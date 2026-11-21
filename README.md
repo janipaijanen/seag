@@ -1,130 +1,193 @@
 <!-- SPDX-FileCopyrightText: Copyright (C) 2026 Jani Päijänen -->
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 
-# SEAG
+# SEAG — Semantic Engineering for Agentic Development
 
-**Semantic Engineering for Agentic Development**
+A provenance-preserving semantic source and transformation framework for
+software work performed by people and LLM agents.
 
-*A semantic capture and transformation framework for meaning-preserving software work by humans and LLM agents.*
+> **Status: private incubation, version line 0.1.0.** SEAG has no supported
+> public release and makes no production-readiness claim. Capabilities are
+> reported with AGF's evidence-based maturity ladder; nothing is Level 5
+> Deployable before a supported release.
 
-SEAG provides a framework for capturing project-specific semantics once and
-transforming them into the representations needed by people, LLM agents, and
-tools. It keeps product language, domain rules, lifecycle vocabularies,
-implementation, and verification traceable without owning any project's domain
-ontology. Its artifacts remain readable and reviewable without an agent runtime.
+[Source contract](docs/source-contract-0.1.md) ·
+[Maturity](docs/maturity.md) ·
+[Conformance](docs/conformance.md) ·
+[Roadmap](docs/roadmap-0.1.md) ·
+[Release policy](docs/release-policy.md) ·
+[Licensing](docs/licensing.md)
 
-SEAG originated from semantic and product-modelling work in the Rediflow
-project. It is incubated as an independent framework so that its specification,
-examples, and tools can be used without Rediflow.
+## Why SEAG
 
-## Version 0.1 scope
+Software projects define important meaning in many places: requirements,
+glossaries, diagrams, UI copy, schemas, code, tests, decisions, and agent
+instructions. Those representations drift. Terms lose their origin, generated
+views become accidental authorities, and agents cannot reliably distinguish a
+confirmed definition from a plausible interpretation.
 
-SEAG 0.1 will define:
+SEAG provides one domain-neutral contract for capturing project semantics with
+stable identity, explicit status, and verifiable provenance. Projects retain
+their own ontologies and domain content. SEAG supplies the framework and tools
+for validating and transforming that content without taking ownership of it.
 
-- SEAG's own domain-neutral meta-ontology for semantic artifacts,
-  transformations, representations, mappings, and provenance;
-- a version-controlled glossary of stable concept identifiers and definitions;
-- typed, directional propositions with explicit cardinalities;
-- lifecycle axes and references to state models;
-- a rule register for conditional and temporal constraints;
-- trace links from concepts and rules to requirements, UI, code, tests, and evidence;
-- CmapTools-compatible exchange, with CXL treated as an export rather than the
-  authoritative source; and
-- lightweight validators and domain-neutral conformance fixtures.
+SEAG originated from semantic and product-modelling needs discovered in the
+Rediflow project, but is developed and distributed independently. Rediflow
+concepts, rules, and product decisions do not belong in SEAG.
 
-Project ontologies, including Rediflow's concepts and rules, remain in their
-own projects. A project may use SEAG schemas and tooling without contributing
-its domain model to SEAG.
+## The three promises
+
+### 1. Meaning has stable identity
+
+Concepts and propositions use stable identifiers that do not change when a
+label, language, filename, repository location, or generated representation
+changes.
+
+### 2. Claims retain provenance
+
+Definitions, mappings, confirmation decisions, translations, and generated
+variants retain their source, status, responsible declared actions, and known
+verification limits. SEAG validates declarations; it does not authenticate the
+real identity or authority of the named actors.
+
+### 3. Transformations stay honest
+
+Generated glossaries, diagrams, agent contexts, and integration formats must
+identify their source release and transformation. Omission, fallback, and loss
+are disclosed instead of being silently presented as equivalent semantics.
+
+## What is available now
+
+- A bounded, domain-neutral [0.1 draft source contract](docs/source-contract-0.1.md).
+- A JSON Schema Draft 2020-12 source shape.
+- A dependency-free Python validator for cross-file and semantic invariants.
+- Invented valid and invalid conformance fixtures.
+- Explicit rejection of process-flow and workflow semantics.
+- BCP 47 language policy, stable identity, provenance, role, and semantic
+  minimality policies.
+- Reproducible release-candidate bundles with manifests, checksums, build
+  provenance, SPDX enforcement, and fail-closed publication gating.
+
+The ontology-to-glossary exporter, CmapTools CXL exchange, and optional AGF,
+Ponytail, and Caveman profiles remain planned. See the
+[machine-readable maturity assessment](maturity.yaml) for exact levels,
+evidence, and limitations.
+
+## Try the validator
+
+SEAG currently runs directly from a source checkout and has no installation
+claim:
+
+```sh
+git clone https://gitlab.com/janipaijanen/seag.git
+cd seag
+
+python3 -m seag.validate fixtures/valid/manifest.json
+python3 -m seag.validate --variant fixtures/valid/variant.json
+python3 -m unittest discover -s tests -v
+```
+
+The validator reads local JSON only. It makes no network calls, publishes
+nothing, and performs no transformation. A successful result confirms the
+bounded source checks implemented by that version; it does not prove semantic
+truth, actor identity, authority, or review independence.
+
+## A minimal semantic record
+
+```json
+{
+  "id": "ThingA",
+  "kind": "concept",
+  "status": "proposed",
+  "implementation_alignment": "not_applicable",
+  "label": "Thing A",
+  "definition": "An invented thing.",
+  "provenance": {
+    "source": "invented fixture",
+    "locator": "fixture/records",
+    "normative": false,
+    "proposer": "invented-fixture-author",
+    "verification_status": "unresolved"
+  }
+}
+```
+
+This example is intentionally invented and domain-neutral. Complete bundles
+also carry manifest identity, namespace, fragment inventory, digests, language,
+licensing, and revision information.
 
 ## Explicit non-goal: process modelling
 
 SEAG is not process-modelling, workflow-design, orchestration, or execution
-tooling. Trying to encode process flow in SEAG is unsupported and will waste
-effort: the framework will not grow sequence flows, gateways, transitions,
-concurrency, timers, compensation, task routing, or runtime semantics.
+tooling. It will not grow sequence flows, gateways, transitions, concurrency,
+timers, compensation, task routing, or runtime semantics.
 
 SEAG may define the meaning of terms such as Activity, Event, State, Rule, and
-Role. It may also reference an external BPMN model, state machine, decision
-table, or workflow by stable identifier and provenance. The external notation
-remains authoritative for process behaviour. SEAG captures meaning across
-representations; it does not replace those representations.
+Role, and may reference an external BPMN model, state machine, decision table,
+or workflow by stable identifier and provenance. The external notation remains
+authoritative for behaviour.
 
-## Related tools and frameworks
+## Standards and compatibility
 
-SEAG is independently usable. Optional integration profiles may connect it to:
+SEAG distinguishes core conformance, conditional requirements, semantic
+mappings, export profiles, and publication gates. Listing an external standard
+does not itself claim compatibility.
 
-- **Agents Govern Framework (AGF) 3.0** for authority, governance, evidence,
-  delegation, and review;
-- **Ponytail** for implementation-reduction discipline; and
-- **Caveman Mode** for short, direct operational communication.
+- Language values follow BCP 47 and the [language-tag policy](docs/language-tags.md).
+- JSON schemas use JSON Schema Draft 2020-12.
+- Provenance and glossary concepts have documented W3C PROV and SKOS mapping
+  obligations; neither is the authoritative SEAG storage syntax.
+- CXL, JSON-LD, RDF, OWL, and PROV-O serialization remain export profiles until
+  implemented and independently verified.
 
-These are interoperability targets, not dependencies and not bundled
-components. SEAG does not claim compatibility until an integration profile has
-been implemented and verified against a pinned version.
+See [standards and conformance](docs/conformance.md) and the machine-readable
+[`standards.yaml`](standards.yaml) register.
 
-## Status
+## Documentation
 
-Private incubation. No public-release or stability claim has been made.
+- [Project charter](docs/charter.md)
+- [0.1 roadmap](docs/roadmap-0.1.md)
+- [Source contract](docs/source-contract-0.1.md)
+- [Identity, bundles, and variants](docs/identity-bundles-and-variants.md)
+- [Term adoption and provenance](docs/term-adoption-and-provenance.md)
+- [Language tags](docs/language-tags.md)
+- [Roles](docs/roles.md)
+- [Semantic minimality](docs/semantic-minimality.md)
+- [Maturity and evidence](docs/maturity.md)
+- [Standards and conformance](docs/conformance.md)
+- [Release and version policy](docs/release-policy.md)
+- [Licensing and SPDX declarations](docs/licensing.md)
 
-SEAG uses AGF's evidence-based five-level capability ladder instead of binary
-"implemented" or "supported" claims. Current capabilities range from Level 1
-Planned to Level 4 Validated; nothing is Level 5 Deployable before a supported
-release. See [maturity and evidence](docs/maturity.md) and the machine-readable
-[`maturity.yaml`](maturity.yaml) assessment.
+## Releases
 
-## Standards and conformance
+`VERSION` is the authoritative package version. Release tags must match it
+exactly as `v<version>`, and the tagged commit must belong to `main`. CI bakes a
+reproducible `seag-<version>.tar.gz` candidate with a content manifest,
+SHA-256 checksum, and build-provenance record.
 
-SEAG pins the standards used for normative language, language tags,
-identifiers, JSON schemas, timestamps, Unicode, provenance mappings, glossary
-mappings, and published licence expressions. Listing an external standard does
-not by itself claim compatibility: core requirements, conditional use,
-semantic mappings, and export profiles are distinguished explicitly.
+Candidate artifacts are review inputs, not releases. Stable publication remains
+blocked until licensing, security, contribution, compatibility, and
+release-specific independent-review gates are satisfied.
 
-The authoritative policy is [standards and conformance](docs/conformance.md).
-Its machine-readable register is [`standards.yaml`](standards.yaml).
-
-## Release candidates
-
-GitLab CI validates the repository and bakes a reproducible source
-release-candidate archive with a content manifest, SHA-256 checksum, and build
-provenance record. Candidate artifacts are review inputs, not public-release or
-stability claims. Stable publication tags fail closed until the publication
-gate and release-specific independent review requirements are satisfied.
-
-`VERSION` is the authoritative package version and release tags must match it
-exactly as `v<version>`, following the AGF release-numbering pattern. Commit
-identity stays in build provenance rather than being embedded in a synthetic
-CI version. See the [release and version policy](docs/release-policy.md).
-
-Build and verify the same candidate locally:
+Build the current candidate locally:
 
 ```sh
 python3 scripts/build-release-bundle.py \
   --commit HEAD --output-dir dist --verify
 ```
 
-See [the project charter](docs/charter.md) and [the 0.1 roadmap](docs/roadmap-0.1.md).
-External vocabulary reuse and divergence follow the
-[term adoption and provenance policy](docs/term-adoption-and-provenance.md).
-Portable identity and generated representations follow the
-[identity, bundle, and variant policy](docs/identity-bundles-and-variants.md).
-Multilingual values and generated language variants follow the
-[BCP 47 language-tag policy](docs/language-tags.md).
-Responsibility contracts are defined in [SEAG roles](docs/roles.md), and
-expression discipline in [semantic minimality](docs/semantic-minimality.md).
+## Stewardship and participation
 
-## Licensing intent
+SEAG is currently maintained by Jani Päijänen and is under active private
+incubation. A public community programme, external contribution procedure,
+security-reporting channel, and support commitment have not yet been
+established. Those procedures are publication gates and must exist before the
+first supported public release.
 
-Tooling code is licensed under Apache-2.0. Framework and methodology documents
-are licensed under CC BY 4.0. Complete licence texts, the per-file SPDX policy,
-and rules for non-commentable formats are documented in
-[licensing and SPDX declarations](docs/licensing.md).
+## Licensing
 
-## Source contract and validator draft
+Copyright (C) 2026 Jani Päijänen.
 
-The bounded 0.1 source contract is in [docs/source-contract-0.1.md](docs/source-contract-0.1.md),
-with machine-readable shapes in [schema/source-0.1.schema.json](schema/source-0.1.schema.json).
-Run `python3 -m seag.validate fixtures/valid/manifest.json` and
-`python3 -m unittest discover -s tests -v` from the repository root. The
-validator reads only local JSON, makes no network calls, and does not publish
-or transform source bundles.
+Software, CI, and tests are licensed under Apache-2.0. Framework documentation
+and semantic registers are licensed under CC BY 4.0. Complete texts and the
+per-file SPDX policy are in [licensing and SPDX declarations](docs/licensing.md).
