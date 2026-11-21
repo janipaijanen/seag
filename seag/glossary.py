@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 from pathlib import Path
 import sys
+import unicodedata
 
 from .source import load_bundle, package_version
 from .transform import timestamp, write_with_provenance
@@ -58,6 +59,7 @@ def extract(manifest_path: Path, language: str, generated_at: str) -> tuple[dict
         "language_selection": "exact",
         "fallback_policy": "none",
         "entry_count": len(entries),
+        "unicode_data_version": unicodedata.unidata_version,
     }
     return result, provenance
 

@@ -11,12 +11,13 @@ import json
 import os
 from pathlib import Path
 
+from .validate import iso_timestamp
+
 
 def timestamp(value: str | None) -> str:
     if value:
-        parsed = datetime.datetime.fromisoformat(value.replace("Z", "+00:00"))
-        if parsed.tzinfo is None:
-            raise ValueError("generated timestamp must include a UTC offset")
+        if not iso_timestamp(value):
+            raise ValueError("generated timestamp must be RFC 3339 with a UTC offset")
         return value
     epoch = os.environ.get("SOURCE_DATE_EPOCH")
     moment = datetime.datetime.fromtimestamp(int(epoch), datetime.timezone.utc) if epoch else datetime.datetime.now(datetime.timezone.utc)

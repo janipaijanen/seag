@@ -54,6 +54,13 @@ PROCESS_NAME = re.compile(
 )
 VAGUE_NAMES = {"relates to", "relates to the", "related to", "is related to", "associated with", "is associated with", "linked to", "is linked to", "connection", "relation", "supports", "uses", "has many"}
 EVIDENCE_STATUS = {"unresolved", "qualified", "verified", "rejected"}
+LANGUAGE_TAG = re.compile(
+    r"^(?:(?:[A-Za-z]{2,3}(?:-[A-Za-z]{3}){0,3}|[A-Za-z]{4}|[A-Za-z]{5,8})"
+    r"(?:-[A-Za-z]{4})?(?:-(?:[A-Za-z]{2}|[0-9]{3}))?"
+    r"(?:-(?:[A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))*"
+    r"(?:-[0-9A-WY-Za-wy-z](?:-[A-Za-z0-9]{2,8})+)*"
+    r"(?:-x(?:-[A-Za-z0-9]{1,8})+)?|x(?:-[A-Za-z0-9]{1,8})+)$"
+)
 
 
 def normalized_actor(value: object) -> str:
@@ -82,6 +89,10 @@ def iso_timestamp(value: object) -> bool:
         return datetime.datetime.fromisoformat(value.replace("Z", "+00:00")).tzinfo is not None
     except ValueError:
         return False
+
+
+def language_tag(value: object) -> bool:
+    return isinstance(value, str) and bool(LANGUAGE_TAG.fullmatch(value))
 
 
 def absolute_iri(value: object) -> bool:
@@ -119,6 +130,8 @@ def validate(manifest_path: Path) -> list[str]:
     check(absolute_iri(namespace) and namespace.endswith(("#", "/")), "manifest.namespace", "absolute IRI ending in # or / required")
     for field in ("title", "default_language", "licence"):
         check(isinstance(manifest.get(field), str) and bool(manifest[field].strip()), f"manifest.{field}", "nonempty string required")
+    if isinstance(manifest.get("default_language"), str) and manifest["default_language"].strip():
+        check(language_tag(manifest["default_language"]), "manifest.default_language", "supported well-formed BCP 47 tag required")
     check(manifest.get("status") == "draft", "manifest.status", "this validator accepts draft bundles only")
     inventory = manifest.get("fragments")
     if not isinstance(inventory, list) or not inventory:
@@ -163,6 +176,8 @@ def validate(manifest_path: Path) -> list[str]:
             check(fragment.get(field) == expected, name + "." + field, "does not match manifest")
         for field in ("language", "revision"):
             check(isinstance(fragment.get(field), str) and bool(fragment[field].strip()), name + "." + field, "nonempty string required")
+        if isinstance(fragment.get("language"), str) and fragment["language"].strip():
+            check(language_tag(fragment["language"]), name + ".language", "supported well-formed BCP 47 tag required")
         source_records = fragment.get("records")
         if not isinstance(source_records, list):
             errors.append(f"{name}.records: array required")

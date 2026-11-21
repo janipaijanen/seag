@@ -52,6 +52,13 @@ class SourceValidationTest(unittest.TestCase):
     def test_valid_fixture(self):
         self.assertEqual([], self.run_case())
 
+    def test_language_tags_require_supported_bcp47_shape(self):
+        self.manifest["default_language"] = "en_US"
+        self.assert_rejects("well-formed BCP 47")
+        self.manifest["default_language"] = "en"
+        self.fragment["language"] = "not a tag"
+        self.assert_rejects("well-formed BCP 47")
+
     def test_concept_requires_singular_number_declaration(self):
         record = self.fragment["records"][0]
         del record["grammatical_number"]

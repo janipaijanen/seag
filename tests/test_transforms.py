@@ -7,7 +7,7 @@ import json
 import tempfile
 import unittest
 
-from seag.cxl import export, parse
+from seag.cxl import export, parse, xml_text
 from seag.glossary import extract
 from seag.transform import json_bytes
 
@@ -44,6 +44,21 @@ class TransformTest(unittest.TestCase):
         second, repeated, _ = export(MANIFEST, WHEN)
         self.assertEqual(first, second)
         self.assertEqual(json_bytes(provenance), json_bytes(repeated))
+
+    def test_cxl_rejects_forbidden_xml_and_dtd(self):
+        with self.assertRaisesRegex(ValueError, "XML-forbidden"):
+            xml_text("bad\x00value")
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "hostile.cxl"
+            path.write_text("<!DOCTYPE cmap [<!ENTITY x 'x'>]><cmap/>")
+            with self.assertRaisesRegex(ValueError, "DTD and entity"):
+                parse(path)
+
+    def test_generated_timestamp_requires_rfc3339(self):
+        from seag.transform import timestamp
+
+        with self.assertRaisesRegex(ValueError, "RFC 3339"):
+            timestamp("2026-11-22T00:00:00")
 
 
 if __name__ == "__main__":

@@ -69,7 +69,8 @@ standards:
     versions: ["Unicode Standard", "UAX #15"]
     normalization_form: NFC
     version_evidence: required
-    unicode_data_version: "16.0.0"
+    runtime_version_recorded_in_transformation_provenance: true
+    validated_versions: ["15.0.0", "16.0.0"]
 
   - id: json-canonicalization
     title: JSON Canonicalization Scheme
