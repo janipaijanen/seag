@@ -63,6 +63,17 @@ been implemented and verified against a pinned version.
 
 Private incubation. No public-release or stability claim has been made.
 
+## Standards and conformance
+
+SEAG pins the standards used for normative language, language tags,
+identifiers, JSON schemas, timestamps, Unicode, provenance mappings, glossary
+mappings, and published licence expressions. Listing an external standard does
+not by itself claim compatibility: core requirements, conditional use,
+semantic mappings, and export profiles are distinguished explicitly.
+
+The authoritative policy is [standards and conformance](docs/conformance.md).
+Its machine-readable register is [`standards.yaml`](standards.yaml).
+
 See [the project charter](docs/charter.md) and [the 0.1 roadmap](docs/roadmap-0.1.md).
 External vocabulary reuse and divergence follow the
 [term adoption and provenance policy](docs/term-adoption-and-provenance.md).

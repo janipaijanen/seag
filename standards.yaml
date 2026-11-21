@@ -1,0 +1,106 @@
+seag_standards_register: "0.1"
+status: draft
+
+conformance_classes:
+  - core
+  - conditional
+  - mapping
+  - export-profile
+  - publication-gate
+
+standards:
+  - id: rfc2119-rfc8174
+    title: Normative requirement keywords
+    class: core
+    versions: ["RFC 2119", "RFC 8174"]
+    applies_to: SEAG normative specifications
+
+  - id: bcp47
+    title: Language tags and matching
+    class: core
+    versions: ["RFC 5646", "RFC 4647"]
+    registry: IANA Language Subtag Registry
+    registry_version_field: File-Date
+    applies_to: language-bearing values and language selection
+
+  - id: uri-iri
+    title: Resource identifiers
+    class: core
+    versions: ["RFC 3986", "RFC 3987"]
+    applies_to: bundle, release, namespace, record, and external identifiers
+
+  - id: uuid
+    title: UUID generation
+    class: conditional
+    versions: ["RFC 9562"]
+    condition: SEAG tooling generates a UUID
+
+  - id: json
+    title: JSON interchange
+    class: core
+    versions: ["RFC 8259"]
+    applies_to: normative JSON artifacts
+
+  - id: json-schema
+    title: JSON Schema
+    class: core
+    versions: ["Draft 2020-12"]
+    applies_to: SEAG 0.1 JSON schemas
+
+  - id: json-pointer
+    title: JSON Pointer
+    class: core
+    versions: ["RFC 6901"]
+    applies_to: machine-readable JSON diagnostic locations
+
+  - id: timestamp
+    title: Internet timestamps
+    class: core
+    versions: ["RFC 3339"]
+    applies_to: machine-readable instants
+
+  - id: unicode-normalization
+    title: Unicode normalization
+    class: core
+    versions: ["Unicode Standard", "UAX #15"]
+    normalization_form: NFC
+    version_evidence: required
+
+  - id: json-canonicalization
+    title: JSON Canonicalization Scheme
+    class: conditional
+    versions: ["RFC 8785"]
+    condition: a digest or signature covers canonical semantic JSON
+
+  - id: w3c-prov
+    title: W3C provenance model
+    class: mapping
+    versions: ["PROV-DM", "PROV-O 2013 Recommendation"]
+    claim: mapping-required
+    serialization_required: false
+
+  - id: w3c-skos
+    title: Simple Knowledge Organization System
+    class: mapping
+    versions: ["SKOS Reference 2009 Recommendation"]
+    claim: mapping-required
+    serialization_required: false
+
+  - id: spdx
+    title: Licence expressions and licence list
+    class: publication-gate
+    versions: ["SPDX Specification 3.0.1"]
+    pin_license_list_version_before_publication: true
+
+  - id: cmaptools-cxl
+    title: CmapTools CXL interoperability
+    class: export-profile
+    version: pending-profile
+    claim: not-yet-conformant
+
+  - id: semantic-web-exports
+    title: JSON-LD, RDF, OWL, and PROV-O serialization
+    class: export-profile
+    version: pending-profile
+    claim: not-yet-conformant
+
