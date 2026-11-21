@@ -76,13 +76,13 @@ class SourceValidationTest(unittest.TestCase):
         self.assert_rejects("six static controlled predicates")
 
     def test_process_name_cannot_hide_as_named_association(self):
-        for name in ("precedes", "changes state to", "is followed by", "changes_state_to", "changes-state-to", "triggered by", "preceding", "changed state to", "leads to", "results in", "is succeeded by", "becomes"):
+        for name in ("precedes", "directly precedes", "is preceded by", "preceded by", "changes state to", "is followed by", "followed by", "changes_state_to", "changes-state-to", "triggered by", "is triggered by", "triggers", "moves to", "goes to", "happens before", "succeeds", "changed state to", "leads to", "results in", "is succeeded by", "becomes"):
             with self.subTest(name=name):
                 self.fragment["records"][-1]["name"] = name
                 self.assert_only_error("process or transition association name forbidden")
 
     def test_static_names_are_not_over_rejected(self):
-        for name in ("is named after", "has sequence number", "has step count", "has workflow owner", "has transition fee", "has cause code", "follows standard", "enables access to", "is following member of"):
+        for name in ("is named after", "has sequence number", "has step count", "has workflow owner", "has transition fee", "has cause code", "trigger condition for", "cause code of", "preceding version of", "cause of", "follows standard", "enables access to", "is following member of"):
             with self.subTest(name=name):
                 self.fragment["records"][-1]["name"] = name
                 self.assertEqual([], self.run_case())
@@ -217,10 +217,37 @@ class SourceValidationTest(unittest.TestCase):
         record["confirmation"]["junk"] = "unreviewed"
         self.assert_only_error("unsupported fields: junk")
 
+    def test_empty_confirmation_does_not_claim_actor_collapse(self):
+        record = self.fragment["records"][0]
+        record["confirmation"] = {}
+        errors = self.run_case()
+        self.assertFalse(any("reviewer and confirmer" in error for error in errors), errors)
+        self.assertTrue(any("confirmation block needs" in error for error in errors), errors)
+
+    def test_optional_disclosures_and_replacement_are_nonempty_strings(self):
+        record = self.fragment["records"][0]
+        for value in ("", 42):
+            with self.subTest(field="replacement_or_reason", value=value):
+                record["replacement_or_reason"] = value
+                self.assert_only_error("replacement or rationale must be a nonempty string")
+        del record["replacement_or_reason"]
+        confirmation = self.confirm()["confirmation"]
+        for field in ("review_limit", "role_collapse_note"):
+            for value in ("", 42):
+                with self.subTest(field=field, value=value):
+                    confirmation[field] = value
+                    self.assert_only_error("disclosure must be a nonempty string")
+            confirmation.pop(field)
+
     def test_review_must_precede_decision(self):
         record = self.confirm()
         record["confirmation"]["reviewed_at"] = "2026-11-22"
         self.assert_only_error("review date must not follow decision date")
+
+    def test_reviewed_at_requires_iso_date(self):
+        record = self.confirm()
+        record["confirmation"]["reviewed_at"] = "yesterday"
+        self.assert_only_error("reviewed_at: ISO calendar date required")
 
     def test_confirmed_date_and_evidence_status(self):
         record = self.confirm()
@@ -317,6 +344,60 @@ class SourceValidationTest(unittest.TestCase):
     def test_deprecated_requires_rationale(self):
         self.fragment["records"][0]["status"] = "deprecated"
         self.assert_rejects("deprecated record needs replacement or rationale")
+
+    def test_deprecated_with_rationale_is_valid(self):
+        record = self.fragment["records"][0]
+        record.update(status="deprecated", replacement_or_reason="Replaced by ThingB.")
+        self.assertEqual([], self.run_case())
+
+    def test_fragment_language_revision_and_manifest_identity_are_checked(self):
+        for field in ("language", "revision"):
+            with self.subTest(field=field):
+                original = self.fragment[field]
+                self.fragment[field] = ""
+                self.assert_only_error("nonempty string required")
+                self.fragment[field] = original
+        for field, value in (("bundle_id", "urn:uuid:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa"), ("fragment_id", "other"), ("role", "other")):
+            with self.subTest(field=field):
+                original = self.fragment[field]
+                self.fragment[field] = value
+                self.assert_only_error("does not match manifest")
+                self.fragment[field] = original
+
+    def test_invalid_iri_and_namespace_forms(self):
+        rule = self.fragment["records"][3]
+        rule["iri"] = "relative"
+        self.assert_only_error("absolute external artifact IRI required")
+        rule["iri"] = "urn:uuid:22222222-2222-4222-8222-222222222222"
+        self.manifest["namespace"] = "https://example.invalid/terms"
+        self.fragment["namespace"] = self.manifest["namespace"]
+        self.assert_only_error("ending in # or / required")
+
+    def test_unknown_record_kind_and_non_object_record(self):
+        self.fragment["records"][0]["kind"] = "unknown"
+        self.assert_rejects("unknown record kind")
+        self.fragment = json.loads((VALID / "fragment.json").read_text())
+        self.fragment["records"][0] = []
+        self.assert_rejects("object required")
+
+    def test_cli_variant_success_names_variant_metadata(self):
+        result = subprocess.run([sys.executable, "-I", str(ROOT / "seag" / "validate.py"), "--variant", str(VALID / "variant.json")], cwd=ROOT, capture_output=True, text=True)
+        self.assertEqual(0, result.returncode, result.stderr)
+        self.assertIn("variant metadata valid", result.stdout)
+
+    def test_confirmed_source_cardinality_cannot_be_unresolved(self):
+        association = self.confirm(-1)
+        association["source_cardinality"] = "unresolved"
+        self.assert_only_error("confirmed cardinality cannot be unresolved")
+
+    def test_variant_requires_absolute_identifiers(self):
+        variant = json.loads((VALID / "variant.json").read_text())
+        path = self.root / "variant.json"
+        for field in ("variant_id", "representation_of"):
+            with self.subTest(field=field):
+                changed = dict(variant, **{field: "relative"})
+                path.write_text(json.dumps(changed))
+                self.assertEqual([f"variant.{field}: absolute immutable IRI required"], validate_variant(path))
 
     def test_malformed_record_kind_is_reported(self):
         self.fragment["records"][0]["kind"] = ["concept"]

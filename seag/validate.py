@@ -45,7 +45,13 @@ CONFIRMATION_FIELDS = {"decision_ref", "decided_at", "confirmer", "reviewer", "r
 VARIANT_FIELDS = {"variant_id", "representation_of", "format", "source_manifest_sha256", "output_sha256", "generator", "generated_at", "lossless", "omissions", "unsupported_constructs"}
 # Only initial transition/action phrases are rejected automatically. Ambiguous
 # interior words and static names require human semantic review.
-PROCESS_NAME = re.compile(r"^(?:precedes?|preceded by|preceding|is followed by|trigger(?:s|ed|ing)?(?: by)?|transition(?:s|ed|ing)? to|chang(?:e|es|ed|ing) state(?: to)?|next state|leads? to|results? in|is succeeded by|becomes?|is caused by|caused by|causes?)(?:\b|$)")
+PROCESS_NAME = re.compile(
+    r"^(?:directly precedes?|precedes?|(?:is )?preceded by|(?:is )?followed by|"
+    r"triggers|triggered by|is triggered by|triggering|transition(?:s|ed|ing)? to|"
+    r"chang(?:e|es|ed|ing) state(?: to)?|moves? to|goes? to|next state|"
+    r"leads? to|results? in|is succeeded by|succeeds?|becomes?|is caused by|"
+    r"caused by|causes|happens before)(?:\b|$)"
+)
 VAGUE_NAMES = {"relates to", "relates to the", "related to", "is related to", "associated with", "is associated with", "linked to", "is linked to", "connection", "relation", "supports", "uses", "has many"}
 EVIDENCE_STATUS = {"unresolved", "qualified", "verified", "rejected"}
 
@@ -183,15 +189,22 @@ def validate(manifest_path: Path) -> list[str]:
             if isinstance(provenance, dict):
                 check(not (set(provenance) - PROVENANCE_FIELDS), loc + ".provenance", "unsupported fields: " + ", ".join(sorted(set(provenance) - PROVENANCE_FIELDS)))
             confirmation = record.get("confirmation")
+            if "replacement_or_reason" in record:
+                check(isinstance(record["replacement_or_reason"], str) and bool(record["replacement_or_reason"].strip()), loc + ".replacement_or_reason", "when present, replacement or rationale must be a nonempty string")
             if "confirmation" in record:
-                check(isinstance(confirmation, dict) and all(isinstance(confirmation.get(k), str) and confirmation[k].strip() for k in ("decision_ref", "decided_at", "confirmer", "reviewer", "review_ref", "reviewed_at")), loc + ".confirmation", "confirmed record needs separate decision and review references, dates, confirmer, and reviewer")
+                check(isinstance(confirmation, dict) and all(isinstance(confirmation.get(k), str) and confirmation[k].strip() for k in ("decision_ref", "decided_at", "confirmer", "reviewer", "review_ref", "reviewed_at")), loc + ".confirmation", "confirmation block needs separate decision and review references, dates, confirmer, and reviewer")
                 if isinstance(confirmation, dict):
                     check(not (set(confirmation) - CONFIRMATION_FIELDS), loc + ".confirmation", "unsupported fields: " + ", ".join(sorted(set(confirmation) - CONFIRMATION_FIELDS)))
+                    for field in ("role_collapse_note", "review_limit"):
+                        if field in confirmation:
+                            check(isinstance(confirmation[field], str) and bool(confirmation[field].strip()), loc + ".confirmation." + field, "when present, disclosure must be a nonempty string")
                     check(iso_date(confirmation.get("decided_at")), loc + ".confirmation.decided_at", "ISO calendar date required")
                     check(iso_date(confirmation.get("reviewed_at")), loc + ".confirmation.reviewed_at", "ISO calendar date required")
                     if iso_date(confirmation.get("decided_at")) and iso_date(confirmation.get("reviewed_at")):
                         check(confirmation["reviewed_at"] <= confirmation["decided_at"], loc + ".confirmation.reviewed_at", "review date must not follow decision date")
-                    if normalized_actor(confirmation.get("reviewer")) == normalized_actor(confirmation.get("confirmer")) and not (isinstance(provenance, dict) and normalized_actor(confirmation.get("reviewer")) == normalized_actor(provenance.get("proposer"))):
+                    reviewer = normalized_actor(confirmation.get("reviewer"))
+                    confirmer = normalized_actor(confirmation.get("confirmer"))
+                    if reviewer and confirmer and reviewer == confirmer and not (isinstance(provenance, dict) and reviewer == normalized_actor(provenance.get("proposer"))):
                         check(isinstance(confirmation.get("review_limit"), str) and bool(confirmation["review_limit"].strip()), loc + ".confirmation.review_limit", "same declared reviewer and confirmer needs review-limit disclosure")
                 if isinstance(confirmation, dict) and isinstance(provenance, dict):
                     if normalized_actor(confirmation.get("confirmer")) == normalized_actor(provenance.get("proposer")):
@@ -316,7 +329,8 @@ def main(argv: list[str] | None = None) -> int:
     if errors:
         print(f"{len(errors)} validation error(s)", file=sys.stderr)
         return 1
-    print("SEAG 0.1 draft source shape valid; actor identities and authority unverified")
+    subject = "variant metadata" if args.variant else "source shape"
+    print(f"SEAG 0.1 draft {subject} valid; actor identities and authority unverified")
     return 0
 
 

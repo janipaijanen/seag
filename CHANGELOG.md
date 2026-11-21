@@ -9,6 +9,15 @@ CI uses that release section as the future release-note source.
 
 ## Unreleased
 
+- Aligned dependency-free validation with the source schema for optional
+  replacement and role-disclosure fields.
+- Removed a misleading actor-collapse diagnostic from incomplete confirmation
+  blocks and made CLI success output identify variant validation.
+- Expanded tested process-phrase rejection while preserving static semantic
+  names and the documented need for human semantic review.
+- Added focused negative and boundary coverage for source, fragment, variant,
+  provenance, identity, cardinality, and deprecation validation.
+
 ## 0.1.0-rc.2
 
 Public review governance release. This release candidate remains unsupported,
