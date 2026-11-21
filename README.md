@@ -6,7 +6,7 @@
 
 SEAG provides a framework for capturing project-specific semantics once and
 transforming them into the representations needed by people, LLM agents, and
-tools. It keeps product language, domain rules, lifecycle models,
+tools. It keeps product language, domain rules, lifecycle vocabularies,
 implementation, and verification traceable without owning any project's domain
 ontology. Its artifacts remain readable and reviewable without an agent runtime.
 
@@ -33,9 +33,18 @@ Project ontologies, including Rediflow's concepts and rules, remain in their
 own projects. A project may use SEAG schemas and tooling without contributing
 its domain model to SEAG.
 
-SEAG does not attempt to express workflow ordering, branching, concurrency, or
-all executable policy in a concept map. State diagrams, decision tables, and
-workflow notation retain their own jobs and share stable SEAG identifiers.
+## Explicit non-goal: process modelling
+
+SEAG is not process-modelling, workflow-design, orchestration, or execution
+tooling. Trying to encode process flow in SEAG is unsupported and will waste
+effort: the framework will not grow sequence flows, gateways, transitions,
+concurrency, timers, compensation, task routing, or runtime semantics.
+
+SEAG may define the meaning of terms such as Activity, Event, State, Rule, and
+Role. It may also reference an external BPMN model, state machine, decision
+table, or workflow by stable identifier and provenance. The external notation
+remains authoritative for process behaviour. SEAG captures meaning across
+representations; it does not replace those representations.
 
 ## Related tools and frameworks
 

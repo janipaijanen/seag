@@ -5,7 +5,7 @@
 - Confirm the charter and terminology.
 - Define the SEAG meta-ontology and its external-vocabulary mappings.
 - Define stable identifier namespaces.
-- Define concept, proposition, lifecycle-axis, rule, and trace records.
+- Define concept, proposition, lifecycle-vocabulary, rule-reference, and trace records.
 - Add small, invented, domain-neutral conformance fixtures.
 - Record unresolved facts as unresolved rather than choosing defaults.
 
@@ -20,6 +20,7 @@ Exit evidence: specification review and fixture conformance review.
 - Validate lifecycle, rule, and trace references.
 - Verify that proposed and confirmed statements cannot be confused.
 - Verify provenance completeness and mapping-status consistency.
+- Reject process-flow edges and state-transition semantics with actionable errors.
 
 Exit evidence: focused automated tests and invalid fixture coverage.
 
@@ -42,6 +43,8 @@ Exit evidence: pinned-tool round-trip record and retained fixture.
 
 Each profile must state its pinned target version, assumptions, supported
 workflow, and verification limits. No profile is part of the SEAG core.
+“Workflow” here means how a team uses SEAG artifacts; it does not mean SEAG
+models or executes the team's software-delivery process.
 
 ## Increment 5: publication preparation
 

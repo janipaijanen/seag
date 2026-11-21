@@ -27,9 +27,9 @@ word for different things or different words for the same thing.
    identifiers instead of duplicating definitions or rules.
 3. **Unknown is not optional.** Missing cardinality or policy remains unresolved
    until evidence or a decision settles it.
-4. **Meaning and execution use different notations.** A concept map explains
-   meaning. A state model explains a lifecycle. A decision table explains a
-   conditional rule. A workflow diagram explains ordering and handoffs.
+4. **SEAG does not model processes.** It captures meaning and references
+   process artifacts. State machines, decision tables, and workflow models own
+   their behaviour in external notations.
 5. **Traceability is evidence, not proof.** A link to code or a test identifies
    a claim to inspect; it does not establish correctness by itself.
 6. **Small slices precede whole-domain models.** An adopting project captures
@@ -53,10 +53,10 @@ word for different things or different words for the same thing.
 |---|---|---|
 | Glossary | stable terms, definitions, aliases, status | sequence or authorization |
 | Proposition map | typed static relationships and cardinalities | temporal guards or workflow |
-| Lifecycle model | states, transitions, events, guards for one state axis | cross-actor orchestration |
-| Rule register | scoped conditional and temporal constraints | visual process ordering |
-| Decision table | complete outcomes for multi-condition rules | domain definitions |
-| Workflow model | ordering, branches, concurrency, handoffs | authoritative concept meaning |
+| Lifecycle vocabulary | state identifiers, definitions, and state-axis identity | transitions, guards, or execution |
+| Rule register | named semantic constraints and references to authoritative rules | executable decisions or orchestration |
+| External decision table | referenced outcomes for multi-condition rules | SEAG domain definitions |
+| External workflow model | referenced ordering, branches, concurrency, and handoffs | SEAG semantic authority |
 | Trace register | links to requirements, UI, code, tests, evidence | correctness verdicts |
 
 All artifacts cross-reference stable SEAG identifiers.
@@ -66,7 +66,7 @@ All artifacts cross-reference stable SEAG identifiers.
 The initial SEAG meta-ontology covers at least:
 
 - semantic artifacts: concept, term, definition, proposition, association,
-  lifecycle axis, state, rule, decision table, trace, and evidence claim;
+  lifecycle axis, state vocabulary, rule reference, trace, and evidence claim;
 - framework operations: capture, validate, map, transform, export, import, and
   round-trip verification;
 - representation artifacts: source record, generated representation, profile,
@@ -82,6 +82,30 @@ adopt RDF or OWL. The authoritative source format must preserve these meanings.
 Detailed rules are in
 [the term adoption and provenance policy](term-adoption-and-provenance.md).
 
+## Hard non-goal: process and workflow modelling
+
+SEAG will not represent or execute:
+
+- ordered steps or sequence flow;
+- gateways, branches, joins, loops, or concurrency;
+- state-transition graphs or executable guards;
+- timers, retries, compensation, transactions, or error paths;
+- task assignment, work queues, orchestration, or automation; or
+- process-instance state, event processing, or runtime monitoring.
+
+These capabilities are intentionally out of scope, not deferred roadmap items.
+SEAG source and validators should fail clearly when a record attempts to use
+SEAG relationships as workflow edges or transition semantics.
+
+SEAG may register the identity, meaning, provenance, version, and location of
+an external process artifact. It may map that artifact's vocabulary to project
+concepts and verify that referenced identifiers resolve. It must not infer,
+generate, validate, simulate, or execute the artifact's behavioural semantics.
+
+This boundary prevents a weak second implementation of BPMN, state-machine,
+decision-model, and orchestration tooling. It also keeps SEAG transformations
+loss-aware: process behaviour stays in the notation designed to express it.
+
 ## Initial controlled relationship vocabulary
 
 The first vocabulary should remain deliberately small:
@@ -89,18 +113,17 @@ The first vocabulary should remain deliberately small:
 - `is a kind of`
 - `is part of`
 - `refers to`
-- `consumes`
-- `produces`
-- `is performed by role`
 - `has lifecycle state`
 - `is governed by rule`
 - named associations with `exactly one`, `zero or one`, `one or more`, or
   `zero or more` cardinality at both ends
 
 Generic phrases such as `relates to`, `supports`, `uses`, and `has many` are not
-accepted as authoritative relationships. Conditional `requires` statements
-belong in a named rule with scope, evaluation time, outcome, and unknown-input
-behaviour.
+accepted as authoritative relationships. Process-like phrases such as
+`precedes`, `triggers`, `changes state to`, and `is followed by` are forbidden
+as SEAG proposition predicates. Conditional `requires` statements belong in a
+named semantic constraint or an external rule artifact with scope, evaluation
+time, outcome, and unknown-input behaviour.
 
 ## Rediflow provenance
 
