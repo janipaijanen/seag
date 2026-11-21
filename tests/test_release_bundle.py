@@ -23,7 +23,9 @@ class ReleaseBundleTests(unittest.TestCase):
         version = release_bundle.package_version("HEAD")
         commit = subprocess.check_output(("git", "rev-parse", "HEAD"), text=True).strip()
         with patch.object(release_bundle, "package_version", return_value=version), patch.object(
-            release_bundle, "git", side_effect=("tag", commit, commit)
+            release_bundle,
+            "git",
+            side_effect=("tag", f"object {commit}\ntype commit\ntag v{version}\n\nrelease", commit),
         ):
             self.assertEqual(release_bundle.check_tag(f"v{version}", "HEAD"), version)
         with self.assertRaises(ValueError):
@@ -38,9 +40,18 @@ class ReleaseBundleTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "annotated tag"):
                 release_bundle.check_tag(f"v{version}", "HEAD")
         with patch.object(release_bundle, "package_version", return_value=version), patch.object(
-            release_bundle, "git", side_effect=("tag", "a" * 40, commit)
+            release_bundle,
+            "git",
+            side_effect=("tag", f"object {'a' * 40}\ntype commit\ntag v{version}\n\nrelease", commit),
         ):
-            with self.assertRaisesRegex(ValueError, "does not identify commit"):
+            with self.assertRaisesRegex(ValueError, "does not directly identify commit"):
+                release_bundle.check_tag(f"v{version}", "HEAD")
+        with patch.object(release_bundle, "package_version", return_value=version), patch.object(
+            release_bundle,
+            "git",
+            side_effect=("tag", f"object {'a' * 40}\ntype tag\ntag v{version}\n\nrelease", commit),
+        ):
+            with self.assertRaisesRegex(ValueError, "directly identify a commit"):
                 release_bundle.check_tag(f"v{version}", "HEAD")
 
     def test_rejects_unsafe_version(self):

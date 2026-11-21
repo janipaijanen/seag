@@ -11,6 +11,7 @@ import re
 import subprocess
 import sys
 import tempfile
+from urllib.parse import urlsplit
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -36,7 +37,8 @@ REQUIRED_FILES = (
 
 REVIEW_SCOPES = {"semantic", "framework-boundary", "licensing", "security"}
 RFC3339_UTC = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z\Z")
-ABSOLUTE_EVIDENCE_REF = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*:\S+\Z")
+ABSOLUTE_EVIDENCE_REF = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*:[A-Za-z0-9._~:/?#\[\]@!$&'()*+,;=%-]+\Z")
+INVALID_PERCENT_ESCAPE = re.compile(r"%(?![0-9A-Fa-f]{2})")
 
 
 def valid_reviewed_at(value: object) -> bool:
@@ -46,6 +48,21 @@ def valid_reviewed_at(value: object) -> bool:
         return datetime.datetime.fromisoformat(value.removesuffix("Z") + "+00:00").tzinfo is not None
     except ValueError:
         return False
+
+
+def valid_evidence_ref(value: object) -> bool:
+    if not isinstance(value, str) or not ABSOLUTE_EVIDENCE_REF.fullmatch(value):
+        return False
+    if INVALID_PERCENT_ESCAPE.search(value):
+        return False
+    try:
+        parts = urlsplit(value)
+        _ = parts.port
+    except ValueError:
+        return False
+    if parts.scheme in {"http", "https"}:
+        return bool(parts.netloc)
+    return bool(value.split(":", 1)[1])
 
 
 def check_review_evidence(path: Path) -> list[str]:
@@ -95,10 +112,9 @@ def check_review_evidence(path: Path) -> list[str]:
         if "reviewed_at" in review and not valid_reviewed_at(review["reviewed_at"]):
             errors.append(f"review {index} reviewed_at must be an RFC 3339 UTC timestamp")
         if "evidence_ref" in review and (
-            not isinstance(review["evidence_ref"], str)
-            or not ABSOLUTE_EVIDENCE_REF.fullmatch(review["evidence_ref"])
+            not valid_evidence_ref(review["evidence_ref"])
         ):
-            errors.append(f"review {index} evidence_ref must be an absolute URI without whitespace")
+            errors.append(f"review {index} evidence_ref must be a syntactically valid absolute URI")
         if isinstance(review.get("reviewer"), str) and review["reviewer"].strip():
             reviewers.add(review["reviewer"].strip().casefold())
     if covered != REVIEW_SCOPES:

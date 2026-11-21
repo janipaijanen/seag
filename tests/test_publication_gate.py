@@ -55,10 +55,10 @@ class ReleaseEvidenceTest(unittest.TestCase):
     def test_rejects_malformed_review_provenance(self):
         evidence = self.evidence()
         evidence["reviews"][0]["reviewed_at"] = "not-a-date"
-        evidence["reviews"][0]["evidence_ref"] = "not a URI"
+        evidence["reviews"][0]["evidence_ref"] = "https:%ZZ"
         errors = self.check(evidence)
         self.assertTrue(any("RFC 3339 UTC" in error for error in errors), errors)
-        self.assertTrue(any("absolute URI" in error for error in errors), errors)
+        self.assertTrue(any("valid absolute URI" in error for error in errors), errors)
 
 
 if __name__ == "__main__":
