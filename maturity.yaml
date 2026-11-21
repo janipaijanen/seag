@@ -5,9 +5,10 @@ schema: seag/maturity-assessment/v1
 assessment_date: 2026-11-22
 assessment_basis:
   repository: https://gitlab.com/janipaijanen/seag
-  source_commit: 2370d999022f9fe5c5c32aef7c943fd7ed5be3df
-  documentation_delta: ad566999a9f93bd7c76910b8bc650f9853a656ae
+  implementation_commit: 9c1b9a8a62767804ec9d70d931c73ef449528eec
+  stable_metadata_commit: f97e05e8bf430e6581ff3aee2c8b6b01bc51281f
   review_record: docs/reviews/source-contract-integration-0.1.md
+  pending_release_review: docs/reviews/0.1.0-release.json
 
 adopted_vocabulary:
   framework: AGF26
@@ -34,11 +35,13 @@ capabilities:
     name: Validated
     evidence:
       - gitlab-pipeline:3097901803
+      - gitlab-pipeline:3098412900
   spdx-enforcement:
     level: 4
     name: Validated
     evidence:
       - gitlab-pipeline:3097901803
+      - gitlab-pipeline:3098412900
   semantic-source-contract:
     level: 4
     name: Validated
@@ -50,7 +53,8 @@ capabilities:
     level: 4
     name: Validated
     evidence:
-      - tests:45-passed
+      - tests:54-validator-tests-passed
+      - tests:73-total-tests-passed
       - review-record:docs/reviews/source-contract-integration-0.1.md
       - gitlab-pipeline:3097930514
   glossary-extraction:
@@ -59,6 +63,7 @@ capabilities:
     evidence:
       - test:test_transforms.TransformTest.test_glossary_retains_identity_language_and_source_provenance
       - fixture:fixtures/expected/glossary-en.json
+      - gitlab-pipeline:3098412613
   cmaptools-cxl-exchange:
     name: Validated
     level: 4
@@ -67,6 +72,7 @@ capabilities:
     evidence:
       - test:test_transforms.TransformTest.test_cxl_round_trip_preserves_bounded_graph
       - fixture:fixtures/expected/concept-map.cxl
+      - gitlab-pipeline:3098412613
   optional-integration-profiles:
     level: 1
     name: Planned

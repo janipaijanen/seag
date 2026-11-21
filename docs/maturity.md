@@ -107,7 +107,7 @@ The machine-readable assessment is [`maturity.yaml`](../maturity.yaml). Its
 levels describe the identified capability scope at the recorded source commit;
 they are not a blanket project score.
 
-As of the initial assessment:
+As of the stable 0.1 candidate assessment:
 
 | Capability | Level | Evidence and limitation |
 |---|---:|---|
@@ -121,14 +121,15 @@ As of the initial assessment:
 | CmapTools CXL exchange | 4 Validated | Deterministic export and compatible-parser graph round trip; CmapTools desktop import remains untested and unclaimed |
 | AGF, Ponytail, and Caveman profiles | 1 Planned | Interoperability targets only |
 
-The assessment basis is integration head
-`2370d999022f9fe5c5c32aef7c943fd7ed5be3df`, documentation-only correction
-`ad566999a9f93bd7c76910b8bc650f9853a656ae`, and the durable
-[integration review record](reviews/source-contract-integration-0.1.md). Level
-4 applies only to the bounded 0.1 contract and checks exercised there; it does
-not claim semantic truth, authenticated actor authority, complete
-Unicode/process detection, cross-engine equivalence, or a supported
-distribution.
+The current assessment basis is implementation head
+`9c1b9a8a62767804ec9d70d931c73ef449528eec`, stable-metadata head
+`f97e05e8bf430e6581ff3aee2c8b6b01bc51281f`, the durable
+[source-contract integration review](reviews/source-contract-integration-0.1.md),
+73 passing tests, and exact-head hosted pipelines recorded in `maturity.yaml`.
+Level 4 applies only to the bounded 0.1 contract and checks exercised there;
+it does not claim semantic truth, authenticated actor authority, complete
+Unicode/process detection, CmapTools desktop compatibility, or cross-engine
+equivalence. Level 5 requires the reviewed, tagged stable distribution.
 
 SEAG's problem framing is **Empirically informed** by Rediflow and SEAG's own
 incubation. Claims that SEAG improves independent projects remain
