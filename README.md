@@ -76,6 +76,7 @@ expression discipline in [semantic minimality](docs/semantic-minimality.md).
 Tooling code will be offered under Apache-2.0. Framework and methodology
 documents will be offered under CC BY 4.0. Exact license texts and per-file
 SPDX identifiers must be present before public release.
+
 # Source contract and validator draft
 
 The bounded 0.1 source contract is in [docs/source-contract-0.1.md](docs/source-contract-0.1.md),

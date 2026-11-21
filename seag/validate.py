@@ -39,7 +39,10 @@ RECORD_FIELDS = {
 }
 PROVENANCE_FIELDS = {"source", "locator", "proposer", "normative", "verification_status"}
 CONFIRMATION_FIELDS = {"decision_ref", "decided_at", "confirmer", "reviewer", "review_ref", "reviewed_at", "role_collapse_note", "review_limit"}
-PROCESS_NAME = re.compile(r"\b(?:preced(?:e|es|ed|ing)|follow(?:s|ed|ing)|trigger(?:s|ed|ing)|transition(?:s|ed|ing)?|chang(?:e|es|ed|ing)\s+state(?:\s+to)?|next\s+state|leads?\s+to|results?\s+in|is\s+succeeded\s+by|becomes?|causes?|enables?)\b")
+VARIANT_FIELDS = {"variant_id", "representation_of", "format", "source_manifest_sha256", "output_sha256", "generator", "generated_at", "lossless", "omissions", "unsupported_constructs"}
+# Only initial transition/action phrases are rejected automatically. Ambiguous
+# interior words and static names require human semantic review.
+PROCESS_NAME = re.compile(r"^(?:precedes?|preceded by|preceding|is followed by|trigger(?:s|ed|ing)?(?: by)?|transition(?:s|ed|ing)? to|chang(?:e|es|ed|ing) state(?: to)?|next state|leads? to|results? in|is succeeded by|becomes?|is caused by|caused by|causes?)(?:\b|$)")
 VAGUE_NAMES = {"relates to", "relates to the", "related to", "is related to", "associated with", "is associated with", "linked to", "is linked to", "connection", "relation", "supports", "uses", "has many"}
 EVIDENCE_STATUS = {"unresolved", "qualified", "verified", "rejected"}
 
@@ -59,6 +62,15 @@ def iso_date(value: object) -> bool:
         return False
     try:
         return datetime.date.fromisoformat(value).isoformat() == value
+    except ValueError:
+        return False
+
+
+def iso_timestamp(value: object) -> bool:
+    if not isinstance(value, str) or not re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})", value):
+        return False
+    try:
+        return datetime.datetime.fromisoformat(value.replace("Z", "+00:00")).tzinfo is not None
     except ValueError:
         return False
 
@@ -167,18 +179,24 @@ def validate(manifest_path: Path) -> list[str]:
             check(isinstance(provenance, dict) and all(isinstance(provenance.get(k), str) and provenance[k].strip() for k in ("source", "locator", "proposer")) and isinstance(provenance.get("normative"), bool) and isinstance(provenance.get("verification_status"), str) and provenance["verification_status"] in EVIDENCE_STATUS, loc + ".provenance", "source, locator, proposer, normative boolean, and evidence verification status required")
             if isinstance(provenance, dict):
                 check(not (set(provenance) - PROVENANCE_FIELDS), loc + ".provenance", "unsupported fields: " + ", ".join(sorted(set(provenance) - PROVENANCE_FIELDS)))
-            if record.get("status") == "confirmed":
-                confirmation = record.get("confirmation")
+            confirmation = record.get("confirmation")
+            if "confirmation" in record:
                 check(isinstance(confirmation, dict) and all(isinstance(confirmation.get(k), str) and confirmation[k].strip() for k in ("decision_ref", "decided_at", "confirmer", "reviewer", "review_ref", "reviewed_at")), loc + ".confirmation", "confirmed record needs separate decision and review references, dates, confirmer, and reviewer")
-                if isinstance(confirmation, dict) and isinstance(provenance, dict):
+                if isinstance(confirmation, dict):
                     check(not (set(confirmation) - CONFIRMATION_FIELDS), loc + ".confirmation", "unsupported fields: " + ", ".join(sorted(set(confirmation) - CONFIRMATION_FIELDS)))
+                    check(iso_date(confirmation.get("decided_at")), loc + ".confirmation.decided_at", "ISO calendar date required")
+                    check(iso_date(confirmation.get("reviewed_at")), loc + ".confirmation.reviewed_at", "ISO calendar date required")
+                    if iso_date(confirmation.get("decided_at")) and iso_date(confirmation.get("reviewed_at")):
+                        check(confirmation["reviewed_at"] <= confirmation["decided_at"], loc + ".confirmation.reviewed_at", "review date must not follow decision date")
+                    if normalized_actor(confirmation.get("reviewer")) == normalized_actor(confirmation.get("confirmer")) and not (isinstance(provenance, dict) and normalized_actor(confirmation.get("reviewer")) == normalized_actor(provenance.get("proposer"))):
+                        check(isinstance(confirmation.get("review_limit"), str) and bool(confirmation["review_limit"].strip()), loc + ".confirmation.review_limit", "same declared reviewer and confirmer needs review-limit disclosure")
+                if isinstance(confirmation, dict) and isinstance(provenance, dict):
                     if normalized_actor(confirmation.get("confirmer")) == normalized_actor(provenance.get("proposer")):
                         check(isinstance(confirmation.get("role_collapse_note"), str) and bool(confirmation["role_collapse_note"].strip()), loc + ".confirmation.role_collapse_note", "same declared actor needs role-collapse disclosure")
                     if normalized_actor(confirmation.get("reviewer")) == normalized_actor(provenance.get("proposer")):
                         check(isinstance(confirmation.get("review_limit"), str) and bool(confirmation["review_limit"].strip()), loc + ".confirmation.review_limit", "self-review must be disclosed, not called independent")
-                if isinstance(confirmation, dict):
-                    check(iso_date(confirmation.get("decided_at")), loc + ".confirmation.decided_at", "ISO calendar date required")
-                    check(iso_date(confirmation.get("reviewed_at")), loc + ".confirmation.reviewed_at", "ISO calendar date required")
+            if record.get("status") == "confirmed":
+                check(isinstance(confirmation, dict), loc + ".confirmation", "confirmed record needs separate decision and review references, dates, confirmer, and reviewer")
                 check(isinstance(provenance, dict) and provenance.get("verification_status") in {"qualified", "verified"}, loc + ".provenance.verification_status", "confirmed record needs qualified or verified source evidence")
             if record.get("status") == "deprecated":
                 check(isinstance(record.get("replacement_or_reason"), str) and bool(record["replacement_or_reason"].strip()), loc + ".replacement_or_reason", "deprecated record needs replacement or rationale")
@@ -254,12 +272,17 @@ def validate_variant(path: Path) -> list[str]:
     if not isinstance(variant, dict):
         return [f"{path}: variant must be an object"]
     errors: list[str] = []
+    extras = sorted(set(variant) - VARIANT_FIELDS)
+    if extras:
+        errors.append("variant: unsupported fields: " + ", ".join(extras))
     for field in ("variant_id", "representation_of"):
         if not absolute_iri(variant.get(field)):
             errors.append(f"variant.{field}: absolute immutable IRI required")
     for field in ("format", "generator", "generated_at"):
         if not isinstance(variant.get(field), str) or not variant[field].strip():
             errors.append(f"variant.{field}: nonempty string required")
+    if isinstance(variant.get("generated_at"), str) and variant["generated_at"].strip() and not iso_timestamp(variant["generated_at"]):
+        errors.append("variant.generated_at: ISO timestamp with timezone required")
     for field in ("source_manifest_sha256", "output_sha256"):
         value = variant.get(field)
         if not isinstance(value, str) or not re.fullmatch(r"[0-9a-f]{64}", value):
@@ -267,8 +290,9 @@ def validate_variant(path: Path) -> list[str]:
     if not isinstance(variant.get("lossless"), bool):
         errors.append("variant.lossless: boolean required")
     for field in ("omissions", "unsupported_constructs"):
-        if not isinstance(variant.get(field), list):
-            errors.append(f"variant.{field}: explicit array required")
+        value = variant.get(field)
+        if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
+            errors.append(f"variant.{field}: explicit string array required")
     if variant.get("lossless") and variant.get("unsupported_constructs"):
         errors.append("variant: lossless claim conflicts with unsupported constructs")
     return errors
@@ -287,7 +311,7 @@ def main(argv: list[str] | None = None) -> int:
     if errors:
         print(f"{len(errors)} validation error(s)", file=sys.stderr)
         return 1
-    print("SEAG 0.1 draft source valid")
+    print("SEAG 0.1 draft source shape valid; actor identities and authority unverified")
     return 0
 
 

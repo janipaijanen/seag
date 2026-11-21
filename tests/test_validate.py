@@ -72,7 +72,7 @@ class SourceValidationTest(unittest.TestCase):
                 self.assert_only_error("process or transition association name forbidden")
 
     def test_static_names_are_not_over_rejected(self):
-        for name in ("is named after", "has sequence number", "has step count", "has workflow owner"):
+        for name in ("is named after", "has sequence number", "has step count", "has workflow owner", "has transition fee", "has cause code", "follows standard", "enables access to", "is following member of"):
             with self.subTest(name=name):
                 self.fragment["records"][-1]["name"] = name
                 self.assertEqual([], self.run_case())
@@ -136,11 +136,36 @@ class SourceValidationTest(unittest.TestCase):
     def test_variant_fixture(self):
         self.assertEqual([], validate_variant(VALID / "variant.json"))
 
+    def test_variant_closed_shape_and_timestamp(self):
+        variant = json.loads((VALID / "variant.json").read_text())
+        path = self.root / "variant.json"
+        for field, value, message in (
+            ("sequence", ["a"], "unsupported fields: sequence"),
+            ("omissions", ["layout", 1], "explicit string array"),
+            ("unsupported_constructs", [None], "explicit string array"),
+            ("generated_at", "sometime", "ISO timestamp with timezone"),
+            ("source_manifest_sha256", "bad", "SHA-256 hex required"),
+        ):
+            with self.subTest(field=field):
+                changed = dict(variant, **{field: value})
+                path.write_text(json.dumps(changed))
+                errors = validate_variant(path)
+                self.assertEqual(1, len(errors), errors)
+                self.assertIn(message, errors[0])
+
+    def test_variant_lossless_conflict(self):
+        variant = json.loads((VALID / "variant.json").read_text())
+        variant.update(lossless=True, unsupported_constructs=["invented-layout"])
+        path = self.root / "variant.json"
+        path.write_text(json.dumps(variant))
+        self.assertEqual(["variant: lossless claim conflicts with unsupported constructs"], validate_variant(path))
+
     def test_invalid_fixture_directories(self):
         for name, expected in (("process-flow", "controlled predicate"), ("wrong-endpoint", "wrong endpoint type"), ("missing-cardinality", "explicit both-end cardinality")):
             with self.subTest(name=name):
                 errors = validate(ROOT / "fixtures" / "invalid" / name / "manifest.json")
-                self.assertTrue(any(expected in error for error in errors), errors)
+                self.assertEqual(1, len(errors), errors)
+                self.assertIn(expected, errors[0])
 
     def test_malformed_endpoint_is_reported(self):
         self.fragment["records"][-1]["target"] = ["ThingB"]
@@ -168,6 +193,24 @@ class SourceValidationTest(unittest.TestCase):
         self.assert_only_error("self-review must be disclosed")
         record["confirmation"]["review_limit"] = "Author review is not independent conformance evidence."
         self.assertEqual([], self.run_case())
+
+    def test_reviewer_confirmer_collapse_is_disclosed(self):
+        record = self.confirm()
+        record["confirmation"]["reviewer"] = " FIXTURE-STEWARD "
+        self.assert_only_error("same declared reviewer and confirmer needs review-limit disclosure")
+        record["confirmation"]["review_limit"] = "Same steward did both actions; no independent review is claimed."
+        self.assertEqual([], self.run_case())
+
+    def test_proposed_confirmation_is_checked(self):
+        record = self.fragment["records"][0]
+        record["confirmation"] = self.confirm(1)["confirmation"].copy()
+        record["confirmation"]["junk"] = "unreviewed"
+        self.assert_only_error("unsupported fields: junk")
+
+    def test_review_must_precede_decision(self):
+        record = self.confirm()
+        record["confirmation"]["reviewed_at"] = "2026-11-22"
+        self.assert_only_error("review date must not follow decision date")
 
     def test_confirmed_date_and_evidence_status(self):
         record = self.confirm()
@@ -198,14 +241,67 @@ class SourceValidationTest(unittest.TestCase):
         self.manifest["fragments"][0]["path"] = "../fragment.json"
         self.assert_rejects("safe relative path")
 
+    def test_unknown_inventory_and_provenance_fields(self):
+        self.manifest["fragments"][0]["sequence"] = 1
+        self.assert_only_error("unsupported fields: sequence")
+        del self.manifest["fragments"][0]["sequence"]
+        self.fragment["records"][0]["provenance"]["workflow"] = "unexpected"
+        self.assert_only_error("unsupported fields: workflow")
+
+    def test_core_manifest_shape_rejections(self):
+        cases = (
+            ("seag_schema", "0.2", "expected 0.1-draft"),
+            ("status", "release", "draft bundles only"),
+            ("bundle_id", "relative", "absolute IRI required"),
+            ("namespace", "urn:example:terms", "ending in # or /"),
+            ("title", "", "nonempty string"),
+            ("default_language", "", "nonempty string"),
+            ("licence", "", "nonempty string"),
+        )
+        for field, value, message in cases:
+            with self.subTest(field=field):
+                original = self.manifest[field]
+                original_fragment = self.fragment.get(field)
+                self.manifest[field] = value
+                if field in ("bundle_id", "namespace"):
+                    self.fragment[field] = value
+                self.assert_only_error(message)
+                self.manifest[field] = original
+                if field in ("bundle_id", "namespace"):
+                    self.fragment[field] = original_fragment
+
+    def test_core_record_shape_rejections(self):
+        record = self.fragment["records"][-1]
+        cases = (
+            ("id", "bad id", "stable local ID"),
+            ("status", "certified", "invalid semantic status"),
+            ("implementation_alignment", "shipped", "separate alignment status"),
+        )
+        for field, value, message in cases:
+            with self.subTest(field=field):
+                original = record[field]
+                record[field] = value
+                self.assert_only_error(message)
+                record[field] = original
+        record["provenance"]["normative"] = "yes"
+        self.assert_only_error("normative boolean")
+
+    def test_non_object_fragment_and_non_array_records(self):
+        self.fragment = ["wrong"]
+        self.assert_only_error("fragment must be an object")
+        self.fragment = json.loads((VALID / "fragment.json").read_text())
+        self.fragment["records"] = {}
+        self.assert_only_error("array required")
+
     def test_duplicate_fragment_id(self):
         self.manifest["fragments"].append(copy.deepcopy(self.manifest["fragments"][0]))
         self.assert_rejects("duplicate fragment ID")
 
     def test_cli_exit_codes(self):
-        ok = subprocess.run([sys.executable, "-m", "seag.validate", str(VALID / "manifest.json")], cwd=ROOT, capture_output=True, text=True)
+        ok = subprocess.run([sys.executable, "-I", str(ROOT / "seag" / "validate.py"), str(VALID / "manifest.json")], cwd=ROOT, capture_output=True, text=True)
         self.assertEqual(0, ok.returncode, ok.stderr)
-        bad = subprocess.run([sys.executable, "-m", "seag.validate", str(ROOT / "fixtures" / "invalid" / "process-flow" / "manifest.json")], cwd=ROOT, capture_output=True, text=True)
+        self.assertIn("identities and authority unverified", ok.stdout)
+        bad = subprocess.run([sys.executable, "-I", str(ROOT / "seag" / "validate.py"), str(ROOT / "fixtures" / "invalid" / "process-flow" / "manifest.json")], cwd=ROOT, capture_output=True, text=True)
         self.assertEqual(1, bad.returncode, bad.stdout)
 
     def test_deprecated_requires_rationale(self):
@@ -215,6 +311,29 @@ class SourceValidationTest(unittest.TestCase):
     def test_malformed_record_kind_is_reported(self):
         self.fragment["records"][0]["kind"] = ["concept"]
         self.assert_rejects("unknown record kind")
+
+    def test_symlink_cannot_escape_manifest_directory(self):
+        outside = self.root.parent / (self.root.name + "-outside.json")
+        outside.write_text(json.dumps(self.fragment))
+        self.addCleanup(outside.unlink)
+        (self.root / "fragment.json").symlink_to(outside)
+        self.manifest["fragments"][0]["sha256"] = hashlib.sha256(outside.read_bytes()).hexdigest()
+        (self.root / "manifest.json").write_text(json.dumps(self.manifest))
+        errors = validate(self.root / "manifest.json")
+        self.assertEqual(1, len(errors), errors)
+        self.assertIn("path escapes manifest directory", errors[0])
+
+    def test_external_reference_endpoint_is_predicate_scoped(self):
+        external = copy.deepcopy(self.fragment["records"][3])
+        external.update(id="ExternalX", kind="external_reference", iri="tag:example.org,2026:term")
+        self.fragment["records"].append(external)
+        proposition = self.fragment["records"][4]
+        proposition.update(predicate="refers to", target="ExternalX")
+        for key in ("name", "definition", "source_cardinality", "target_cardinality"):
+            del proposition[key]
+        self.assertEqual([], self.run_case())
+        proposition["predicate"] = "is part of"
+        self.assert_only_error("wrong endpoint type")
 
 
 if __name__ == "__main__":

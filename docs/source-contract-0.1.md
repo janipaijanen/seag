@@ -21,18 +21,21 @@ fragments, and must not be reused for another meaning.
 
 `records` may contain `concept`, `lifecycle_state`, `rule_reference`,
 `external_reference`, and `proposition`. Concepts and vocabulary records have
-`label` and `definition`. An external reference has an absolute `iri`. Every
+`label` and `definition`. Rule and external references also have an absolute
+`iri` naming the referenced artifact. Every
 record has `status` (`proposed`, `confirmed`, `deprecated`, or `unresolved`),
 `implementation_alignment` (`unchecked`, `matches`, `diverges`, or
 `not_applicable`), and provenance with `source`, `locator`, `proposer`, a
 separate `normative` boolean, and `verification_status` (`unresolved`,
 `qualified`, `verified`, or `rejected`). A confirmed claim needs a `confirmation`
 with separate decision and review references, ISO calendar dates, confirmer,
-and reviewer. Qualified or verified evidence can support a declared decision;
+and reviewer. The review date must be no later than the decision date. Qualified
+evidence can be a traceable project-owned source with an explicit locator; it
+need not be an external publication. Qualified or verified evidence can support a declared decision;
 the evidence status does not itself decide meaning. If the same declared actor
 proposed and confirmed, `role_collapse_note` records the distinct authorities;
-if the proposer reviewed, `review_limit` discloses that the review is not
-independent. The validator checks declared fields and disclosures, not actor
+if the proposer reviewed, or the same actor reviewed and confirmed,
+`review_limit` discloses that the review is not independent. The validator checks declared fields and disclosures, not actor
 identity, authority, the substance of either action, or actual independence.
 External-term dispositions still need independent review under the governing
 term-adoption policy; a self-review disclosure cannot satisfy that requirement.
@@ -64,8 +67,11 @@ record kind and file shape: an unknown field such as `guard`, `next_state`,
 `sequence`, or `workflow` fails validation rather than carrying unreviewed
 transition semantics. A future extension needs a new versioned contract.
 Association names are normalised for case, compatibility characters and common
-separators; hidden format characters fail. This is a bounded lexical check,
-not a proof that all paraphrases or look-alike characters are excluded.
+separators; hidden format characters fail. The process-name rule only rejects
+recognised initial action phrases, not a process-like stem anywhere in a name:
+`has transition fee` and `enables access to` are allowed as static names.
+This is a bounded lexical check, not a proof that all paraphrases or look-alike
+characters are excluded.
 Free-text definitions are not machine-interpreted, so human review must still
 check that a permitted static name is not used to smuggle process meaning.
 Static lifecycle names do not imply transitions.
@@ -81,6 +87,10 @@ arrays. This validator checks metadata shape, not generation, byte matching,
 round-trip fidelity, or release immutability across revisions. A claimed
 lossless variant with unsupported constructs is invalid. Additional source
 fields are reserved for a future version, not silently accepted by this one.
+The timestamp is an ISO date-time with timezone. The absolute-IRI check accepts
+any syntactically valid scheme with nonempty remainder, including `tag:` and
+`did:`; it does not adjudicate scheme safety or dereference targets. Consumers
+must apply their own trusted-scheme policy before using a link.
 
 Run `python3 -m seag.validate manifest.json` or
 `python3 -m seag.validate --variant variant.json`. The command prints actionable
