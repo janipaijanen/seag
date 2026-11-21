@@ -47,9 +47,11 @@ Consumers detect the boundary by reading both the pinned SEAG package version
 or commit and `seag_schema`. A source carrying `0.1-draft` must not be relabelled
 automatically. Migration requires a human to inspect every concept label, add
 `grammatical_number: "singular"`, revise a plural preferred label where needed,
-retain the original source wording in provenance, update fragment digests, and
-then set the manifest and every fragment to `0.1-draft.2`. The validator does
-not infer grammatical number.
+retain the original source wording in provenance, and set the manifest and
+every fragment to `0.1-draft.2`. After all fragment edits and identifiers have
+been saved, calculate each digest from the final fragment bytes and place it in
+the manifest. Validate the completed bundle last. The validator does not infer
+grammatical number.
 
 Backward compatibility means that every artifact valid under an identified
 older supported contract retains its declared meaning and validates under the
