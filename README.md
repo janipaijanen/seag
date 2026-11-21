@@ -18,6 +18,8 @@ examples, and tools can be used without Rediflow.
 
 SEAG 0.1 will define:
 
+- SEAG's own domain-neutral meta-ontology for semantic artifacts,
+  transformations, representations, mappings, and provenance;
 - a version-controlled glossary of stable concept identifiers and definitions;
 - typed, directional propositions with explicit cardinalities;
 - lifecycle axes and references to state models;
@@ -53,6 +55,8 @@ been implemented and verified against a pinned version.
 Private incubation. No public-release or stability claim has been made.
 
 See [the project charter](docs/charter.md) and [the 0.1 roadmap](docs/roadmap-0.1.md).
+External vocabulary reuse and divergence follow the
+[term adoption and provenance policy](docs/term-adoption-and-provenance.md).
 
 ## Licensing intent
 

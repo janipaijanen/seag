@@ -3,6 +3,7 @@
 ## Increment 1: semantic contract
 
 - Confirm the charter and terminology.
+- Define the SEAG meta-ontology and its external-vocabulary mappings.
 - Define stable identifier namespaces.
 - Define concept, proposition, lifecycle-axis, rule, and trace records.
 - Add small, invented, domain-neutral conformance fixtures.
@@ -18,6 +19,7 @@ Exit evidence: specification review and fixture conformance review.
 - Detect taxonomy cycles.
 - Validate lifecycle, rule, and trace references.
 - Verify that proposed and confirmed statements cannot be confused.
+- Verify provenance completeness and mapping-status consistency.
 
 Exit evidence: focused automated tests and invalid fixture coverage.
 

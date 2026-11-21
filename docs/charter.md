@@ -10,6 +10,9 @@ it into representation modes required by people, agents, and tools.
 
 SEAG does not define, curate, or publish the domain ontology of Rediflow or any
 other adopting project. Domain statements remain owned by the adopting project.
+SEAG does define its own domain-neutral meta-ontology: the kinds of semantic
+artifacts it can capture, how mappings and transformations are described, and
+how their provenance is verified.
 
 Its primary failure mode to prevent is semantic drift: UI text, requirements,
 agent instructions, code, tests, and product decisions silently using the same
@@ -37,6 +40,12 @@ word for different things or different words for the same thing.
 8. **Framework and content stay separate.** SEAG owns schemas, transformation
    semantics, validators, exporters, and conformance fixtures. Adopting projects
    own their concepts, propositions, rules, lifecycle models, and evidence.
+9. **Adopt, profile, map, or define; never silently redefine.** Standards and
+   established vocabularies are reused where their normative meanings fit.
+   Every difference is given a distinct SEAG identity and an explicit mapping.
+10. **Provenance is reproducible.** A future user can locate the cited source,
+    identify its version and exact passage, verify available content by digest,
+    and inspect who made and reviewed the SEAG interpretation.
 
 ## Boundary between artifacts
 
@@ -51,6 +60,27 @@ word for different things or different words for the same thing.
 | Trace register | links to requirements, UI, code, tests, evidence | correctness verdicts |
 
 All artifacts cross-reference stable SEAG identifiers.
+
+## SEAG meta-ontology boundary
+
+The initial SEAG meta-ontology covers at least:
+
+- semantic artifacts: concept, term, definition, proposition, association,
+  lifecycle axis, state, rule, decision table, trace, and evidence claim;
+- framework operations: capture, validate, map, transform, export, import, and
+  round-trip verification;
+- representation artifacts: source record, generated representation, profile,
+  adapter, and conformance fixture;
+- vocabulary alignment: adopted term, profiled term, SEAG-defined term,
+  deprecated term, and exact, close, broader, narrower, or related mapping; and
+- provenance: source, source version, locator, retrieval, digest, licence,
+  derivation activity, responsible agent, review, and decision status.
+
+This is a conceptual contract. SEAG may serialize it without requiring users to
+adopt RDF or OWL. The authoritative source format must preserve these meanings.
+
+Detailed rules are in
+[the term adoption and provenance policy](term-adoption-and-provenance.md).
 
 ## Initial controlled relationship vocabulary
 
