@@ -52,6 +52,13 @@ class SourceValidationTest(unittest.TestCase):
     def test_valid_fixture(self):
         self.assertEqual([], self.run_case())
 
+    def test_concept_requires_singular_number_declaration(self):
+        record = self.fragment["records"][0]
+        del record["grammatical_number"]
+        self.assert_only_error("concept label must be declared singular")
+        record["grammatical_number"] = "plural"
+        self.assert_only_error("concept label must be declared singular")
+
     def test_duplicate_record_id(self):
         self.fragment["records"].append(copy.deepcopy(self.fragment["records"][0]))
         self.assert_rejects("duplicate expanded record ID")

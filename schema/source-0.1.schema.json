@@ -235,7 +235,8 @@
             "implementation_alignment",
             "provenance",
             "label",
-            "definition"
+            "definition",
+            "grammatical_number"
           ],
           "properties": {
             "id": {
@@ -320,6 +321,9 @@
             "definition": {
               "type": "string",
               "minLength": 1
+            },
+            "grammatical_number": {
+              "const": "singular"
             }
           },
           "additionalProperties": false,

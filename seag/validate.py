@@ -34,7 +34,7 @@ INVENTORY_FIELDS = {"fragment_id", "path", "role", "sha256"}
 FRAGMENT_FIELDS = {"seag_schema", "bundle_id", "namespace", "fragment_id", "role", "language", "revision", "records"}
 COMMON_FIELDS = {"id", "kind", "status", "implementation_alignment", "provenance", "confirmation", "replacement_or_reason"}
 RECORD_FIELDS = {
-    "concept": COMMON_FIELDS | {"label", "definition"},
+    "concept": COMMON_FIELDS | {"label", "definition", "grammatical_number"},
     "lifecycle_state": COMMON_FIELDS | {"label", "definition"},
     "rule_reference": COMMON_FIELDS | {"label", "definition", "iri"},
     "external_reference": COMMON_FIELDS | {"label", "definition", "iri"},
@@ -208,6 +208,8 @@ def validate(manifest_path: Path) -> list[str]:
             elif isinstance(kind, str) and kind in KINDS:
                 for field in ("label", "definition"):
                     check(isinstance(record.get(field), str) and bool(record[field].strip()), loc + "." + field, "nonempty string required")
+                if kind == "concept":
+                    check(record.get("grammatical_number") == "singular", loc + ".grammatical_number", "concept label must be declared singular")
                 if kind in {"external_reference", "rule_reference"}:
                     check(absolute_iri(record.get("iri")), loc + ".iri", "absolute external artifact IRI required")
 

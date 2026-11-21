@@ -53,6 +53,9 @@ word for different things or different words for the same thing.
     that preserves intended meaning, constraints, uncertainty, and provenance.
 12. **Roles are responsibility contracts.** SEAG defines semantic-work roles,
     not mandatory agent instances or a duplicate governance pipeline.
+13. **Concept labels are singular.** Every concept record uses a singular
+    authoritative preferred label. Verbatim source expressions and aliases may
+    retain their original grammatical number so provenance is not falsified.
 
 ## Boundary between artifacts
 

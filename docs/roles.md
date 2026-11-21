@@ -15,6 +15,28 @@ from an LLM's ability to perform the work.
 
 ## Minimal roles
 
+### Semantic Discovery Consultant
+
+Guides humans and agents in identifying, eliciting, delimiting, and collecting
+candidate concepts and their evidence.
+
+- **Inputs:** product language, stakeholder interviews, requirements, UI text,
+  code, tests, standards, and observed terminology conflicts.
+- **Outputs:** discovery questions, candidate concept inventories, source
+  pointers, ambiguity and duplication findings, and collection guidance.
+- **May:** facilitate workshops; ask contrast, boundary, identity, and
+  cardinality questions; suggest singular candidate labels; and advise which
+  evidence the Semantic Modeller should collect.
+- **Must not:** declare a candidate authoritative, manufacture missing evidence,
+  silently merge meanings, or confirm its own proposals.
+- **Escalates:** domain disagreement, unclear ownership, irreducibly plural
+  labels, incompatible sources, and decisions about project meaning to the
+  Semantic Steward.
+
+This is a consultation responsibility, not a required dedicated person or
+agent. It may be combined with the Semantic Modeller role when the combination
+is disclosed; semantic confirmation remains with the Semantic Steward.
+
 ### Semantic Steward
 
 Owns semantic authority for the adopting project.
@@ -32,7 +54,8 @@ Owns semantic authority for the adopting project.
 Captures concepts, propositions, associations, lifecycle vocabularies, semantic
 constraints, and external mappings.
 
-- **Inputs:** requirements, domain sources, observed implementation, decisions.
+- **Inputs:** requirements, domain sources, observed implementation, decisions,
+  and discovery-consultation findings.
 - **Outputs:** proposed semantic records and change rationale.
 - **May:** discover, compare, propose, and revise semantic expressions.
 - **Must not:** confirm its own proposals or invent missing cardinality and scope.

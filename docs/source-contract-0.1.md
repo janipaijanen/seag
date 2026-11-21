@@ -23,8 +23,9 @@ record `id` is its expanded identity. IDs are stable, unique across all
 fragments, and must not be reused for another meaning.
 
 `records` may contain `concept`, `lifecycle_state`, `rule_reference`,
-`external_reference`, and `proposition`. Concepts and vocabulary records have
-`label` and `definition`. Rule and external references also have an absolute
+`external_reference`, and `proposition`. Concepts have `label`, `definition`,
+and the required declaration `grammatical_number: "singular"`. Other vocabulary
+records have `label` and `definition`. Rule and external references also have an absolute
 `iri` naming the referenced artifact. Every
 record has `status` (`proposed`, `confirmed`, `deprecated`, or `unresolved`),
 `implementation_alignment` (`unchecked`, `matches`, `diverges`, or
@@ -44,6 +45,15 @@ External-term dispositions still need independent review under the governing
 term-adoption policy; a self-review disclosure cannot satisfy that requirement.
 A deprecated claim needs a replacement or rationale. A missing fact is
 recorded as `unresolved`, never filled by a validator default.
+
+The authoritative preferred `label` of every concept is singular, without
+exception. This applies in the fragment's declared BCP 47 language. A plural
+source term is retained verbatim in provenance or as a future sourced alias,
+but the concept record is named with a singular formulation. The validator
+enforces the declaration; a linguistically competent human review establishes
+whether the label actually satisfies it. SEAG does not guess grammatical
+number with an English-only inflector, because that would produce false claims
+for other languages, mass nouns, proper names, acronyms, and irregular forms.
 
 ## Proposition vocabulary
 

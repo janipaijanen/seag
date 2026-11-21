@@ -101,6 +101,7 @@ truth, actor identity, authority, or review independence.
   "status": "proposed",
   "implementation_alignment": "not_applicable",
   "label": "Thing A",
+  "grammatical_number": "singular",
   "definition": "An invented thing.",
   "provenance": {
     "source": "invented fixture",
