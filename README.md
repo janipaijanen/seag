@@ -68,6 +68,8 @@ External vocabulary reuse and divergence follow the
 [term adoption and provenance policy](docs/term-adoption-and-provenance.md).
 Portable identity and generated representations follow the
 [identity, bundle, and variant policy](docs/identity-bundles-and-variants.md).
+Responsibility contracts are defined in [SEAG roles](docs/roles.md), and
+expression discipline in [semantic minimality](docs/semantic-minimality.md).
 
 ## Licensing intent
 

@@ -46,6 +46,10 @@ word for different things or different words for the same thing.
 10. **Provenance is reproducible.** A future user can locate the cited source,
     identify its version and exact passage, verify available content by digest,
     and inspect who made and reviewed the SEAG interpretation.
+11. **Expressions are minimally complete.** SEAG keeps the smallest expression
+    that preserves intended meaning, constraints, uncertainty, and provenance.
+12. **Roles are responsibility contracts.** SEAG defines semantic-work roles,
+    not mandatory agent instances or a duplicate governance pipeline.
 
 ## Boundary between artifacts
 

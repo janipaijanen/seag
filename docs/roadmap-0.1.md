@@ -6,6 +6,7 @@
 - Define the SEAG meta-ontology and its external-vocabulary mappings.
 - Define stable identifier namespaces, bundle manifests, and representation variants.
 - Define concept, proposition, lifecycle-vocabulary, rule-reference, and trace records.
+- Define role contracts and semantic-minimality validation.
 - Add small, invented, domain-neutral conformance fixtures.
 - Record unresolved facts as unresolved rather than choosing defaults.
 
