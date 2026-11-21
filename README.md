@@ -2,12 +2,13 @@
 
 **Semantic Engineering for Agentic Development**
 
-*A glossary and tooling framework for meaning-preserving software work by humans and LLM agents.*
+*A semantic capture and transformation framework for meaning-preserving software work by humans and LLM agents.*
 
-SEAG keeps product language, domain rules, lifecycle models, implementation,
-and verification traceable to the same defined concepts. It is intended for
-software teams using LLM agents, but its semantic artifacts remain readable and
-reviewable by people without an agent runtime.
+SEAG provides a framework for capturing project-specific semantics once and
+transforming them into the representations needed by people, LLM agents, and
+tools. It keeps product language, domain rules, lifecycle models,
+implementation, and verification traceable without owning any project's domain
+ontology. Its artifacts remain readable and reviewable without an agent runtime.
 
 SEAG originated from semantic and product-modelling work in the Rediflow
 project. It is incubated as an independent framework so that its specification,
@@ -24,7 +25,11 @@ SEAG 0.1 will define:
 - trace links from concepts and rules to requirements, UI, code, tests, and evidence;
 - CmapTools-compatible exchange, with CXL treated as an export rather than the
   authoritative source; and
-- lightweight validators and a sanitized worked example derived from Rediflow.
+- lightweight validators and domain-neutral conformance fixtures.
+
+Project ontologies, including Rediflow's concepts and rules, remain in their
+own projects. A project may use SEAG schemas and tooling without contributing
+its domain model to SEAG.
 
 SEAG does not attempt to express workflow ordering, branching, concurrency, or
 all executable policy in a concept map. State diagrams, decision tables, and

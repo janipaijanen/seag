@@ -5,10 +5,10 @@
 - Confirm the charter and terminology.
 - Define stable identifier namespaces.
 - Define concept, proposition, lifecycle-axis, rule, and trace records.
-- Add one small, sanitized example sourced from Rediflow.
+- Add small, invented, domain-neutral conformance fixtures.
 - Record unresolved facts as unresolved rather than choosing defaults.
 
-Exit evidence: specification review and example provenance review.
+Exit evidence: specification review and fixture conformance review.
 
 ## Increment 2: validation
 
@@ -45,6 +45,6 @@ workflow, and verification limits. No profile is part of the SEAG core.
 
 - Complete licensing and SPDX labelling.
 - Add contribution, security, release, and compatibility policies.
-- Perform independent semantic, sanitation, licensing, and security reviews.
+- Perform independent semantic, framework-boundary, licensing, and security reviews.
 - Publish 0.1 only after the publication gate in the charter is satisfied.
 
