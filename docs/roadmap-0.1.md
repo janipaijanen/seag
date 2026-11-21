@@ -4,7 +4,7 @@
 
 - Confirm the charter and terminology.
 - Define the SEAG meta-ontology and its external-vocabulary mappings.
-- Define stable identifier namespaces.
+- Define stable identifier namespaces, bundle manifests, and representation variants.
 - Define concept, proposition, lifecycle-vocabulary, rule-reference, and trace records.
 - Add small, invented, domain-neutral conformance fixtures.
 - Record unresolved facts as unresolved rather than choosing defaults.

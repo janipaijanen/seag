@@ -66,6 +66,8 @@ Private incubation. No public-release or stability claim has been made.
 See [the project charter](docs/charter.md) and [the 0.1 roadmap](docs/roadmap-0.1.md).
 External vocabulary reuse and divergence follow the
 [term adoption and provenance policy](docs/term-adoption-and-provenance.md).
+Portable identity and generated representations follow the
+[identity, bundle, and variant policy](docs/identity-bundles-and-variants.md).
 
 ## Licensing intent
 
