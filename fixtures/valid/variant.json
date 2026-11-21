@@ -1,0 +1,14 @@
+{
+  "variant_id": "urn:uuid:11111111-1111-4111-8111-111111111111",
+  "representation_of": "urn:uuid:22222222-2222-4222-8222-222222222222",
+  "format": "application/json",
+  "generator": "invented-fixture/1",
+  "generated_at": "2026-11-21T00:00:00Z",
+  "source_manifest_sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb",
+  "output_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "lossless": false,
+  "omissions": [
+    "invented visual layout"
+  ],
+  "unsupported_constructs": []
+}

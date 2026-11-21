@@ -1,0 +1,17 @@
+{
+  "seag_schema": "0.1-draft",
+  "bundle_id": "urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87",
+  "namespace": "urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#",
+  "title": "Invented neutral fixture",
+  "default_language": "en",
+  "status": "draft",
+  "licence": "CC-BY-4.0",
+  "fragments": [
+    {
+      "fragment_id": "terms",
+      "path": "fragment.json",
+      "role": "semantic-source",
+      "sha256": "d519ac2bfb50b8a5b05ebfa66fa16429933fb465f90c0f8042d6767e5b90b178"
+    }
+  ]
+}
