@@ -9,6 +9,12 @@ CI uses that release section as the future release-note source.
 
 ## Unreleased
 
+## 0.1.0-rc.3
+
+Public review validation and learning release. This release candidate remains
+unsupported, non-production-ready, and incomplete against the stable
+publication gate.
+
 - Added a software-engineer introduction to concept maps, ontologies, and
   SEAG's semantic-source role, linked from the main README.
 - Corrected the source-contract identifier to `0.1-draft.2` for the mandatory

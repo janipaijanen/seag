@@ -6,7 +6,7 @@
 A provenance-preserving semantic source and transformation framework for
 software work performed by people and LLM agents.
 
-> **Status: public review, version 0.1.0-rc.2.** This release candidate is
+> **Status: public review, version 0.1.0-rc.3.** This release candidate is
 > published for evaluation and review. It is not a stable or supported release,
 > makes no production-readiness or complete-conformance claim, and may change
 > incompatibly before 0.1.0. Capabilities are reported with AGF's evidence-based
