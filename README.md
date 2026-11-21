@@ -108,26 +108,30 @@ truth, actor identity, authority, or review independence.
 
 ```json
 {
-  "id": "ThingA",
+  "id": "StateMachine",
   "kind": "concept",
   "status": "proposed",
   "implementation_alignment": "not_applicable",
-  "label": "Thing A",
+  "label": "state machine",
   "grammatical_number": "singular",
-  "definition": "An invented thing.",
+  "definition": "A model that describes a system using states and rules for changing between states.",
   "provenance": {
-    "source": "invented fixture",
-    "locator": "fixture/records",
+    "source": "illustrative SEAG documentation",
+    "locator": "README.md#A minimal semantic record",
     "normative": false,
-    "proposer": "invented-fixture-author",
+    "proposer": "SEAG maintainer",
     "verification_status": "unresolved"
   }
 }
 ```
 
-This example is intentionally invented and domain-neutral. Complete bundles
-also carry manifest identity, namespace, fragment inventory, digests, language,
-licensing, and revision information.
+This proposed, non-normative example defines the concept `state machine`; it
+does not encode a particular machine or its executable transitions. A project
+may similarly define the singular concepts `state`, `transition`, `event`, and
+`guard`, record their provenance, and refer to an external state-machine
+artifact. The external notation remains authoritative for transition
+behaviour. Complete SEAG bundles also carry manifest identity, namespace,
+fragment inventory, digests, language, licensing, and revision information.
 
 ## Explicit non-goal: process modelling
 
