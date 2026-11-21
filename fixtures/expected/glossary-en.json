@@ -10,6 +10,8 @@
       "label": "Rule C",
       "language": "en",
       "local_id": "RuleC",
+      "source_fragment_id": "terms",
+      "source_fragment_revision": "draft-1",
       "source_provenance": {
         "locator": "fixture/records",
         "normative": false,
@@ -27,6 +29,8 @@
       "label": "State B",
       "language": "en",
       "local_id": "StateB",
+      "source_fragment_id": "terms",
+      "source_fragment_revision": "draft-1",
       "source_provenance": {
         "locator": "fixture/records",
         "normative": false,
@@ -44,6 +48,8 @@
       "label": "Thing A",
       "language": "en",
       "local_id": "ThingA",
+      "source_fragment_id": "terms",
+      "source_fragment_revision": "draft-1",
       "source_provenance": {
         "locator": "fixture/records",
         "normative": false,
@@ -61,6 +67,8 @@
       "label": "Thing B",
       "language": "en",
       "local_id": "ThingB",
+      "source_fragment_id": "terms",
+      "source_fragment_revision": "draft-1",
       "source_provenance": {
         "locator": "fixture/records",
         "normative": false,
