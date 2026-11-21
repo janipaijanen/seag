@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: Copyright (C) 2026 Jani Päijänen -->
+<!-- SPDX-License-Identifier: CC-BY-4.0 -->
+
 # SEAG 0.1 roadmap
 
 ## Increment 1: semantic contract

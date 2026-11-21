@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (C) 2026 Jani Päijänen
+# SPDX-License-Identifier: Apache-2.0
+
 """Build a reproducible SEAG source release-candidate bundle."""
 
 from __future__ import annotations

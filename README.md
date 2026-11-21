@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: Copyright (C) 2026 Jani Päijänen -->
+<!-- SPDX-License-Identifier: CC-BY-4.0 -->
+
 # SEAG
 
 **Semantic Engineering for Agentic Development**
@@ -101,6 +104,7 @@ expression discipline in [semantic minimality](docs/semantic-minimality.md).
 
 ## Licensing intent
 
-Tooling code will be offered under Apache-2.0. Framework and methodology
-documents will be offered under CC BY 4.0. Exact license texts and per-file
-SPDX identifiers must be present before public release.
+Tooling code is licensed under Apache-2.0. Framework and methodology documents
+are licensed under CC BY 4.0. Complete licence texts, the per-file SPDX policy,
+and rules for non-commentable formats are documented in
+[licensing and SPDX declarations](docs/licensing.md).

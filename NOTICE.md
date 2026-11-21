@@ -1,4 +1,9 @@
+<!-- SPDX-FileCopyrightText: Copyright (C) 2026 Jani Päijänen -->
+<!-- SPDX-License-Identifier: CC-BY-4.0 -->
+
 # Notices
+
+Copyright (C) 2026 Jani Päijänen
 
 SEAG originated from tooling needs discovered during semantic and
 product-modelling work in Rediflow. Rediflow is the originating use case; SEAG

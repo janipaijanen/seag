@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: Copyright (C) 2026 Jani Päijänen -->
+<!-- SPDX-License-Identifier: CC-BY-4.0 -->
+
 # Standards and conformance
 
 ## Purpose
@@ -98,6 +101,9 @@ Published SEAG artifacts use SPDX licence expressions and pin the applicable
 SPDX specification and licence-list versions. Private-incubation metadata may
 remain provisional, but publication cannot proceed with an ambiguous licence
 identifier or missing licence text.
+
+SEAG's per-file allocation, copyright declaration, canonical texts, and
+sidecar rule are defined in the [licensing policy](licensing.md).
 
 ## Semantic mappings
 

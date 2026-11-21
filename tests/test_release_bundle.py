@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: Copyright (C) 2026 Jani Päijänen
+# SPDX-License-Identifier: Apache-2.0
+
 import importlib.util
 import json
 from pathlib import Path

@@ -1,3 +1,6 @@
+<!-- SPDX-FileCopyrightText: Copyright (C) 2026 Jani Päijänen -->
+<!-- SPDX-License-Identifier: CC-BY-4.0 -->
+
 # Identity, bundles, and representation variants
 
 ## Goals

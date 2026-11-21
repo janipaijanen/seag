@@ -1,4 +1,7 @@
 #!/usr/bin/env python3
+# SPDX-FileCopyrightText: Copyright (C) 2026 Jani Päijänen
+# SPDX-License-Identifier: Apache-2.0
+
 """Fail closed until the SEAG public-release prerequisites are present."""
 
 from pathlib import Path
