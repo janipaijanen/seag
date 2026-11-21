@@ -1,6 +1,6 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "urn:seag:schema:source:0.1-draft.2",
+  "$id": "https://gitlab.com/janipaijanen/seag/-/raw/v0.1.0/schema/source-0.1.schema.json",
   "title": "SEAG 0.1 draft source file shapes",
   "description": "Shape only; run seag.validate for cross-file identity, endpoint, provenance and cycle checks.",
   "oneOf": [
