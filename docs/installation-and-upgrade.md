@@ -10,8 +10,8 @@ required.
 
 ```sh
 python3 -m seag.validate source/manifest.json
-python3 -m seag.glossary source/manifest.json --language en --output glossary.json
-python3 -m seag.cxl source/manifest.json --output map.cxl --verify
+python3 -m seag.glossary source/manifest.json --language en --generated-at 2026-11-22T00:00:00Z --output glossary.json
+python3 -m seag.cxl source/manifest.json --generated-at 2026-11-22T00:00:00Z --output map.cxl --verify
 ```
 
 The supported source identifier is `0.1-draft.2`. Inputs using the collided

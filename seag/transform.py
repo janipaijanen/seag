@@ -20,7 +20,9 @@ def timestamp(value: str | None) -> str:
             raise ValueError("generated timestamp must be RFC 3339 with a UTC offset")
         return value
     epoch = os.environ.get("SOURCE_DATE_EPOCH")
-    moment = datetime.datetime.fromtimestamp(int(epoch), datetime.timezone.utc) if epoch else datetime.datetime.now(datetime.timezone.utc)
+    if epoch is None:
+        raise ValueError("generated timestamp requires --generated-at or SOURCE_DATE_EPOCH")
+    moment = datetime.datetime.fromtimestamp(int(epoch), datetime.timezone.utc)
     return moment.replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 

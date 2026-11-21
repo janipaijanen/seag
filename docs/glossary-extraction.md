@@ -24,7 +24,7 @@ selection result, fallback policy, timestamp, and entry count. The manifest
 digest commits to the fragment digests in its inventory.
 
 For reproducible output, provide `--generated-at` or `SOURCE_DATE_EPOCH`.
-Without either, the tool records the current UTC time. Invalid bundles,
+The tool fails if neither is present. Invalid bundles,
 unsupported source-contract versions, and missing exact-language content fail
 without producing a successful result.
 

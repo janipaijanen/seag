@@ -100,8 +100,8 @@ cd seag
 
 python3 -m seag.validate fixtures/valid/manifest.json
 python3 -m seag.validate --variant fixtures/valid/variant.json
-python3 -m seag.glossary fixtures/valid/manifest.json --language en --output glossary.json
-python3 -m seag.cxl fixtures/valid/manifest.json --output concept-map.cxl --verify
+python3 -m seag.glossary fixtures/valid/manifest.json --language en --generated-at 2026-11-22T00:00:00Z --output glossary.json
+python3 -m seag.cxl fixtures/valid/manifest.json --generated-at 2026-11-22T00:00:00Z --output concept-map.cxl --verify
 python3 -m unittest discover -s tests -v
 ```
 

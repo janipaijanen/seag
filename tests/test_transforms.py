@@ -62,6 +62,14 @@ class TransformTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "RFC 3339"):
             timestamp("2026-11-22T00:00:00")
 
+    def test_generated_timestamp_requires_reproducible_source(self):
+        from unittest.mock import patch
+        from seag.transform import timestamp
+
+        with patch.dict("os.environ", {}, clear=True):
+            with self.assertRaisesRegex(ValueError, "SOURCE_DATE_EPOCH"):
+                timestamp(None)
+
 
 if __name__ == "__main__":
     unittest.main()
