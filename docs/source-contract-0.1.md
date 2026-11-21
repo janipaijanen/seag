@@ -27,9 +27,15 @@ record has `status` (`proposed`, `confirmed`, `deprecated`, or `unresolved`),
 `not_applicable`), and provenance with `source`, `locator`, `proposer`, a
 separate `normative` boolean, and `verification_status` (`unresolved`,
 `qualified`, `verified`, or `rejected`). A confirmed claim needs a `confirmation`
-with decision reference, date, confirmer, and reviewer distinct from the
-proposer; its evidence must be marked verified. The validator checks presence
-and role distinction, not the authority or independence of those identities.
+with separate decision and review references, ISO calendar dates, confirmer,
+and reviewer. Qualified or verified evidence can support a declared decision;
+the evidence status does not itself decide meaning. If the same declared actor
+proposed and confirmed, `role_collapse_note` records the distinct authorities;
+if the proposer reviewed, `review_limit` discloses that the review is not
+independent. The validator checks declared fields and disclosures, not actor
+identity, authority, the substance of either action, or actual independence.
+External-term dispositions still need independent review under the governing
+term-adoption policy; a self-review disclosure cannot satisfy that requirement.
 A deprecated claim needs a replacement or rationale. A missing fact is
 recorded as `unresolved`, never filled by a validator default.
 
@@ -52,12 +58,17 @@ A named association also has a bounded static `name` and `definition`, plus two 
 not confirmed. Direction is always source to target; do not infer its inverse.
 Taxonomy (`is a kind of`) cycles are invalid. Process or transition names such
 as `precedes`, `changes state to`, `triggers` and `is followed by`, and vague
-names such as `relates to`, are rejected even inside `named association`.
-Unrecognized proposition fields (for example `guard`, `next_state`, or
-`sequence`) are rejected; other unknown source fields are opaque and carry no
-validated semantic meaning. Free-text definitions are not machine-interpreted,
-so human review must still check that a permitted static name is not used to
-smuggle process meaning. Static lifecycle names do not imply transitions.
+names such as `relates to`, `supports`, `uses`, and `has many` are rejected even
+inside `named association`. The 0.1 draft has closed field sets for every
+record kind and file shape: an unknown field such as `guard`, `next_state`,
+`sequence`, or `workflow` fails validation rather than carrying unreviewed
+transition semantics. A future extension needs a new versioned contract.
+Association names are normalised for case, compatibility characters and common
+separators; hidden format characters fail. This is a bounded lexical check,
+not a proof that all paraphrases or look-alike characters are excluded.
+Free-text definitions are not machine-interpreted, so human review must still
+check that a permitted static name is not used to smuggle process meaning.
+Static lifecycle names do not imply transitions.
 
 ## Variants and limits
 
@@ -68,9 +79,8 @@ source manifest digest, output digest, generator, generation timestamp,
 `lossless` boolean, and explicit `omissions` and `unsupported_constructs`
 arrays. This validator checks metadata shape, not generation, byte matching,
 round-trip fidelity, or release immutability across revisions. A claimed
-lossless variant with unsupported constructs is invalid. Source files can
-carry additional fields for future interpretation; this validator preserves
-them but makes no conformance claim about their semantics.
+lossless variant with unsupported constructs is invalid. Additional source
+fields are reserved for a future version, not silently accepted by this one.
 
 Run `python3 -m seag.validate manifest.json` or
 `python3 -m seag.validate --variant variant.json`. The command prints actionable

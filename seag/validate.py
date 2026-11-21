@@ -3,10 +3,12 @@
 from __future__ import annotations
 
 import argparse
+import datetime
 import hashlib
 import json
 import re
 import sys
+import unicodedata
 from pathlib import Path
 from urllib.parse import urlsplit
 
@@ -24,19 +26,50 @@ ENDPOINTS = {
     "named association": ({"concept"}, {"concept"}),
 }
 KINDS = {"concept", "lifecycle_state", "rule_reference", "external_reference", "proposition"}
-PROPOSITION_FIELDS = {"id", "kind", "status", "implementation_alignment", "provenance", "confirmation", "replacement_or_reason", "source", "target", "predicate", "name", "definition", "source_cardinality", "target_cardinality"}
-PROCESS_NAME = re.compile(r"\b(precedes?|follows?|followed|triggers?|transitions?|changes?\s+state|next\s+state|before|after|causes?|enables?|step|workflow|sequence)\b", re.IGNORECASE)
-VAGUE_NAMES = {"relates to", "is related to", "associated with", "is associated with", "linked to", "is linked to", "connection", "relation"}
+MANIFEST_FIELDS = {"seag_schema", "bundle_id", "namespace", "title", "default_language", "status", "licence", "fragments"}
+INVENTORY_FIELDS = {"fragment_id", "path", "role", "sha256"}
+FRAGMENT_FIELDS = {"seag_schema", "bundle_id", "namespace", "fragment_id", "role", "language", "revision", "records"}
+COMMON_FIELDS = {"id", "kind", "status", "implementation_alignment", "provenance", "confirmation", "replacement_or_reason"}
+RECORD_FIELDS = {
+    "concept": COMMON_FIELDS | {"label", "definition"},
+    "lifecycle_state": COMMON_FIELDS | {"label", "definition"},
+    "rule_reference": COMMON_FIELDS | {"label", "definition", "iri"},
+    "external_reference": COMMON_FIELDS | {"label", "definition", "iri"},
+    "proposition": COMMON_FIELDS | {"source", "target", "predicate", "name", "definition", "source_cardinality", "target_cardinality"},
+}
+PROVENANCE_FIELDS = {"source", "locator", "proposer", "normative", "verification_status"}
+CONFIRMATION_FIELDS = {"decision_ref", "decided_at", "confirmer", "reviewer", "review_ref", "reviewed_at", "role_collapse_note", "review_limit"}
+PROCESS_NAME = re.compile(r"\b(?:preced(?:e|es|ed|ing)|follow(?:s|ed|ing)|trigger(?:s|ed|ing)|transition(?:s|ed|ing)?|chang(?:e|es|ed|ing)\s+state(?:\s+to)?|next\s+state|leads?\s+to|results?\s+in|is\s+succeeded\s+by|becomes?|causes?|enables?)\b")
+VAGUE_NAMES = {"relates to", "relates to the", "related to", "is related to", "associated with", "is associated with", "linked to", "is linked to", "connection", "relation", "supports", "uses", "has many"}
 EVIDENCE_STATUS = {"unresolved", "qualified", "verified", "rejected"}
 
 
+def normalized_actor(value: object) -> str:
+    return unicodedata.normalize("NFKC", value).strip().casefold() if isinstance(value, str) else ""
+
+
+def normalized_name(value: str) -> str:
+    # Fold separators, case and compatibility forms; hidden format characters are rejected separately.
+    folded = unicodedata.normalize("NFKC", value).casefold()
+    return " ".join(re.sub(r"[_\-\W]+", " ", folded, flags=re.UNICODE).split())
+
+
+def iso_date(value: object) -> bool:
+    if not isinstance(value, str):
+        return False
+    try:
+        return datetime.date.fromisoformat(value).isoformat() == value
+    except ValueError:
+        return False
+
+
 def absolute_iri(value: object) -> bool:
-    if not isinstance(value, str) or not value or any(c.isspace() for c in value):
+    if not isinstance(value, str) or not value or any(c.isspace() or unicodedata.category(c) == "Cc" for c in value):
         return False
     parts = urlsplit(value)
     if parts.scheme in {"http", "https"}:
         return bool(parts.netloc)
-    return parts.scheme == "urn" and ":" in parts.path and all(parts.path.split(":", 1))
+    return bool(re.fullmatch(r"[A-Za-z][A-Za-z0-9+.-]*", parts.scheme)) and bool(value.split(":", 1)[1])
 
 
 def _load_json(path: Path) -> object:
@@ -57,6 +90,7 @@ def validate(manifest_path: Path) -> list[str]:
         return [f"{manifest_path}: cannot read JSON: {exc}"]
     if not isinstance(manifest, dict):
         return [f"{manifest_path}: manifest must be an object"]
+    check(not (set(manifest) - MANIFEST_FIELDS), "manifest", "unsupported fields: " + ", ".join(sorted(set(manifest) - MANIFEST_FIELDS)))
     check(manifest.get("seag_schema") == SCHEMA, "manifest.seag_schema", f"expected {SCHEMA}")
     bundle_id = manifest.get("bundle_id")
     namespace = manifest.get("namespace")
@@ -77,6 +111,7 @@ def validate(manifest_path: Path) -> list[str]:
         if not isinstance(item, dict):
             errors.append(f"{where}: object required")
             continue
+        check(not (set(item) - INVENTORY_FIELDS), where, "unsupported fields: " + ", ".join(sorted(set(item) - INVENTORY_FIELDS)))
         fragment_id = item.get("fragment_id")
         check(isinstance(fragment_id, str) and bool(LOCAL_ID.fullmatch(fragment_id)), where + ".fragment_id", "stable local ID required")
         check(isinstance(item.get("role"), str) and bool(item["role"].strip()), where + ".role", "nonempty role required")
@@ -102,6 +137,7 @@ def validate(manifest_path: Path) -> list[str]:
         if not isinstance(fragment, dict):
             errors.append(f"{name}: fragment must be an object")
             continue
+        check(not (set(fragment) - FRAGMENT_FIELDS), name, "unsupported fields: " + ", ".join(sorted(set(fragment) - FRAGMENT_FIELDS)))
         for field, expected in (("seag_schema", SCHEMA), ("bundle_id", bundle_id), ("namespace", namespace), ("fragment_id", fragment_id), ("role", item.get("role"))):
             check(fragment.get(field) == expected, name + "." + field, "does not match manifest")
         for field in ("language", "revision"):
@@ -118,6 +154,9 @@ def validate(manifest_path: Path) -> list[str]:
             ident, kind = record.get("id"), record.get("kind")
             check(isinstance(ident, str) and bool(LOCAL_ID.fullmatch(ident)), loc + ".id", "stable local ID required")
             check(isinstance(kind, str) and kind in KINDS, loc + ".kind", "unknown record kind")
+            if isinstance(kind, str) and kind in KINDS:
+                extras = sorted(set(record) - RECORD_FIELDS[kind])
+                check(not extras, loc, "unsupported record fields: " + ", ".join(extras))
             if isinstance(ident, str):
                 check(ident not in records, loc + ".id", "duplicate expanded record ID")
                 if ident not in records:
@@ -126,30 +165,35 @@ def validate(manifest_path: Path) -> list[str]:
             check(isinstance(record.get("implementation_alignment"), str) and record["implementation_alignment"] in ALIGNMENT, loc + ".implementation_alignment", "separate alignment status required")
             provenance = record.get("provenance")
             check(isinstance(provenance, dict) and all(isinstance(provenance.get(k), str) and provenance[k].strip() for k in ("source", "locator", "proposer")) and isinstance(provenance.get("normative"), bool) and isinstance(provenance.get("verification_status"), str) and provenance["verification_status"] in EVIDENCE_STATUS, loc + ".provenance", "source, locator, proposer, normative boolean, and evidence verification status required")
+            if isinstance(provenance, dict):
+                check(not (set(provenance) - PROVENANCE_FIELDS), loc + ".provenance", "unsupported fields: " + ", ".join(sorted(set(provenance) - PROVENANCE_FIELDS)))
             if record.get("status") == "confirmed":
                 confirmation = record.get("confirmation")
-                check(isinstance(confirmation, dict) and all(isinstance(confirmation.get(k), str) and confirmation[k].strip() for k in ("decision_ref", "decided_at", "confirmer", "reviewer")), loc + ".confirmation", "confirmed record needs decision reference, date, confirmer, and independent reviewer")
+                check(isinstance(confirmation, dict) and all(isinstance(confirmation.get(k), str) and confirmation[k].strip() for k in ("decision_ref", "decided_at", "confirmer", "reviewer", "review_ref", "reviewed_at")), loc + ".confirmation", "confirmed record needs separate decision and review references, dates, confirmer, and reviewer")
                 if isinstance(confirmation, dict) and isinstance(provenance, dict):
-                    check(confirmation.get("reviewer") != provenance.get("proposer"), loc + ".confirmation.reviewer", "reviewer must differ from proposer")
-                check(isinstance(provenance, dict) and provenance.get("verification_status") == "verified", loc + ".provenance.verification_status", "confirmed record needs verified evidence")
+                    check(not (set(confirmation) - CONFIRMATION_FIELDS), loc + ".confirmation", "unsupported fields: " + ", ".join(sorted(set(confirmation) - CONFIRMATION_FIELDS)))
+                    if normalized_actor(confirmation.get("confirmer")) == normalized_actor(provenance.get("proposer")):
+                        check(isinstance(confirmation.get("role_collapse_note"), str) and bool(confirmation["role_collapse_note"].strip()), loc + ".confirmation.role_collapse_note", "same declared actor needs role-collapse disclosure")
+                    if normalized_actor(confirmation.get("reviewer")) == normalized_actor(provenance.get("proposer")):
+                        check(isinstance(confirmation.get("review_limit"), str) and bool(confirmation["review_limit"].strip()), loc + ".confirmation.review_limit", "self-review must be disclosed, not called independent")
+                if isinstance(confirmation, dict):
+                    check(iso_date(confirmation.get("decided_at")), loc + ".confirmation.decided_at", "ISO calendar date required")
+                    check(iso_date(confirmation.get("reviewed_at")), loc + ".confirmation.reviewed_at", "ISO calendar date required")
+                check(isinstance(provenance, dict) and provenance.get("verification_status") in {"qualified", "verified"}, loc + ".provenance.verification_status", "confirmed record needs qualified or verified source evidence")
             if record.get("status") == "deprecated":
                 check(isinstance(record.get("replacement_or_reason"), str) and bool(record["replacement_or_reason"].strip()), loc + ".replacement_or_reason", "deprecated record needs replacement or rationale")
             if kind == "proposition":
-                extras = sorted(set(record) - PROPOSITION_FIELDS)
-                check(not extras, loc, "unsupported proposition fields: " + ", ".join(extras) + "; process/extension semantics are not supported")
                 propositions.append((loc, record))
-            elif kind == "external_reference":
-                check(absolute_iri(record.get("iri")), loc + ".iri", "absolute external IRI required")
-            elif kind == "rule_reference":
-                check(absolute_iri(record.get("iri")), loc + ".iri", "absolute rule artifact IRI required")
             elif isinstance(kind, str) and kind in KINDS:
                 for field in ("label", "definition"):
                     check(isinstance(record.get(field), str) and bool(record[field].strip()), loc + "." + field, "nonempty string required")
+                if kind in {"external_reference", "rule_reference"}:
+                    check(absolute_iri(record.get("iri")), loc + ".iri", "absolute external artifact IRI required")
 
     taxonomy: dict[str, list[str]] = {}
     for loc, record in propositions:
         predicate = record.get("predicate")
-        check(isinstance(predicate, str) and predicate in ENDPOINTS, loc + ".predicate", "controlled predicate required; process flow and transitions are outside SEAG source vocabulary")
+        check(isinstance(predicate, str) and predicate in ENDPOINTS, loc + ".predicate", "one of six static controlled predicates required")
         source, target = record.get("source"), record.get("target")
         source_found = isinstance(source, str) and source in records
         target_found = isinstance(target, str) and target in records
@@ -167,7 +211,8 @@ def validate(manifest_path: Path) -> list[str]:
             check(isinstance(record.get("name"), str) and bool(record["name"].strip()), loc + ".name", "association name required")
             name = record.get("name")
             if isinstance(name, str):
-                normalized = " ".join(name.lower().split())
+                normalized = normalized_name(name)
+                check(not any(unicodedata.category(c) == "Cf" for c in name), loc + ".name", "hidden format characters forbidden")
                 check(not PROCESS_NAME.search(normalized), loc + ".name", "process or transition association name forbidden")
                 check(normalized not in VAGUE_NAMES, loc + ".name", "vague association name; use a bounded static semantic relation")
             check(isinstance(record.get("definition"), str) and bool(record["definition"].strip()), loc + ".definition", "bounded static association definition required")
@@ -175,6 +220,9 @@ def validate(manifest_path: Path) -> list[str]:
                 check(isinstance(record.get(end), str) and record[end] in CARDINALITY, loc + "." + end, "explicit both-end cardinality required")
                 if record.get("status") == "confirmed":
                     check(record.get(end) != "unresolved", loc + "." + end, "confirmed cardinality cannot be unresolved")
+        elif isinstance(predicate, str) and predicate in ENDPOINTS:
+            extra = sorted(set(record) & {"name", "definition", "source_cardinality", "target_cardinality"})
+            check(not extra, loc, "named-association fields unsupported for controlled predicate: " + ", ".join(extra))
 
     visiting: set[str] = set()
     visited: set[str] = set()
