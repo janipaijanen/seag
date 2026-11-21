@@ -122,10 +122,13 @@ As of the initial assessment:
 | AGF, Ponytail, and Caveman profiles | 1 Planned | Interoperability targets only |
 
 The assessment basis is integration head
-`2370d999022f9fe5c5c32aef7c943fd7ed5be3df` and its recorded evidence. Level 4
-applies only to the bounded 0.1 contract and checks exercised there; it does not
-claim semantic truth, authenticated actor authority, complete Unicode/process
-detection, cross-engine equivalence, or a supported distribution.
+`2370d999022f9fe5c5c32aef7c943fd7ed5be3df`, documentation-only correction
+`ad566999a9f93bd7c76910b8bc650f9853a656ae`, and the durable
+[integration review record](reviews/source-contract-integration-0.1.md). Level
+4 applies only to the bounded 0.1 contract and checks exercised there; it does
+not claim semantic truth, authenticated actor authority, complete
+Unicode/process detection, cross-engine equivalence, or a supported
+distribution.
 
 SEAG's problem framing is **Empirically informed** by Rediflow and SEAG's own
 incubation. Claims that SEAG improves independent projects remain

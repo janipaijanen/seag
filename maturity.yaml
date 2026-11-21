@@ -6,6 +6,8 @@ assessment_date: 2026-11-21
 assessment_basis:
   repository: https://gitlab.com/janipaijanen/seag
   source_commit: 2370d999022f9fe5c5c32aef7c943fd7ed5be3df
+  documentation_delta: ad566999a9f93bd7c76910b8bc650f9853a656ae
+  review_record: docs/reviews/source-contract-integration-0.1.md
 
 adopted_vocabulary:
   framework: AGF26
@@ -42,14 +44,14 @@ capabilities:
     name: Validated
     evidence:
       - reviewed-parent:cb3d9585d1660ecf4c66131ba9ea95c4e9f2c797
-      - independent-integration-review:acs-795-796
+      - review-record:docs/reviews/source-contract-integration-0.1.md
       - gitlab-pipeline:3097930514
   semantic-validator:
     level: 4
     name: Validated
     evidence:
       - tests:45-passed
-      - independent-integration-review:acs-795-796
+      - review-record:docs/reviews/source-contract-integration-0.1.md
       - gitlab-pipeline:3097930514
   glossary-extraction:
     level: 1
