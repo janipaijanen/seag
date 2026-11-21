@@ -64,3 +64,25 @@ from being confused with a different build.
 SEAG adopts the AGF numbering and release mechanics as a project policy, not as
 a runtime dependency or a claim that AGF governs SEAG. SEAG retains its own
 publication criteria, licensing, semantic compatibility rules, and artifacts.
+
+## CI policy informed by Rediflow
+
+SEAG also adopts Rediflow's established pipeline-source selection pattern:
+
+- merge requests always receive a pipeline;
+- `main` pushes and tags always receive a pipeline;
+- scheduled, API-triggered, and manually requested branch pipelines remain
+  available; and
+- ordinary feature or release branch pushes do not create a duplicate pipeline
+  before or alongside their merge request.
+
+Every admitted SEAG pipeline runs the complete SEAG validation set because the
+repository is small and no test tier is currently expensive enough to justify
+path-based omission. Tag pipelines retain the same validation rather than
+assuming that an earlier branch pipeline covered the tagged commit.
+
+Rediflow's container publication, browser-test tiers, database services, and
+product deployment rules are not applicable to SEAG. SEAG also deliberately
+keeps its stricter tag checks: a version tag must equal `v<VERSION>` and its
+commit must be contained in `main` before a bundle can be considered for
+publication.

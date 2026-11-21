@@ -1,6 +1,18 @@
 # SPDX-FileCopyrightText: Copyright (C) 2026 Jani Päijänen
 # SPDX-License-Identifier: Apache-2.0
 
+# Follow the established Rediflow pipeline-source policy: feature and release
+# branch pushes validate through their merge-request pipeline, avoiding the
+# first-push/MR duplicate race. Main, tags, and deliberate non-push invocations
+# always receive a pipeline.
+workflow:
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event"'
+    - if: '$CI_COMMIT_TAG'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_PIPELINE_SOURCE == "push"'
+    - if: '$CI_COMMIT_BRANCH && $CI_PIPELINE_SOURCE != "push"'
+    - when: never
+
 stages:
   - validate
   - bundle
