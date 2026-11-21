@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: CC-BY-4.0
 
 schema: seag/maturity-assessment/v1
-assessment_date: 2026-11-21
+assessment_date: 2026-11-22
 assessment_basis:
   repository: https://gitlab.com/janipaijanen/seag
   source_commit: 2370d999022f9fe5c5c32aef7c943fd7ed5be3df
@@ -54,11 +54,19 @@ capabilities:
       - review-record:docs/reviews/source-contract-integration-0.1.md
       - gitlab-pipeline:3097930514
   glossary-extraction:
-    level: 1
-    name: Planned
+    level: 4
+    name: Validated
+    evidence:
+      - test:test_transforms.TransformTest.test_glossary_retains_identity_language_and_source_provenance
+      - fixture:fixtures/expected/glossary-en.json
   cmaptools-cxl-exchange:
-    level: 1
-    name: Planned
+    name: Validated
+    level: 4
+    limitations:
+      - CmapTools desktop import is untested and unclaimed
+    evidence:
+      - test:test_transforms.TransformTest.test_cxl_round_trip_preserves_bounded_graph
+      - fixture:fixtures/expected/concept-map.cxl
   optional-integration-profiles:
     level: 1
     name: Planned

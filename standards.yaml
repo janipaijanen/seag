@@ -2,7 +2,7 @@
 # SPDX-License-Identifier: CC-BY-4.0
 
 seag_standards_register: "0.1"
-status: draft
+status: pinned-for-0.1
 
 conformance_classes:
   - core
@@ -24,6 +24,7 @@ standards:
     versions: ["RFC 5646", "RFC 4647"]
     registry: IANA Language Subtag Registry
     registry_version_field: File-Date
+    registry_version: "2026-11-18"
     applies_to: language-bearing values and language selection
 
   - id: uri-iri
@@ -68,6 +69,7 @@ standards:
     versions: ["Unicode Standard", "UAX #15"]
     normalization_form: NFC
     version_evidence: required
+    unicode_data_version: "16.0.0"
 
   - id: json-canonicalization
     title: JSON Canonicalization Scheme
@@ -93,13 +95,14 @@ standards:
     title: Licence expressions and licence list
     class: publication-gate
     versions: ["SPDX Specification 3.0.1"]
-    pin_license_list_version_before_publication: true
+    license_list_version: "3.29.0"
 
   - id: cmaptools-cxl
     title: CmapTools CXL interoperability
     class: export-profile
-    version: pending-profile
-    claim: not-yet-conformant
+    version: "IHMC public cmap.xsd sha256:aa8ffda7d51ce4864e76186a349240cb6f01e086fab9cbc34e9c816bd778802a"
+    claim: compatible-parser-round-trip
+    limitations: CmapTools desktop import not tested; see docs/cxl-profile.md
 
   - id: semantic-web-exports
     title: JSON-LD, RDF, OWL, and PROV-O serialization

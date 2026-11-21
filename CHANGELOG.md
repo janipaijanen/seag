@@ -31,6 +31,10 @@ publication gate.
 - Recorded the maintainer's explicit DCO certification for the eleven
   preserved commits published during the unenforced sign-off transition and
   added fail-closed prospective DCO checks to CI and the publication gate.
+- Added deterministic provenance-preserving glossary extraction and a lossy,
+  sidecar-bound CmapTools CXL export with compatible-parser round-trip checks.
+- Pinned the 0.1 standards register, documented PROV and SKOS mappings, and
+  added installation, upgrade, and transformation-profile guidance.
 
 ## 0.1.0-rc.2
 

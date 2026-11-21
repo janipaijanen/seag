@@ -1,0 +1,56 @@
+{
+  "generated_at": "2026-11-22T00:00:00Z",
+  "generator": "seag/0.1.0-rc.3",
+  "lossless": false,
+  "omissions": [
+    "definitions",
+    "semantic status",
+    "implementation alignment",
+    "cardinalities",
+    "confirmation metadata",
+    "visual layout"
+  ],
+  "output_sha256": "e0e144077f7e17c33d5650ecfc23860561400fdc57e8df861567c48b34ad503e",
+  "profile": "seag/cxl/0.1",
+  "record_provenance": {
+    "urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#AssocAB": {
+      "locator": "fixture/records",
+      "normative": false,
+      "proposer": "invented-fixture-author",
+      "source": "invented fixture",
+      "verification_status": "unresolved"
+    },
+    "urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#RuleC": {
+      "locator": "fixture/records",
+      "normative": false,
+      "proposer": "invented-fixture-author",
+      "source": "invented fixture",
+      "verification_status": "unresolved"
+    },
+    "urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#StateB": {
+      "locator": "fixture/records",
+      "normative": false,
+      "proposer": "invented-fixture-author",
+      "source": "invented fixture",
+      "verification_status": "unresolved"
+    },
+    "urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#ThingA": {
+      "locator": "fixture/records",
+      "normative": false,
+      "proposer": "invented-fixture-author",
+      "source": "invented fixture",
+      "verification_status": "unresolved"
+    },
+    "urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#ThingB": {
+      "locator": "fixture/records",
+      "normative": false,
+      "proposer": "invented-fixture-author",
+      "source": "invented fixture",
+      "verification_status": "unresolved"
+    }
+  },
+  "schema": "seag/transformation-provenance/v1",
+  "source_bundle_id": "urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87",
+  "source_manifest_sha256": "cde6fde8173bf892025b6ab3db0db0d15f986a744476f3506ec487b6046fed7a",
+  "transformation": "cmaptools-cxl-export"
+}

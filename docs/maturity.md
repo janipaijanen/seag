@@ -111,14 +111,14 @@ As of the initial assessment:
 
 | Capability | Level | Evidence and limitation |
 |---|---:|---|
-| Framework charter and boundary policies | 2 Surface-defined | Normative documents exist; no released source contract |
-| Identity, provenance, language, and standards policies | 2 Surface-defined | Documented and reviewed locally; not wired into the released validator |
+| Framework charter and boundary policies | 4 Validated | Normative documents, closed source contract, fixtures, validator, and boundary tests; not yet in a stable release |
+| Identity, provenance, language, and standards policies | 4 Validated | Pinned register, validation, transformation sidecars, and mapping profiles; not yet in a stable release |
 | Reproducible release-candidate bundling | 4 Validated | Local repeatability tests and passing GitLab pipelines; no supported release |
 | SPDX coverage enforcement | 4 Validated | Exact-header check and CI evidence; no public release |
 | Normative semantic source contract | 4 Validated | Integrated contract, schema, neutral fixtures, independent review, and exact-head CI; not released |
 | Semantic validator | 4 Validated | Dependency-free implementation with positive and negative tests on the integration head; not released |
-| Ontology-to-glossary extraction | 1 Planned | Contract assigned; no implementation on `main` |
-| CmapTools CXL exchange | 1 Planned | Roadmap only |
+| Ontology-to-glossary extraction | 4 Validated | Deterministic exact-language extraction retains record provenance and digest-bound extraction evidence; no stable release |
+| CmapTools CXL exchange | 4 Validated | Deterministic export and compatible-parser graph round trip; CmapTools desktop import remains untested and unclaimed |
 | AGF, Ponytail, and Caveman profiles | 1 Planned | Interoperability targets only |
 
 The assessment basis is integration head

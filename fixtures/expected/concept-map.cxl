@@ -1,0 +1,23 @@
+<?xml version='1.0' encoding='utf-8'?>
+<cmap xmlns="http://cmap.ihmc.us/xml/cmap/" xmlns:dc="http://purl.org/dc/elements/1.1/">
+  <res-meta>
+    <dc:title>Invented neutral fixture</dc:title>
+    <dc:identifier>urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87</dc:identifier>
+    <dc:language>en</dc:language>
+  </res-meta>
+  <map>
+    <concept-list>
+      <concept id="urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#RuleC" label="Rule C" />
+      <concept id="urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#StateB" label="State B" />
+      <concept id="urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#ThingA" label="Thing A" />
+      <concept id="urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#ThingB" label="Thing B" />
+    </concept-list>
+    <linking-phrase-list>
+      <linking-phrase id="urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#AssocAB" label="has static descriptor" />
+    </linking-phrase-list>
+    <connection-list>
+      <connection from-id="urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#AssocAB" to-id="urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#ThingB" />
+      <connection from-id="urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#ThingA" to-id="urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#AssocAB" />
+    </connection-list>
+  </map>
+</cmap>

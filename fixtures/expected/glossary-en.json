@@ -1,0 +1,78 @@
+{
+  "bundle_id": "urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87",
+  "entries": [
+    {
+      "definition": "An invented external rule reference.",
+      "external_iri": "urn:uuid:44444444-4444-4444-8444-444444444444",
+      "id": "urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#RuleC",
+      "implementation_alignment": "not_applicable",
+      "kind": "rule_reference",
+      "label": "Rule C",
+      "language": "en",
+      "local_id": "RuleC",
+      "source_provenance": {
+        "locator": "fixture/records",
+        "normative": false,
+        "proposer": "invented-fixture-author",
+        "source": "invented fixture",
+        "verification_status": "unresolved"
+      },
+      "status": "proposed"
+    },
+    {
+      "definition": "An invented static state name.",
+      "id": "urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#StateB",
+      "implementation_alignment": "not_applicable",
+      "kind": "lifecycle_state",
+      "label": "State B",
+      "language": "en",
+      "local_id": "StateB",
+      "source_provenance": {
+        "locator": "fixture/records",
+        "normative": false,
+        "proposer": "invented-fixture-author",
+        "source": "invented fixture",
+        "verification_status": "unresolved"
+      },
+      "status": "proposed"
+    },
+    {
+      "definition": "An invented thing.",
+      "id": "urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#ThingA",
+      "implementation_alignment": "not_applicable",
+      "kind": "concept",
+      "label": "Thing A",
+      "language": "en",
+      "local_id": "ThingA",
+      "source_provenance": {
+        "locator": "fixture/records",
+        "normative": false,
+        "proposer": "invented-fixture-author",
+        "source": "invented fixture",
+        "verification_status": "unresolved"
+      },
+      "status": "proposed"
+    },
+    {
+      "definition": "Another invented thing.",
+      "id": "urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#ThingB",
+      "implementation_alignment": "not_applicable",
+      "kind": "concept",
+      "label": "Thing B",
+      "language": "en",
+      "local_id": "ThingB",
+      "source_provenance": {
+        "locator": "fixture/records",
+        "normative": false,
+        "proposer": "invented-fixture-author",
+        "source": "invented fixture",
+        "verification_status": "unresolved"
+      },
+      "status": "proposed"
+    }
+  ],
+  "language": "en",
+  "licence": "CC-BY-4.0",
+  "schema": "seag/glossary/v1",
+  "title": "Invented neutral fixture"
+}

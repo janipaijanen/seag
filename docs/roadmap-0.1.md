@@ -57,3 +57,10 @@ models or executes the team's software-delivery process.
 - Perform independent semantic, framework-boundary, licensing, and security reviews.
 - Publish 0.1 only after the publication gate in the charter is satisfied.
 
+## Stable-release interpretation
+
+The 0.1 stable scope includes the bounded source contract, validator, exact-language
+glossary extraction, and CXL export with compatible-parser round-trip evidence.
+CmapTools desktop import and the optional AGF, Ponytail, and Caveman profiles
+remain outside the stable compatibility claim unless separately evidenced.
+
