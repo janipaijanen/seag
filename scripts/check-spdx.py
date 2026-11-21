@@ -12,6 +12,10 @@ import sys
 COPYRIGHT = "SPDX-FileCopyrightText: Copyright (C) 2026 Jani Päijänen"
 LICENCE_PREFIX = "SPDX-License-Identifier: "
 ALLOWED_LICENCES = {"Apache-2.0", "CC-BY-4.0"}
+ROOT_LICENCE_COPIES = {
+    Path("LICENSE"): Path("LICENSES/Apache-2.0.txt"),
+    Path("LICENSE-DOCS"): Path("LICENSES/CC-BY-4.0.txt"),
+}
 
 
 def tracked_files() -> list[Path]:
@@ -30,7 +34,7 @@ def main() -> int:
     errors: list[str] = []
     files = tracked_files()
     for path in files:
-        if path.parts and path.parts[0] == "LICENSES":
+        if (path.parts and path.parts[0] == "LICENSES") or path in ROOT_LICENCE_COPIES:
             continue
         if path.name.endswith(".license"):
             continue
@@ -53,6 +57,11 @@ def main() -> int:
     for licence in sorted(ALLOWED_LICENCES):
         if not Path(f"LICENSES/{licence}.txt").is_file():
             errors.append(f"missing canonical licence text: LICENSES/{licence}.txt")
+    for root_copy, canonical in ROOT_LICENCE_COPIES.items():
+        if not root_copy.is_file():
+            errors.append(f"missing root licence copy: {root_copy}")
+        elif root_copy.read_bytes() != canonical.read_bytes():
+            errors.append(f"{root_copy}: differs from canonical text {canonical}")
     if errors:
         print("SPDX check: FAILED", file=sys.stderr)
         for error in errors:

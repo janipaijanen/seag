@@ -188,6 +188,7 @@ exists.
 
 Copyright (C) 2026 Jani Päijänen.
 
-Software, CI, and tests are licensed under Apache-2.0. Framework documentation
-and semantic registers are licensed under CC BY 4.0. Complete texts and the
-per-file SPDX policy are in [licensing and SPDX declarations](docs/licensing.md).
+Software, CI, and tests are licensed under [Apache-2.0](LICENSE). Framework
+documentation and semantic registers are licensed under
+[CC BY 4.0](LICENSE-DOCS). The per-file SPDX policy is in
+[licensing and SPDX declarations](docs/licensing.md).
