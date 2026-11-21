@@ -13,6 +13,7 @@ software work performed by people and LLM agents.
 > maturity ladder; nothing is Level 5 Deployable before a supported release.
 
 [Source contract](docs/source-contract-0.1.md) ·
+[Concept maps and ontologies](docs/introduction-for-software-engineers.md) ·
 [Maturity](docs/maturity.md) ·
 [Conformance](docs/conformance.md) ·
 [Roadmap](docs/roadmap-0.1.md) ·
@@ -36,6 +37,15 @@ for validating and transforming that content without taking ownership of it.
 SEAG originated from semantic and product-modelling needs discovered in the
 Rediflow project, but is developed and distributed independently. Rediflow
 concepts, rules, and product decisions do not belong in SEAG.
+
+## New to concept maps and ontologies?
+
+Read [SEAG concepts for software engineers](docs/introduction-for-software-engineers.md).
+It introduces concepts, propositions, concept maps, ontologies, provenance,
+source bundles, and generated variants through familiar software-engineering
+ideas. It also explains why SEAG is neither a diagram editor nor a complete
+ontology reasoner, and why it keeps semantic relations separate from
+cardinality.
 
 ## The three promises
 
@@ -148,6 +158,7 @@ See [standards and conformance](docs/conformance.md) and the machine-readable
 
 ## Documentation
 
+- [SEAG concepts for software engineers](docs/introduction-for-software-engineers.md)
 - [Project charter](docs/charter.md)
 - [0.1 roadmap](docs/roadmap-0.1.md)
 - [Source contract](docs/source-contract-0.1.md)
