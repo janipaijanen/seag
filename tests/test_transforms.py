@@ -23,6 +23,8 @@ class TransformTest(unittest.TestCase):
         self.assertEqual("seag/glossary/v1", glossary["schema"])
         self.assertEqual(4, len(glossary["entries"]))
         self.assertEqual("invented fixture", glossary["entries"][0]["source_provenance"]["source"])
+        self.assertEqual("terms", glossary["entries"][0]["source_fragment_id"])
+        self.assertEqual(["terms"], provenance["source_fragment_ids"])
         self.assertEqual("none", provenance["fallback_policy"])
 
     def test_glossary_rejects_implicit_language_fallback(self):

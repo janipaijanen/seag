@@ -32,6 +32,8 @@ def extract(manifest_path: Path, language: str, generated_at: str) -> tuple[dict
             "label": record["label"],
             "definition": record["definition"],
             "language": fragment["language"],
+            "source_fragment_id": fragment["fragment_id"],
+            "source_fragment_revision": fragment["revision"],
             "status": record["status"],
             "implementation_alignment": record["implementation_alignment"],
             "source_provenance": record["provenance"],
@@ -59,6 +61,7 @@ def extract(manifest_path: Path, language: str, generated_at: str) -> tuple[dict
         "language_selection": "exact",
         "fallback_policy": "none",
         "entry_count": len(entries),
+        "source_fragment_ids": sorted({fragment["fragment_id"] for fragment, _ in selected}),
         "unicode_data_version": unicodedata.unidata_version,
     }
     return result, provenance
