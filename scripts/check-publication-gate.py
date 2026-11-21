@@ -27,10 +27,14 @@ REQUIRED_FILES = (
     "docs/semantic-mappings.md",
     "docs/installation-and-upgrade.md",
     "docs/release-policy.md",
+    "docs/reviews/0.1.0-release.md",
 )
 
 
 def main() -> int:
+    if Path("VERSION").read_text().strip() != "0.1.0":
+        print("publication gate: CLOSED: VERSION is not stable 0.1.0", file=sys.stderr)
+        return 1
     missing = [path for path in REQUIRED_FILES if not Path(path).is_file()]
     if missing:
         print("publication gate: CLOSED", file=sys.stderr)

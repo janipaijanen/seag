@@ -9,11 +9,12 @@ CI uses that release section as the future release-note source.
 
 ## Unreleased
 
-## 0.1.0-rc.3
+## 0.1.0
 
-Public review validation and learning release. This release candidate remains
-unsupported, non-production-ready, and incomplete against the stable
-publication gate.
+Initial stable release of the bounded SEAG semantic-source and transformation
+tooling. Stability applies only to the documented 0.1 compatibility boundary;
+optional integration profiles and unclaimed external representations remain
+outside support.
 
 - Added a software-engineer introduction to concept maps, ontologies, and
   SEAG's semantic-source role, linked from the main README.

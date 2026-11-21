@@ -2,7 +2,7 @@
   "entry_count": 4,
   "fallback_policy": "none",
   "generated_at": "2026-11-22T00:00:00Z",
-  "generator": "seag/0.1.0-rc.3",
+  "generator": "seag/0.1.0",
   "language_selection": "exact",
   "output_sha256": "a30800c7d5eef8b5396638df6d462d21d88b9dc0897b0dd59ddd1471f55c0532",
   "requested_language": "en",

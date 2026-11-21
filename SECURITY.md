@@ -5,10 +5,12 @@
 
 ## Support status
 
-SEAG is a single-maintainer project in public review. No version is currently a
-stable, supported, or production-ready release. Security reports are evaluated
-against the latest public-review release and current `main` on a best-effort
-basis. There is no response or remediation service-level agreement.
+SEAG is a single-maintainer project. The latest `0.1.x` release is supported
+for reports within the bounded validator, transformation, provenance, and
+release-integrity scope documented here. Reports are evaluated against the
+latest stable release and current `main` on a best-effort basis. There is no
+response or remediation service-level agreement, and support does not extend
+to third-party semantic content or production-service operation.
 
 ## Report a vulnerability privately
 

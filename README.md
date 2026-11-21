@@ -6,11 +6,11 @@
 A provenance-preserving semantic source and transformation framework for
 software work performed by people and LLM agents.
 
-> **Status: public review, version 0.1.0-rc.3.** This release candidate is
-> published for evaluation and review. It is not a stable or supported release,
-> makes no production-readiness or complete-conformance claim, and may change
-> incompatibly before 0.1.0. Capabilities are reported with AGF's evidence-based
-> maturity ladder; nothing is Level 5 Deployable before a supported release.
+> **Status: stable source/tooling release 0.1.0.** Support covers the bounded
+> source contract, validator, exact-language glossary extraction, reproducible
+> bundles, and the documented lossy CXL profile. This is a file-oriented
+> framework release, not a hosted service or claim that semantic content is
+> true, actor identities are authenticated, or every planned export exists.
 
 [Source contract](docs/source-contract-0.1.md) ·
 [Concept maps and ontologies](docs/introduction-for-software-engineers.md) ·
@@ -81,7 +81,7 @@ are disclosed instead of being silently presented as equivalent semantics.
   provenance.
 - Deterministic CmapTools CXL export with an explicit loss sidecar and
   compatible-parser graph round trip.
-- Reproducible release-candidate bundles with manifests, checksums, build
+- Reproducible release bundles with manifests, checksums, build
   provenance, SPDX enforcement, and fail-closed publication gating.
 
 The optional AGF, Ponytail, and Caveman profiles remain planned. CmapTools

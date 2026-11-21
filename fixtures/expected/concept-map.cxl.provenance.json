@@ -1,6 +1,6 @@
 {
   "generated_at": "2026-11-22T00:00:00Z",
-  "generator": "seag/0.1.0-rc.3",
+  "generator": "seag/0.1.0",
   "lossless": false,
   "omissions": [
     "definitions",
