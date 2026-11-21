@@ -6,10 +6,11 @@ stages:
   - bundle
   - publication
 
+variables:
+  GIT_DEPTH: "0"
+
 default:
   image: python:3.12-alpine
-  variables:
-    GIT_DEPTH: "0"
   before_script:
     - apk add --no-cache git
 
