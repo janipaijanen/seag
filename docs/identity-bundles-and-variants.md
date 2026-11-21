@@ -92,6 +92,10 @@ The complete manifest model includes:
 - bundle-level provenance and review state; and
 - optional signature and verification information.
 
+`default_language`, fragment languages, and representation languages are BCP
+47 tags and follow the [language-tag policy](language-tags.md). A language tag
+describes content and never participates in semantic record identity.
+
 A bundle is a packaging and identity boundary, not a process boundary or an
 ontology claim. One adopting project may maintain several bundles when their
 ownership, release cadence, access, or namespace differs.
@@ -201,4 +205,7 @@ Validators must reject:
 - reused release, record, or variant identifiers with different meanings;
 - variants without an immutable source release and source digest;
 - claimed lossless variants with unreported unsupported constructs; and
-- external imports lacking sufficient provenance to identify the source.
+- external imports lacking sufficient provenance to identify the source;
+- malformed language tags or unsupported required language capabilities; and
+- generated language variants that conceal fallback, missing values, or lost
+  linguistic provenance.
