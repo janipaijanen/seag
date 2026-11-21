@@ -5,7 +5,7 @@ schema: seag/maturity-assessment/v1
 assessment_date: 2026-11-22
 assessment_basis:
   repository: https://gitlab.com/janipaijanen/seag
-  implementation_commit: 147bb0a56bd5a878a68589bac73d9e8f3e7bbb0e
+  implementation_commit: 69002ae665d869c5c3656e50e1283cfbf03e3c1c
   stable_candidate_ref: release/0.1.0-prep
   review_record: docs/reviews/source-contract-integration-0.1.md
   pending_release_review: docs/reviews/0.1.0-release.json
