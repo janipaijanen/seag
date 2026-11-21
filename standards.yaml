@@ -103,6 +103,10 @@ standards:
     class: export-profile
     version: "IHMC public cmap.xsd sha256:aa8ffda7d51ce4864e76186a349240cb6f01e086fab9cbc34e9c816bd778802a"
     claim: compatible-parser-round-trip
+    compatible_parser:
+      implementation: CPython 3.14.8 xml.etree.ElementTree 1.3.0
+      ci_image: "python:3.14.8-alpine@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d750607710cc56da3bc72"
+      linux_amd64_manifest: "sha256:7f2ec713f0436c59df2362d973b6a05af9e87ba78f0e94f5245c302984a7a1fd"
     limitations: CmapTools desktop import not tested; see docs/cxl-profile.md
 
   - id: semantic-web-exports

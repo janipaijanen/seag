@@ -6,11 +6,13 @@
 A provenance-preserving semantic source and transformation framework for
 software work performed by people and LLM agents.
 
-> **Status: stable source/tooling release 0.1.0.** Support covers the bounded
-> source contract, validator, exact-language glossary extraction, reproducible
-> bundles, and the documented lossy CXL profile. This is a file-oriented
-> framework release, not a hosted service or claim that semantic content is
-> true, actor identities are authenticated, or every planned export exists.
+> **Status: 0.1.0 release scope.** The immutable `v0.1.0` tag and its published
+> checksums identify the stable release; any untagged checkout or branch bundle
+> is a candidate. The bounded scope covers the source contract, validator,
+> exact-language glossary extraction, reproducible bundles, and documented
+> lossy CXL profile. This is a file-oriented framework, not a hosted service or
+> claim that semantic content is true, actor identities are authenticated, or
+> every planned export exists.
 
 [Source contract](docs/source-contract-0.1.md) ·
 [Concept maps and ontologies](docs/introduction-for-software-engineers.md) ·
@@ -72,7 +74,8 @@ are disclosed instead of being silently presented as equivalent semantics.
 
 - A bounded, domain-neutral [0.1 draft source contract](docs/source-contract-0.1.md).
 - A JSON Schema Draft 2020-12 source shape.
-- A dependency-free Python validator for cross-file and semantic invariants.
+- A Python-standard-library-only validator for cross-file and semantic
+  invariants.
 - Invented valid and invalid conformance fixtures.
 - Explicit rejection of process-flow and workflow semantics.
 - BCP 47 language policy, stable identity, provenance, role, and semantic

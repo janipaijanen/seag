@@ -6,9 +6,11 @@ import hashlib
 import json
 import tempfile
 import unittest
+from unittest.mock import patch
 
-from seag.cxl import export, parse, xml_text
+from seag.cxl import export, main as cxl_main, parse, parse_bytes, xml_text
 from seag.glossary import extract
+from seag.source import load_bundle
 from seag.transform import json_bytes
 
 
@@ -77,11 +79,49 @@ class TransformTest(unittest.TestCase):
     def test_cxl_rejects_forbidden_xml_and_dtd(self):
         with self.assertRaisesRegex(ValueError, "XML-forbidden"):
             xml_text("bad\x00value")
+        with self.assertRaisesRegex(ValueError, "XML-forbidden"):
+            xml_text("bad\ud800value")
         with tempfile.TemporaryDirectory() as directory:
             path = Path(directory) / "hostile.cxl"
             path.write_text("<!DOCTYPE cmap [<!ENTITY x 'x'>]><cmap/>")
             with self.assertRaisesRegex(ValueError, "DTD and entity"):
                 parse(path)
+        hostile = "<!DOCTYPE cmap [<!ENTITY x 'EXPANDED'>]><cmap>&x;</cmap>".encode("utf-16")
+        with self.assertRaisesRegex(ValueError, "UTF-8 only"):
+            parse_bytes(hostile)
+
+    def test_failed_cxl_verification_does_not_write_outputs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            output = Path(directory) / "invalid.cxl"
+            invalid = b"<?xml version='1.0' encoding='utf-8'?><cmap>&#55296;</cmap>\n"
+            with patch("seag.cxl.export", return_value=(invalid, {}, {})), patch(
+                "sys.argv",
+                ["seag.cxl", str(MANIFEST), "--generated-at", WHEN, "--output", str(output), "--verify"],
+            ):
+                self.assertEqual(1, cxl_main())
+            self.assertFalse(output.exists())
+            self.assertFalse(output.with_name(output.name + ".provenance.json").exists())
+
+    def test_transform_consumes_the_validated_snapshot(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest_path = root / "manifest.json"
+            fragment_path = root / "fragment.json"
+            manifest_path.write_bytes(MANIFEST.read_bytes())
+            fragment_path.write_bytes((MANIFEST.parent / "fragment.json").read_bytes())
+            from seag.validate import validate as real_validate
+
+            def mutate_after_validation(path, **snapshot):
+                errors = real_validate(path, **snapshot)
+                fragment = json.loads(fragment_path.read_text())
+                fragment["records"][0]["label"] = "Substituted after validation"
+                fragment_path.write_bytes(json_bytes(fragment))
+                return errors
+
+            with patch("seag.source.validate", side_effect=mutate_after_validation):
+                _manifest, records, _digest = load_bundle(manifest_path)
+            thing_a = next(record for _fragment, record in records if record["id"] == "ThingA")
+            self.assertEqual("Thing A", thing_a["label"])
 
     def test_generated_timestamp_requires_rfc3339(self):
         from seag.transform import timestamp

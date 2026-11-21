@@ -8,8 +8,8 @@ from __future__ import annotations
 import argparse
 import hashlib
 import json
+import platform
 from pathlib import Path
-import re
 import sys
 import unicodedata
 import xml.etree.ElementTree as ET
@@ -24,11 +24,14 @@ ET.register_namespace("", CXL)
 ET.register_namespace("dc", DC)
 
 
-INVALID_XML = re.compile("[\\x00-\\x08\\x0b\\x0c\\x0e-\\x1f￾￿]")
-
-
 def xml_text(value: str) -> str:
-    if INVALID_XML.search(value):
+    if any(
+        character not in "\t\n\r"
+        and not "\x20" <= character <= "\ud7ff"
+        and not "\ue000" <= character <= "\ufffd"
+        and not "\U00010000" <= character <= "\U0010ffff"
+        for character in value
+    ):
         raise ValueError("CXL text contains an XML-forbidden character")
     return value
 
@@ -66,7 +69,7 @@ def export(manifest_path: Path, generated_at: str) -> tuple[bytes, dict, dict]:
         ET.SubElement(link_list, f"{{{CXL}}}linking-phrase", {"id": xml_text(ident), "label": xml_text(label)})
     connection_list = ET.SubElement(map_node, f"{{{CXL}}}connection-list")
     for source, target in graph["connections"]:
-        ET.SubElement(connection_list, f"{{{CXL}}}connection", {"from-id": source, "to-id": target})
+        ET.SubElement(connection_list, f"{{{CXL}}}connection", {"from-id": xml_text(source), "to-id": xml_text(target)})
     ET.indent(root, space="  ")
     data = ET.tostring(root, encoding="utf-8", xml_declaration=True, short_empty_elements=True) + b"\n"
     sidecar = {
@@ -83,33 +86,54 @@ def export(manifest_path: Path, generated_at: str) -> tuple[bytes, dict, dict]:
             "confirmation metadata",
             "definitions",
             "external reference IRIs",
+            "bundle licence",
+            "bundle draft status",
+            "controlled-predicate versus named-association distinction",
             "fragment identity and revision",
+            "fragment inventory paths and digests",
+            "fragment role",
             "grammatical number",
             "implementation alignment",
             "per-record language",
             "record kind distinctions",
+            "record-to-fragment membership",
             "replacement or deprecation rationale",
             "semantic status",
+            "source contract identity",
+            "source namespace",
+            "source record provenance from CXL (retained in the sidecar)",
             "source and target cardinalities",
             "visual layout",
         ],
         "record_provenance": record_provenance,
+        "compatible_parser": {
+            "implementation": "CPython xml.etree.ElementTree",
+            "python_version": platform.python_version(),
+            "elementtree_version": ET.VERSION,
+        },
         "unicode_data_version": unicodedata.unidata_version,
     }
     return data, sidecar, graph
 
 
-def parse(path: Path) -> dict:
-    raw = path.read_bytes()
-    upper = raw.upper()
-    if b"<!DOCTYPE" in upper or b"<!ENTITY" in upper:
+def parse_bytes(raw: bytes) -> dict:
+    try:
+        text = raw.decode("utf-8")
+    except UnicodeDecodeError as error:
+        raise ValueError("CXL verification accepts UTF-8 only") from error
+    upper = text.upper()
+    if "<!DOCTYPE" in upper or "<!ENTITY" in upper:
         raise ValueError("DTD and entity declarations are forbidden in CXL verification")
-    root = ET.fromstring(raw)
+    root = ET.fromstring(text)
     ns = {"c": CXL}
     concepts = {e.attrib["id"]: e.attrib["label"] for e in root.findall(".//c:concept-list/c:concept", ns)}
     links = {e.attrib["id"]: e.attrib["label"] for e in root.findall(".//c:linking-phrase-list/c:linking-phrase", ns)}
     connections = sorted((e.attrib["from-id"], e.attrib["to-id"]) for e in root.findall(".//c:connection-list/c:connection", ns))
     return {"concepts": concepts, "linking_phrases": links, "connections": connections}
+
+
+def parse(path: Path) -> dict:
+    return parse_bytes(path.read_bytes())
 
 
 def main() -> int:
@@ -122,11 +146,11 @@ def main() -> int:
     args = parser.parse_args()
     try:
         data, sidecar, expected = export(args.manifest, timestamp(args.generated_at))
+        if args.verify and parse_bytes(data) != expected:
+            raise ValueError("compatible-parser round trip changed identifiers, labels, or connections")
         args.output.write_bytes(data)
         provenance_path = args.provenance_output or args.output.with_name(args.output.name + ".provenance.json")
         provenance_path.write_bytes(json_bytes(sidecar))
-        if args.verify and parse(args.output) != expected:
-            raise ValueError("compatible-parser round trip changed identifiers, labels, or connections")
     except (ET.ParseError, OSError, ValueError) as error:
         print(f"CXL export failed: {error}", file=sys.stderr)
         return 1

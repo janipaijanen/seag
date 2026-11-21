@@ -109,7 +109,12 @@ def _load_json(path: Path) -> object:
         return json.load(handle)
 
 
-def validate(manifest_path: Path) -> list[str]:
+def validate(
+    manifest_path: Path,
+    *,
+    manifest_raw: bytes | None = None,
+    fragment_raws: dict[str, bytes] | None = None,
+) -> list[str]:
     errors: list[str] = []
 
     def check(ok: bool, location: str, message: str) -> None:
@@ -117,7 +122,7 @@ def validate(manifest_path: Path) -> list[str]:
             errors.append(f"{location}: {message}")
 
     try:
-        manifest = _load_json(manifest_path)
+        manifest = json.loads(manifest_raw) if manifest_raw is not None else _load_json(manifest_path)
     except (OSError, UnicodeError, json.JSONDecodeError) as exc:
         return [f"{manifest_path}: cannot read JSON: {exc}"]
     if not isinstance(manifest, dict):
@@ -157,13 +162,16 @@ def validate(manifest_path: Path) -> list[str]:
             errors.append(f"{where}.path: safe relative path required")
             continue
         path = manifest_path.parent / name
-        if not path.resolve().is_relative_to(manifest_path.parent.resolve()):
+        if fragment_raws is None and not path.resolve().is_relative_to(manifest_path.parent.resolve()):
             errors.append(f"{where}.path: path escapes manifest directory")
             continue
         try:
-            raw = path.read_bytes()
+            if fragment_raws is not None:
+                raw = fragment_raws[name]
+            else:
+                raw = path.read_bytes()
             fragment = json.loads(raw)
-        except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        except (KeyError, OSError, UnicodeError, json.JSONDecodeError) as exc:
             errors.append(f"{where}.path: cannot read fragment: {exc}")
             continue
         digest = hashlib.sha256(raw).hexdigest()

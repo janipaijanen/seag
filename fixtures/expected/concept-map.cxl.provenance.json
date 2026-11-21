@@ -1,4 +1,9 @@
 {
+  "compatible_parser": {
+    "elementtree_version": "1.3.0",
+    "implementation": "CPython xml.etree.ElementTree",
+    "python_version": "3.14.8"
+  },
   "generated_at": "2026-11-22T00:00:00Z",
   "generator": "seag/0.1.0",
   "lossless": false,
@@ -6,13 +11,22 @@
     "confirmation metadata",
     "definitions",
     "external reference IRIs",
+    "bundle licence",
+    "bundle draft status",
+    "controlled-predicate versus named-association distinction",
     "fragment identity and revision",
+    "fragment inventory paths and digests",
+    "fragment role",
     "grammatical number",
     "implementation alignment",
     "per-record language",
     "record kind distinctions",
+    "record-to-fragment membership",
     "replacement or deprecation rationale",
     "semantic status",
+    "source contract identity",
+    "source namespace",
+    "source record provenance from CXL (retained in the sidecar)",
     "source and target cardinalities",
     "visual layout"
   ],

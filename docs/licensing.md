@@ -25,6 +25,19 @@ policy](../CONTRIBUTING.md) and may add an accurate declaration for their work.
 CI requires at least one nonempty declaration but does not replace contributor
 ownership with the maintainer's name.
 
+## AGF maturity-vocabulary authorization
+
+The maturity vocabulary incorporated into [`maturity.md`](maturity.md) and
+[`maturity.yaml`](../maturity.yaml) is adapted from the exact AGF26 source
+identified there. Jani Päijänen is the declared copyright holder of that AGF26
+source and of this SEAG adaptation. For avoidance of doubt, Jani Päijänen
+authorizes the incorporated SEAG adaptation under CC-BY-4.0.
+
+This authorization covers only the vocabulary and adapted explanatory text
+actually distributed in SEAG. It does not relicense the AGF repository, the AGF
+framework as a whole, or any other proprietary AGF material. The exact upstream
+commit and source blocks remain recorded as attribution and provenance.
+
 The root [`LICENSE`](../LICENSE) is the Apache-2.0 text for software, while
 [`LICENSE-DOCS`](../LICENSE-DOCS) is the CC-BY-4.0 text for documentation and
 semantic registers. Their canonical SPDX copies are stored in

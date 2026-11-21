@@ -31,6 +31,18 @@ CmapTools desktop application. The profile is intentionally lossy: definitions,
 status, implementation alignment, cardinality, confirmation metadata,
 grammatical number, external-reference IRIs, record-kind distinctions,
 replacement or deprecation rationale, per-record language, fragment identity
-and revision, and layout are not encoded in CXL. The required sidecar declares
-those omissions, retains every source record's provenance, and binds source and
-output by SHA-256. The SEAG JSON source remains authoritative.
+and revision, record-to-fragment membership, fragment inventory paths and
+digests, fragment role, bundle licence, bundle draft status, source contract
+identity, standalone source namespace, the controlled-predicate versus
+named-association distinction, source record provenance, and layout are not
+encoded in CXL. The required sidecar declares those omissions, retains source
+record provenance separately, and binds source and output by SHA-256. The SEAG
+JSON source remains authoritative.
+
+The compatible parser is CPython 3.14.8's
+`xml.etree.ElementTree` 1.3.0. CI pins the complete multi-architecture OCI image
+digest and the standards register records its Linux/amd64 manifest digest. Each
+CXL sidecar records the Python and ElementTree versions that performed the
+export. Verification accepts UTF-8 CXL only and rejects DTD and entity
+declarations before XML parsing. This runtime evidence supports only the
+bounded graph round trip; it is not CmapTools desktop evidence.

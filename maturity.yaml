@@ -15,6 +15,7 @@ adopted_vocabulary:
   framework_version: 1.9.0
   source_commit: e4ceea4a615fed9cae0ed675aa38b947abfddb99
   source_path: agf26/handbook/agf26core.md
+  licensing_basis: docs/licensing.md#agf-maturity-vocabulary-authorization
   blocks:
     - maturity-vocabulary
     - data-maturity-ladder
@@ -54,7 +55,7 @@ capabilities:
     name: Validated
     evidence:
       - tests:54-validator-tests-passed
-      - tests:77-total-tests-passed
+      - tests:79-total-tests-passed
       - review-record:docs/reviews/source-contract-integration-0.1.md
       - gitlab-pipeline:3097930514
   glossary-extraction:

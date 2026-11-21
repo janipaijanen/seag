@@ -19,6 +19,11 @@ AGF integration profile has been implemented. A future change in the upstream
 vocabulary requires an explicit SEAG review and version update; it does not
 silently change existing SEAG assessments.
 
+The copyright holder's limited CC-BY-4.0 authorization for the vocabulary and
+adapted text incorporated in SEAG is recorded in
+[Licensing and SPDX declarations](licensing.md#agf-maturity-vocabulary-authorization).
+It does not relicense AGF as a whole.
+
 ## Capability maturity
 
 Every material SEAG capability claim uses one of these levels:
@@ -121,11 +126,12 @@ As of the stable 0.1 candidate assessment:
 | CmapTools CXL exchange | 4 Validated | Deterministic export and compatible-parser graph round trip; CmapTools desktop import remains untested and unclaimed |
 | AGF, Ponytail, and Caveman profiles | 1 Planned | Interoperability targets only |
 
-The current assessment basis is implementation head
-`de6b6b75025c6994aa8e63652ca18327223dd5b4`, the
-`release/0.1.0-prep` stable-candidate ref, the durable
+The current assessment basis is the implementation commit recorded in
+[`maturity.yaml`](../maturity.yaml), the `release/0.1.0-prep` stable-candidate
+ref, the durable
 [source-contract integration review](reviews/source-contract-integration-0.1.md),
-73 passing tests, and exact-head hosted pipelines recorded in `maturity.yaml`.
+the passing test count and exact-head hosted pipelines recorded in
+`maturity.yaml`.
 Level 4 applies only to the bounded 0.1 contract and checks exercised there;
 it does not claim semantic truth, authenticated actor authority, complete
 Unicode/process detection, CmapTools desktop compatibility, or cross-engine
