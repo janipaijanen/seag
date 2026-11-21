@@ -77,11 +77,15 @@ are disclosed instead of being silently presented as equivalent semantics.
 - Explicit rejection of process-flow and workflow semantics.
 - BCP 47 language policy, stable identity, provenance, role, and semantic
   minimality policies.
+- Deterministic exact-language glossary extraction with source and extraction
+  provenance.
+- Deterministic CmapTools CXL export with an explicit loss sidecar and
+  compatible-parser graph round trip.
 - Reproducible release-candidate bundles with manifests, checksums, build
   provenance, SPDX enforcement, and fail-closed publication gating.
 
-The ontology-to-glossary exporter, CmapTools CXL exchange, and optional AGF,
-Ponytail, and Caveman profiles remain planned. See the
+The optional AGF, Ponytail, and Caveman profiles remain planned. CmapTools
+desktop import is not yet tested or claimed. See the
 [machine-readable maturity assessment](maturity.yaml) for exact levels,
 evidence, and limitations.
 
@@ -96,6 +100,8 @@ cd seag
 
 python3 -m seag.validate fixtures/valid/manifest.json
 python3 -m seag.validate --variant fixtures/valid/variant.json
+python3 -m seag.glossary fixtures/valid/manifest.json --language en --output glossary.json
+python3 -m seag.cxl fixtures/valid/manifest.json --output concept-map.cxl --verify
 python3 -m unittest discover -s tests -v
 ```
 
@@ -154,8 +160,10 @@ does not itself claim compatibility.
 - JSON schemas use JSON Schema Draft 2020-12.
 - Provenance and glossary concepts have documented W3C PROV and SKOS mapping
   obligations; neither is the authoritative SEAG storage syntax.
-- CXL, JSON-LD, RDF, OWL, and PROV-O serialization remain export profiles until
-  implemented and independently verified.
+- CXL has a bounded, lossy export profile with compatible-parser evidence;
+  CmapTools desktop compatibility is not claimed.
+- JSON-LD, RDF, OWL, and PROV-O serialization remain unimplemented export
+  profiles.
 
 See [standards and conformance](docs/conformance.md) and the machine-readable
 [`standards.yaml`](standards.yaml) register.
