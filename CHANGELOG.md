@@ -28,6 +28,9 @@ publication gate.
   names and the documented need for human semantic review.
 - Added focused negative and boundary coverage for source, fragment, variant,
   provenance, identity, cardinality, and deprecation validation.
+- Recorded the maintainer's explicit DCO certification for the eleven
+  preserved commits published during the unenforced sign-off transition and
+  added fail-closed prospective DCO checks to CI and the publication gate.
 
 ## 0.1.0-rc.2
 

@@ -29,6 +29,7 @@ validate:
   stage: validate
   script:
     - python scripts/check-spdx.py
+    - python scripts/check-dco.py --revision "$CI_COMMIT_SHA"
     - python -m unittest discover -s tests -v
     - git diff --check
 

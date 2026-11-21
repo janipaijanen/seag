@@ -5,6 +5,7 @@
 """Fail closed until the SEAG public-release prerequisites are present."""
 
 from pathlib import Path
+import subprocess
 import sys
 
 
@@ -13,6 +14,7 @@ REQUIRED_FILES = (
     "LICENSES/CC-BY-4.0.txt",
     "CONTRIBUTING.md",
     "SECURITY.md",
+    "docs/dco-historical-attestation.md",
     "docs/release-policy.md",
 )
 
@@ -23,6 +25,13 @@ def main() -> int:
         print("publication gate: CLOSED", file=sys.stderr)
         for path in missing:
             print(f"missing required file: {path}", file=sys.stderr)
+        return 1
+
+    dco = subprocess.run(
+        (sys.executable, "scripts/check-dco.py"), check=False
+    )
+    if dco.returncode:
+        print("publication gate: CLOSED: DCO check failed", file=sys.stderr)
         return 1
     print("publication gate file prerequisites: present")
     print("independent review evidence still requires a release-specific CI check")

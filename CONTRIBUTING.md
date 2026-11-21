@@ -38,6 +38,20 @@ for reviewing everything submitted under their sign-off, including
 agent-assisted or generated material. This policy does not impose unlimited
 personal liability or an indemnity.
 
+### Historical transition and enforcement
+
+The DCO trailer requirement is mechanically enforced for every commit after
+`a2fee6e32b1bdcbcb78bb36791ce3910ae0d1d29`. The eleven commits from
+`2693854aafd78854ffa8c9c9a0e398514e1ae88b` through that baseline were
+published without the required trailer. They are preserved to avoid rewriting
+public release history and are covered by the maintainer's explicit
+[historical DCO attestation](docs/dco-historical-attestation.md).
+
+The attestation records the certification separately; it does not claim that
+the historical commit messages contain trailers. No other exception is
+implicit. A later exception requires a public, commit-specific record and must
+not be used to bypass prospective enforcement.
+
 ## Contribution licence and ownership
 
 Contributors retain copyright in their contributions. By intentionally
@@ -98,6 +112,7 @@ Run:
 
 ```sh
 python3 scripts/check-spdx.py
+python3 scripts/check-dco.py
 python3 -m unittest discover -s tests -v
 git diff --check
 ```
