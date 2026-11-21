@@ -122,8 +122,8 @@ As of the stable 0.1 candidate assessment:
 | AGF, Ponytail, and Caveman profiles | 1 Planned | Interoperability targets only |
 
 The current assessment basis is implementation head
-`9c1b9a8a62767804ec9d70d931c73ef449528eec`, stable-metadata head
-`f97e05e8bf430e6581ff3aee2c8b6b01bc51281f`, the durable
+`de6b6b75025c6994aa8e63652ca18327223dd5b4`, the
+`release/0.1.0-prep` stable-candidate ref, the durable
 [source-contract integration review](reviews/source-contract-integration-0.1.md),
 73 passing tests, and exact-head hosted pipelines recorded in `maturity.yaml`.
 Level 4 applies only to the bounded 0.1 contract and checks exercised there;
