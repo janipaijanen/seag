@@ -26,11 +26,24 @@ evidence_status:
 
 capabilities:
   framework-boundaries:
-    level: 2
-    name: Surface-defined
+    level: 4
+    name: Validated
+    evidence:
+      - document:docs/charter.md
+      - document:docs/source-contract-0.1.md
+      - test:test_validate.SourceValidationTest.test_process_fields_rejected_everywhere
+      - test:test_validate.SourceValidationTest.test_process_flow_rejected
+      - gitlab-pipeline:3098450288
   identity-provenance-language-standards:
-    level: 2
-    name: Surface-defined
+    level: 4
+    name: Validated
+    evidence:
+      - document:docs/identity-bundles-and-variants.md
+      - document:docs/language-tags.md
+      - register:standards.yaml
+      - test:test_transforms.TransformTest.test_glossary_retains_identity_language_and_source_provenance
+      - test:test_validate.SourceValidationTest.test_provenance_required
+      - gitlab-pipeline:3098450288
   release-candidate-bundling:
     level: 4
     name: Validated
@@ -55,7 +68,7 @@ capabilities:
     name: Validated
     evidence:
       - tests:54-validator-tests-passed
-      - tests:79-total-tests-passed
+      - tests:82-total-tests-passed
       - review-record:docs/reviews/source-contract-integration-0.1.md
       - gitlab-pipeline:3097930514
   glossary-extraction:

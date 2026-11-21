@@ -50,6 +50,17 @@ def check_tag(tag: str, commitish: str = "HEAD") -> str:
     expected = f"v{version}"
     if tag != expected:
         raise ValueError(f"tag {tag!r} does not match VERSION {version!r}; expected {expected!r}")
+    ref = f"refs/tags/{tag}"
+    try:
+        object_type = git("cat-file", "-t", ref).strip()
+        tagged_commit = git("rev-parse", f"{ref}^{{commit}}").strip()
+        requested_commit = git("rev-parse", f"{commitish}^{{commit}}").strip()
+    except subprocess.CalledProcessError as error:
+        raise ValueError(f"tag {tag!r} is unavailable") from error
+    if object_type != "tag":
+        raise ValueError(f"tag {tag!r} must be an annotated tag object")
+    if tagged_commit != requested_commit:
+        raise ValueError(f"tag {tag!r} does not identify commit {requested_commit}")
     return version
 
 
@@ -216,6 +227,8 @@ def parse_args() -> argparse.Namespace:
 def main() -> int:
     args = parse_args()
     try:
+        if args.release_status == "stable" and not args.check_tag:
+            raise ValueError("stable bundles require --check-tag with an annotated release tag")
         if args.check_tag:
             check_tag(args.check_tag, args.commit)
         archive, checksum, provenance = build(

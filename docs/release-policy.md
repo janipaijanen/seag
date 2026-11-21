@@ -50,7 +50,8 @@ not silently redefine the SEAG core version.
     `publication_gate: asserted`; branch and pre-gate bundles remain candidates.
 
 Direct version-release tags on unreviewed commits are forbidden. A tag that
-does not exactly match `VERSION` is rejected.
+does not exactly match `VERSION`, is lightweight rather than annotated, or
+does not identify the requested release commit is rejected.
 
 ## Immutability
 

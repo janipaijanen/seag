@@ -36,8 +36,7 @@ def xml_text(value: str) -> str:
     return value
 
 
-def expected_graph(manifest_path: Path) -> tuple[dict, dict, str]:
-    manifest, records, digest = load_bundle(manifest_path)
+def _expected_graph(manifest: dict, records: list[tuple[dict, dict]], digest: str) -> tuple[dict, dict, str]:
     namespace = manifest["namespace"]
     concepts = {namespace + r["id"]: r["label"] for _, r in records if r["kind"] != "proposition"}
     links = {}
@@ -52,9 +51,13 @@ def expected_graph(manifest_path: Path) -> tuple[dict, dict, str]:
     return {"concepts": concepts, "linking_phrases": links, "connections": sorted(connections)}, provenance, digest
 
 
+def expected_graph(manifest_path: Path) -> tuple[dict, dict, str]:
+    return _expected_graph(*load_bundle(manifest_path))
+
+
 def export(manifest_path: Path, generated_at: str) -> tuple[bytes, dict, dict]:
-    manifest, _, _ = load_bundle(manifest_path)
-    graph, record_provenance, source_digest = expected_graph(manifest_path)
+    manifest, records, source_digest = load_bundle(manifest_path)
+    graph, record_provenance, source_digest = _expected_graph(manifest, records, source_digest)
     root = ET.Element(f"{{{CXL}}}cmap")
     meta = ET.SubElement(root, f"{{{CXL}}}res-meta")
     ET.SubElement(meta, f"{{{DC}}}title").text = xml_text(manifest["title"])

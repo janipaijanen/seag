@@ -5,6 +5,7 @@
 """Fail closed until the SEAG public-release prerequisites are present."""
 
 from pathlib import Path
+import datetime
 import json
 import re
 import subprocess
@@ -34,6 +35,17 @@ REQUIRED_FILES = (
 )
 
 REVIEW_SCOPES = {"semantic", "framework-boundary", "licensing", "security"}
+RFC3339_UTC = re.compile(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z\Z")
+ABSOLUTE_EVIDENCE_REF = re.compile(r"[A-Za-z][A-Za-z0-9+.-]*:\S+\Z")
+
+
+def valid_reviewed_at(value: object) -> bool:
+    if not isinstance(value, str) or not RFC3339_UTC.fullmatch(value):
+        return False
+    try:
+        return datetime.datetime.fromisoformat(value.removesuffix("Z") + "+00:00").tzinfo is not None
+    except ValueError:
+        return False
 
 
 def check_review_evidence(path: Path) -> list[str]:
@@ -80,6 +92,13 @@ def check_review_evidence(path: Path) -> list[str]:
         for field in ("reviewer", "evidence_ref", "reviewed_at"):
             if not isinstance(review.get(field), str) or not review[field].strip():
                 errors.append(f"review {index} needs {field}")
+        if "reviewed_at" in review and not valid_reviewed_at(review["reviewed_at"]):
+            errors.append(f"review {index} reviewed_at must be an RFC 3339 UTC timestamp")
+        if "evidence_ref" in review and (
+            not isinstance(review["evidence_ref"], str)
+            or not ABSOLUTE_EVIDENCE_REF.fullmatch(review["evidence_ref"])
+        ):
+            errors.append(f"review {index} evidence_ref must be an absolute URI without whitespace")
         if isinstance(review.get("reviewer"), str) and review["reviewer"].strip():
             reviewers.add(review["reviewer"].strip().casefold())
     if covered != REVIEW_SCOPES:

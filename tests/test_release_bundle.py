@@ -8,6 +8,7 @@ import subprocess
 import tarfile
 import tempfile
 import unittest
+from unittest.mock import patch
 
 
 SCRIPT = Path(__file__).parents[1] / "scripts" / "build-release-bundle.py"
@@ -20,9 +21,27 @@ SPEC.loader.exec_module(release_bundle)
 class ReleaseBundleTests(unittest.TestCase):
     def test_version_and_tag_match(self):
         version = release_bundle.package_version("HEAD")
-        self.assertEqual(release_bundle.check_tag(f"v{version}", "HEAD"), version)
+        commit = subprocess.check_output(("git", "rev-parse", "HEAD"), text=True).strip()
+        with patch.object(release_bundle, "package_version", return_value=version), patch.object(
+            release_bundle, "git", side_effect=("tag", commit, commit)
+        ):
+            self.assertEqual(release_bundle.check_tag(f"v{version}", "HEAD"), version)
         with self.assertRaises(ValueError):
             release_bundle.check_tag("v9.9.9", "HEAD")
+
+    def test_rejects_lightweight_or_wrong_commit_tag(self):
+        version = release_bundle.package_version("HEAD")
+        commit = subprocess.check_output(("git", "rev-parse", "HEAD"), text=True).strip()
+        with patch.object(release_bundle, "package_version", return_value=version), patch.object(
+            release_bundle, "git", return_value="commit"
+        ):
+            with self.assertRaisesRegex(ValueError, "annotated tag"):
+                release_bundle.check_tag(f"v{version}", "HEAD")
+        with patch.object(release_bundle, "package_version", return_value=version), patch.object(
+            release_bundle, "git", side_effect=("tag", "a" * 40, commit)
+        ):
+            with self.assertRaisesRegex(ValueError, "does not identify commit"):
+                release_bundle.check_tag(f"v{version}", "HEAD")
 
     def test_rejects_unsafe_version(self):
         with tempfile.TemporaryDirectory() as temporary:

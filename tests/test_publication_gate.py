@@ -24,7 +24,7 @@ class ReleaseEvidenceTest(unittest.TestCase):
             "release": "0.1.0",
             "candidate_commit": head,
             "reviews": [
-                {"scope": scope, "reviewer": "reviewer-a" if index < 2 else "reviewer-b", "verdict": "approved", "reviewed_commit": head, "reviewed_at": "2026-11-22", "evidence_ref": f"review:{scope}"}
+                {"scope": scope, "reviewer": "reviewer-a" if index < 2 else "reviewer-b", "verdict": "approved", "reviewed_commit": head, "reviewed_at": "2026-11-22T00:00:00Z", "evidence_ref": f"review:{scope}"}
                 for index, scope in enumerate(sorted(GATE.REVIEW_SCOPES))
             ],
         }
@@ -51,6 +51,14 @@ class ReleaseEvidenceTest(unittest.TestCase):
         errors = self.check(evidence)
         self.assertTrue(any("scopes incomplete" in error for error in errors), errors)
         self.assertTrue(any("two distinct" in error for error in errors), errors)
+
+    def test_rejects_malformed_review_provenance(self):
+        evidence = self.evidence()
+        evidence["reviews"][0]["reviewed_at"] = "not-a-date"
+        evidence["reviews"][0]["evidence_ref"] = "not a URI"
+        errors = self.check(evidence)
+        self.assertTrue(any("RFC 3339 UTC" in error for error in errors), errors)
+        self.assertTrue(any("absolute URI" in error for error in errors), errors)
 
 
 if __name__ == "__main__":

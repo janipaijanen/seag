@@ -76,6 +76,11 @@ class TransformTest(unittest.TestCase):
         self.assertEqual(first, second)
         self.assertEqual(json_bytes(provenance), json_bytes(repeated))
 
+    def test_cxl_uses_one_validated_source_snapshot(self):
+        with patch("seag.cxl.load_bundle", wraps=load_bundle) as loader:
+            export(MANIFEST, WHEN)
+        loader.assert_called_once_with(MANIFEST)
+
     def test_cxl_rejects_forbidden_xml_and_dtd(self):
         with self.assertRaisesRegex(ValueError, "XML-forbidden"):
             xml_text("bad\x00value")
