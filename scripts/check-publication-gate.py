@@ -5,6 +5,8 @@
 """Fail closed until the SEAG public-release prerequisites are present."""
 
 from pathlib import Path
+import json
+import re
 import subprocess
 import sys
 import tempfile
@@ -27,8 +29,64 @@ REQUIRED_FILES = (
     "docs/semantic-mappings.md",
     "docs/installation-and-upgrade.md",
     "docs/release-policy.md",
-    "docs/reviews/0.1.0-release.md",
+    "docs/reviews/0.1.0-release.json",
+    "docs/reviews/0.1.0-release.json.license",
 )
+
+REVIEW_SCOPES = {"semantic", "framework-boundary", "licensing", "security"}
+
+
+def check_review_evidence(path: Path) -> list[str]:
+    try:
+        evidence = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError) as error:
+        return [f"cannot read release review evidence: {error}"]
+    errors = []
+    if evidence.get("schema") != "seag/release-review-evidence/v1":
+        errors.append("unexpected review evidence schema")
+    if evidence.get("release") != "0.1.0":
+        errors.append("review evidence release must be 0.1.0")
+    candidate = evidence.get("candidate_commit")
+    if not isinstance(candidate, str) or not re.fullmatch(r"[0-9a-f]{40}", candidate):
+        errors.append("candidate_commit must be a full Git SHA")
+        return errors
+    ancestry = subprocess.run(("git", "merge-base", "--is-ancestor", candidate, "HEAD"), check=False)
+    if ancestry.returncode:
+        errors.append("reviewed candidate is unavailable or not an ancestor of HEAD")
+    else:
+        changed = subprocess.check_output(("git", "diff", "--name-only", f"{candidate}..HEAD"), text=True).splitlines()
+        allowed = {"docs/reviews/0.1.0-release.json", "docs/reviews/0.1.0-release.json.license"}
+        unexpected = sorted(set(changed) - allowed)
+        if unexpected:
+            errors.append("unreviewed post-candidate paths: " + ", ".join(unexpected))
+    reviews = evidence.get("reviews")
+    if not isinstance(reviews, list):
+        return errors + ["reviews must be an array"]
+    covered = set()
+    reviewers = set()
+    for index, review in enumerate(reviews):
+        if not isinstance(review, dict):
+            errors.append(f"review {index} must be an object")
+            continue
+        scope = review.get("scope")
+        if scope not in REVIEW_SCOPES:
+            errors.append(f"review {index} has an invalid scope")
+        else:
+            covered.add(scope)
+        if review.get("verdict") != "approved":
+            errors.append(f"review {index} is not approved")
+        if review.get("reviewed_commit") != candidate:
+            errors.append(f"review {index} does not target candidate_commit")
+        for field in ("reviewer", "evidence_ref", "reviewed_at"):
+            if not isinstance(review.get(field), str) or not review[field].strip():
+                errors.append(f"review {index} needs {field}")
+        if isinstance(review.get("reviewer"), str) and review["reviewer"].strip():
+            reviewers.add(review["reviewer"].strip().casefold())
+    if covered != REVIEW_SCOPES:
+        errors.append("review scopes incomplete: " + ", ".join(sorted(REVIEW_SCOPES - covered)))
+    if len(reviewers) < 2:
+        errors.append("at least two distinct reviewers are required")
+    return errors
 
 
 def main() -> int:
@@ -40,6 +98,12 @@ def main() -> int:
         print("publication gate: CLOSED", file=sys.stderr)
         for path in missing:
             print(f"missing required file: {path}", file=sys.stderr)
+        return 1
+    review_errors = check_review_evidence(Path("docs/reviews/0.1.0-release.json"))
+    if review_errors:
+        print("publication gate: CLOSED: invalid release review evidence", file=sys.stderr)
+        for error in review_errors:
+            print(error, file=sys.stderr)
         return 1
 
     dco = subprocess.run(
