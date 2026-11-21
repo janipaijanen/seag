@@ -9,6 +9,9 @@ SEAG 0.1 emits the public IHMC CXL structure documented at
 `aa8ffda7d51ce4864e76186a349240cb6f01e086fab9cbc34e9c816bd778802a`
 and the official `PlantsSimple.cxl` example to SHA-256
 `935b98a0804d3ae11dbc602e37291942ac945367cf04eb87aad27d5d526de860`.
+On 2026-11-22, an `xmllint` compilation attempt against the pinned XSD could
+not resolve its legacy HTTP Dublin Core schema imports, so full XSD validation
+is not claimed as release evidence.
 
 ```sh
 python3 -m seag.cxl source/manifest.json \
