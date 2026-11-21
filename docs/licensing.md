@@ -18,6 +18,13 @@ Every tracked distributable file carries both `SPDX-FileCopyrightText` and
 as strict JSON, uses an adjacent `<filename>.license` sidecar. The sidecar is
 distributed with the governed file and is included in release manifests.
 
+Copyright declarations identify the actual rights holder or holders; they are
+not project-ownership assertions. Existing valid notices must be preserved.
+External contributors retain copyright under [the contribution
+policy](../CONTRIBUTING.md) and may add an accurate declaration for their work.
+CI requires at least one nonempty declaration but does not replace contributor
+ownership with the maintainer's name.
+
 The root [`LICENSE`](../LICENSE) is the Apache-2.0 text for software, while
 [`LICENSE-DOCS`](../LICENSE-DOCS) is the CC-BY-4.0 text for documentation and
 semantic registers. Their canonical SPDX copies are stored in
@@ -30,6 +37,6 @@ Run the repository check with:
 python3 scripts/check-spdx.py
 ```
 
-The CI validation stage runs this check. Files without an exact declaration,
+The CI validation stage runs this check. Files without a nonempty declaration,
 files using an unapproved expression, missing licence texts, and root licence
 copies that differ from their canonical SPDX texts fail the pipeline.

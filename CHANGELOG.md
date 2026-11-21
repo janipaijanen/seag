@@ -13,6 +13,8 @@ CI uses that release section as the future release-note source.
   review phase.
 - Added the package, contract, profile, validator, deprecation, and evidence
   compatibility policy.
+- Made SPDX enforcement preserve truthful maintainer and contributor copyright
+  ownership instead of requiring one owner on every file.
 
 ## 0.1.0-rc.1
 

@@ -9,7 +9,7 @@ import subprocess
 import sys
 
 
-COPYRIGHT = "SPDX-FileCopyrightText: Copyright (C) 2026 Jani Päijänen"
+COPYRIGHT_PREFIX = "SPDX-FileCopyrightText:"
 LICENCE_PREFIX = "SPDX-License-Identifier: "
 ALLOWED_LICENCES = {"Apache-2.0", "CC-BY-4.0"}
 ROOT_LICENCE_COPIES = {
@@ -30,6 +30,16 @@ def declaration(path: Path) -> str:
     return text if source == sidecar else "\n".join(text.splitlines()[:12])
 
 
+def copyright_declarations(text: str) -> list[str]:
+    """Return nonempty SPDX copyright values without prescribing ownership."""
+    return [
+        line.split(COPYRIGHT_PREFIX, 1)[1].strip().rstrip(" -->")
+        for line in text.splitlines()
+        if COPYRIGHT_PREFIX in line
+        and line.split(COPYRIGHT_PREFIX, 1)[1].strip().rstrip(" -->")
+    ]
+
+
 def main() -> int:
     errors: list[str] = []
     files = tracked_files()
@@ -43,8 +53,8 @@ def main() -> int:
         except UnicodeDecodeError:
             errors.append(f"{path}: binary file requires an SPDX .license sidecar")
             continue
-        if COPYRIGHT not in text:
-            errors.append(f"{path}: missing exact SPDX copyright declaration")
+        if not copyright_declarations(text):
+            errors.append(f"{path}: missing nonempty SPDX copyright declaration")
         licences = {
             line.split(LICENCE_PREFIX, 1)[1].strip().rstrip(" -->")
             for line in text.splitlines()
