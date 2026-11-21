@@ -179,10 +179,10 @@ python3 scripts/build-release-bundle.py \
 ## Stewardship and participation
 
 SEAG is currently maintained by Jani Päijänen and is under active private
-incubation. A public community programme, external contribution procedure,
-security-reporting channel, and support commitment have not yet been
-established. Those procedures are publication gates and must exist before the
-first supported public release.
+incubation. External contribution and security-reporting procedures have not
+yet been established; both are publication gates. SEAG also has no public
+community programme or support commitment, and does not imply that either
+exists.
 
 ## Licensing
 
