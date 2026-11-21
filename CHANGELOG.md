@@ -9,6 +9,11 @@ CI uses that release section as the future release-note source.
 
 ## Unreleased
 
+## 0.1.0-rc.1
+
+Public review release. This release candidate is not a stable or supported
+release and does not claim production readiness or complete conformance.
+
 - Established the SEAG charter, framework boundaries, identity model,
   provenance policy, semantic minimality, and role contracts.
 - Documented BCP 47 language handling and the external-standards conformance

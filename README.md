@@ -6,10 +6,11 @@
 A provenance-preserving semantic source and transformation framework for
 software work performed by people and LLM agents.
 
-> **Status: private incubation, version line 0.1.0.** SEAG has no supported
-> public release and makes no production-readiness claim. Capabilities are
-> reported with AGF's evidence-based maturity ladder; nothing is Level 5
-> Deployable before a supported release.
+> **Status: public review, version 0.1.0-rc.1.** This release candidate is
+> published for evaluation and review. It is not a stable or supported release,
+> makes no production-readiness or complete-conformance claim, and may change
+> incompatibly before 0.1.0. Capabilities are reported with AGF's evidence-based
+> maturity ladder; nothing is Level 5 Deployable before a supported release.
 
 [Source contract](docs/source-contract-0.1.md) ·
 [Maturity](docs/maturity.md) ·
