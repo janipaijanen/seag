@@ -10,7 +10,9 @@ product-modelling work in Rediflow. Rediflow is the originating use case; SEAG
 does not include or publish Rediflow's ontology, concepts, rules, or product
 decisions and is not a Rediflow product component.
 
-Names of optional interoperability targets belong to their respective owners.
-Mention of AGF, Ponytail, Caveman Mode, CmapTools, or Rediflow does not imply
-endorsement or verified compatibility.
+Names of interoperability targets belong to their respective owners. Mention
+of AGF, Ponytail, Caveman Mode, CmapTools, or Rediflow does not imply
+endorsement. Compatibility exists only where a versioned SEAG profile states
+its tested scope and limitations; the CXL profile does not claim CmapTools
+desktop certification.
 

@@ -1,8 +1,8 @@
 {
   "$schema": "https://json-schema.org/draft/2020-12/schema",
-  "$id": "https://example.invalid/seag/source-0.1.schema.json",
+  "$id": "urn:seag:schema:source:0.1-draft.2",
   "title": "SEAG 0.1 draft source file shapes",
-  "description": "Shape only; run seag.validate for cross-file identity, endpoint, provenance and cycle checks. The placeholder $id is not a publication claim.",
+  "description": "Shape only; run seag.validate for cross-file identity, endpoint, provenance and cycle checks.",
   "oneOf": [
     {"$ref": "#/$defs/manifest"},
     {"$ref": "#/$defs/fragment"},

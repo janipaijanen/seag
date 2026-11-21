@@ -94,5 +94,7 @@ version, profile and external-tool versions, test environment, fixtures,
 commands, results, limitations, and reviewer. Planned mappings or successful
 file parsing are not compatibility evidence.
 
-SEAG currently makes no CmapTools CXL, SKOS serialization, PROV-O
-serialization, or cross-version compatibility claim.
+SEAG 0.1 claims only the bounded CXL export and compatible-parser graph round
+trip documented in the CXL profile. It does not claim CmapTools desktop import,
+lossless CXL equivalence, SKOS serialization, PROV-O serialization, or
+cross-version source-contract compatibility.

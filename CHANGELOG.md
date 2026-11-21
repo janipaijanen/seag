@@ -35,6 +35,8 @@ publication gate.
   sidecar-bound CmapTools CXL export with compatible-parser round-trip checks.
 - Pinned the 0.1 standards register, documented PROV and SKOS mappings, and
   added installation, upgrade, and transformation-profile guidance.
+- Replaced the source schema's placeholder URL identity with the stable
+  `urn:seag:schema:source:0.1-draft.2` identifier.
 
 ## 0.1.0-rc.2
 
