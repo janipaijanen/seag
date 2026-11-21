@@ -9,6 +9,8 @@ CI uses that release section as the future release-note source.
 
 ## Unreleased
 
+- Added a software-engineer introduction to concept maps, ontologies, and
+  SEAG's semantic-source role, linked from the main README.
 - Aligned dependency-free validation with the source schema for optional
   replacement and role-disclosure fields.
 - Removed a misleading actor-collapse diagnostic from incomplete confirmation
