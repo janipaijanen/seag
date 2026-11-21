@@ -15,3 +15,5 @@ CI uses that release section as the future release-note source.
   register.
 - Added reproducible release-candidate bundles, complete licence texts, and
   per-file SPDX enforcement.
+- Added the bounded 0.1 semantic source contract, JSON Schema, dependency-free
+  validator, and domain-neutral positive and negative conformance fixtures.

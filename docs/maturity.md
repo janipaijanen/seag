@@ -115,11 +115,17 @@ As of the initial assessment:
 | Identity, provenance, language, and standards policies | 2 Surface-defined | Documented and reviewed locally; not wired into the released validator |
 | Reproducible release-candidate bundling | 4 Validated | Local repeatability tests and passing GitLab pipelines; no supported release |
 | SPDX coverage enforcement | 4 Validated | Exact-header check and CI evidence; no public release |
-| Normative semantic source contract | 1 Planned | Roadmap on `main`; external candidate is not integrated evidence |
-| Semantic validator | 1 Planned | Not present on `main` |
+| Normative semantic source contract | 4 Validated | Integrated contract, schema, neutral fixtures, independent review, and exact-head CI; not released |
+| Semantic validator | 4 Validated | Dependency-free implementation with positive and negative tests on the integration head; not released |
 | Ontology-to-glossary extraction | 1 Planned | Contract assigned; no implementation on `main` |
 | CmapTools CXL exchange | 1 Planned | Roadmap only |
 | AGF, Ponytail, and Caveman profiles | 1 Planned | Interoperability targets only |
+
+The assessment basis is integration head
+`2370d999022f9fe5c5c32aef7c943fd7ed5be3df` and its recorded evidence. Level 4
+applies only to the bounded 0.1 contract and checks exercised there; it does not
+claim semantic truth, authenticated actor authority, complete Unicode/process
+detection, cross-engine equivalence, or a supported distribution.
 
 SEAG's problem framing is **Empirically informed** by Rediflow and SEAG's own
 incubation. Claims that SEAG improves independent projects remain

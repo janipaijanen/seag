@@ -5,7 +5,7 @@ schema: seag/maturity-assessment/v1
 assessment_date: 2026-11-21
 assessment_basis:
   repository: https://gitlab.com/janipaijanen/seag
-  source_commit: 215767c38e83957f28f9c4206c35086a5db12930
+  source_commit: 2370d999022f9fe5c5c32aef7c943fd7ed5be3df
 
 adopted_vocabulary:
   framework: AGF26
@@ -38,11 +38,19 @@ capabilities:
     evidence:
       - gitlab-pipeline:3097901803
   semantic-source-contract:
-    level: 1
-    name: Planned
+    level: 4
+    name: Validated
+    evidence:
+      - reviewed-parent:cb3d9585d1660ecf4c66131ba9ea95c4e9f2c797
+      - independent-integration-review:acs-795-796
+      - gitlab-pipeline:3097930514
   semantic-validator:
-    level: 1
-    name: Planned
+    level: 4
+    name: Validated
+    evidence:
+      - tests:45-passed
+      - independent-integration-review:acs-795-796
+      - gitlab-pipeline:3097930514
   glossary-extraction:
     level: 1
     name: Planned
