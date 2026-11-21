@@ -1,0 +1,54 @@
+# SPDX-FileCopyrightText: Copyright (C) 2026 Jani Päijänen
+# SPDX-License-Identifier: CC-BY-4.0
+
+schema: seag/maturity-assessment/v1
+assessment_date: 2026-11-21
+assessment_basis:
+  repository: https://gitlab.com/janipaijanen/seag
+  source_commit: 215767c38e83957f28f9c4206c35086a5db12930
+
+adopted_vocabulary:
+  framework: AGF26
+  framework_version: 1.9.0
+  source_commit: e4ceea4a615fed9cae0ed675aa38b947abfddb99
+  source_path: agf26/handbook/agf26core.md
+  blocks:
+    - maturity-vocabulary
+    - data-maturity-ladder
+
+evidence_status:
+  problem_framing: empirically-informed
+  independent_project_benefit: theoretical
+
+capabilities:
+  framework-boundaries:
+    level: 2
+    name: Surface-defined
+  identity-provenance-language-standards:
+    level: 2
+    name: Surface-defined
+  release-candidate-bundling:
+    level: 4
+    name: Validated
+    evidence:
+      - gitlab-pipeline:3097901803
+  spdx-enforcement:
+    level: 4
+    name: Validated
+    evidence:
+      - gitlab-pipeline:3097901803
+  semantic-source-contract:
+    level: 1
+    name: Planned
+  semantic-validator:
+    level: 1
+    name: Planned
+  glossary-extraction:
+    level: 1
+    name: Planned
+  cmaptools-cxl-exchange:
+    level: 1
+    name: Planned
+  optional-integration-profiles:
+    level: 1
+    name: Planned

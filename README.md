@@ -66,6 +66,12 @@ been implemented and verified against a pinned version.
 
 Private incubation. No public-release or stability claim has been made.
 
+SEAG uses AGF's evidence-based five-level capability ladder instead of binary
+"implemented" or "supported" claims. Current capabilities range from Level 1
+Planned to Level 4 Validated; nothing is Level 5 Deployable before a supported
+release. See [maturity and evidence](docs/maturity.md) and the machine-readable
+[`maturity.yaml`](maturity.yaml) assessment.
+
 ## Standards and conformance
 
 SEAG pins the standards used for normative language, language tags,
