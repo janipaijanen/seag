@@ -7,8 +7,8 @@
     "identity": {"type": "string", "pattern": "^[A-Za-z][A-Za-z0-9._-]*$"},
     "digest": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
     "provenance": {
-      "type": "object", "required": ["source", "locator", "normative"],
-      "properties": {"source": {"type": "string", "minLength": 1}, "locator": {"type": "string", "minLength": 1}, "normative": {"type": "boolean"}}
+      "type": "object", "required": ["source", "locator", "proposer", "normative", "verification_status"],
+      "properties": {"source": {"type": "string", "minLength": 1}, "locator": {"type": "string", "minLength": 1}, "proposer": {"type": "string", "minLength": 1}, "normative": {"type": "boolean"}, "verification_status": {"enum": ["unresolved", "qualified", "verified", "rejected"]}}
     },
     "record": {
       "type": "object", "required": ["id", "kind", "status", "implementation_alignment", "provenance"],
@@ -18,7 +18,8 @@
         "status": {"enum": ["proposed", "confirmed", "deprecated", "unresolved"]},
         "implementation_alignment": {"enum": ["unchecked", "matches", "diverges", "not_applicable"]},
         "provenance": {"$ref": "#/$defs/provenance"},
-        "decision_ref": {"type": "string", "minLength": 1},
+        "confirmation": {"type": "object", "required": ["decision_ref", "decided_at", "confirmer", "reviewer"], "properties": {"decision_ref": {"type": "string", "minLength": 1}, "decided_at": {"type": "string", "minLength": 1}, "confirmer": {"type": "string", "minLength": 1}, "reviewer": {"type": "string", "minLength": 1}}},
+        "replacement_or_reason": {"type": "string", "minLength": 1},
         "label": {"type": "string", "minLength": 1},
         "definition": {"type": "string", "minLength": 1},
         "iri": {"type": "string", "minLength": 1},

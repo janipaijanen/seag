@@ -15,7 +15,9 @@
       "provenance": {
         "source": "invented fixture",
         "locator": "fixture/records",
-        "normative": false
+        "normative": false,
+        "proposer": "invented-fixture-author",
+        "verification_status": "unresolved"
       },
       "label": "Thing A",
       "definition": "An invented thing."
@@ -28,7 +30,9 @@
       "provenance": {
         "source": "invented fixture",
         "locator": "fixture/records",
-        "normative": false
+        "normative": false,
+        "proposer": "invented-fixture-author",
+        "verification_status": "unresolved"
       },
       "label": "Thing B",
       "definition": "Another invented thing."
@@ -41,7 +45,9 @@
       "provenance": {
         "source": "invented fixture",
         "locator": "fixture/records",
-        "normative": false
+        "normative": false,
+        "proposer": "invented-fixture-author",
+        "verification_status": "unresolved"
       },
       "label": "State B",
       "definition": "An invented static state name."
@@ -54,10 +60,13 @@
       "provenance": {
         "source": "invented fixture",
         "locator": "fixture/records",
-        "normative": false
+        "normative": false,
+        "proposer": "invented-fixture-author",
+        "verification_status": "unresolved"
       },
       "label": "Rule C",
-      "definition": "An invented external rule reference."
+      "definition": "An invented external rule reference.",
+      "iri": "urn:uuid:44444444-4444-4444-8444-444444444444"
     },
     {
       "id": "AssocAB",
@@ -67,13 +76,16 @@
       "provenance": {
         "source": "invented fixture",
         "locator": "fixture/records",
-        "normative": false
+        "normative": false,
+        "proposer": "invented-fixture-author",
+        "verification_status": "unresolved"
       },
       "predicate": "named association",
-      "name": "is associated with",
+      "name": "has static descriptor",
       "source": "ThingA",
       "target": "ThingB",
-      "source_cardinality": "0..1"
+      "source_cardinality": "0..1",
+      "definition": "A Thing A can have a Thing B as a static descriptor."
     }
   ]
 }

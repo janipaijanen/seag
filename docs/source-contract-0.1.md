@@ -24,10 +24,14 @@ fragments, and must not be reused for another meaning.
 `label` and `definition`. An external reference has an absolute `iri`. Every
 record has `status` (`proposed`, `confirmed`, `deprecated`, or `unresolved`),
 `implementation_alignment` (`unchecked`, `matches`, `diverges`, or
-`not_applicable`), and provenance with `source`, `locator`, and a separate
-`normative` boolean. A confirmed claim needs a nonempty decision reference;
-validation of the decision's authority remains a human review task. A missing
-fact is recorded as `unresolved`, never filled by a validator default.
+`not_applicable`), and provenance with `source`, `locator`, `proposer`, a
+separate `normative` boolean, and `verification_status` (`unresolved`,
+`qualified`, `verified`, or `rejected`). A confirmed claim needs a `confirmation`
+with decision reference, date, confirmer, and reviewer distinct from the
+proposer; its evidence must be marked verified. The validator checks presence
+and role distinction, not the authority or independence of those identities.
+A deprecated claim needs a replacement or rationale. A missing fact is
+recorded as `unresolved`, never filled by a validator default.
 
 ## Proposition vocabulary
 
@@ -42,13 +46,18 @@ fact is recorded as `unresolved`, never filled by a validator default.
 | `is governed by rule` | concept | rule_reference |
 | `named association` | concept | concept |
 
-A named association also has a `name` and two explicit end cardinalities,
+A named association also has a bounded static `name` and `definition`, plus two explicit end cardinalities,
 `source_cardinality` and `target_cardinality`: `0..1`, `1..1`, `1..*`,
 `0..*`, or `unresolved`. `unresolved` is allowed only while the proposition is
 not confirmed. Direction is always source to target; do not infer its inverse.
-Taxonomy (`is a kind of`) cycles are invalid. A process-flow or state-transition
-edge is outside this vocabulary and is rejected. Static lifecycle names do not
-imply transitions.
+Taxonomy (`is a kind of`) cycles are invalid. Process or transition names such
+as `precedes`, `changes state to`, `triggers` and `is followed by`, and vague
+names such as `relates to`, are rejected even inside `named association`.
+Unrecognized proposition fields (for example `guard`, `next_state`, or
+`sequence`) are rejected; other unknown source fields are opaque and carry no
+validated semantic meaning. Free-text definitions are not machine-interpreted,
+so human review must still check that a permitted static name is not used to
+smuggle process meaning. Static lifecycle names do not imply transitions.
 
 ## Variants and limits
 

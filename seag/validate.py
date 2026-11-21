@@ -24,6 +24,10 @@ ENDPOINTS = {
     "named association": ({"concept"}, {"concept"}),
 }
 KINDS = {"concept", "lifecycle_state", "rule_reference", "external_reference", "proposition"}
+PROPOSITION_FIELDS = {"id", "kind", "status", "implementation_alignment", "provenance", "confirmation", "replacement_or_reason", "source", "target", "predicate", "name", "definition", "source_cardinality", "target_cardinality"}
+PROCESS_NAME = re.compile(r"\b(precedes?|follows?|followed|triggers?|transitions?|changes?\s+state|next\s+state|before|after|causes?|enables?|step|workflow|sequence)\b", re.IGNORECASE)
+VAGUE_NAMES = {"relates to", "is related to", "associated with", "is associated with", "linked to", "is linked to", "connection", "relation"}
+EVIDENCE_STATUS = {"unresolved", "qualified", "verified", "rejected"}
 
 
 def absolute_iri(value: object) -> bool:
@@ -32,7 +36,7 @@ def absolute_iri(value: object) -> bool:
     parts = urlsplit(value)
     if parts.scheme in {"http", "https"}:
         return bool(parts.netloc)
-    return parts.scheme == "urn" and bool(parts.path)
+    return parts.scheme == "urn" and ":" in parts.path and all(parts.path.split(":", 1))
 
 
 def _load_json(path: Path) -> object:
@@ -116,17 +120,28 @@ def validate(manifest_path: Path) -> list[str]:
             check(isinstance(kind, str) and kind in KINDS, loc + ".kind", "unknown record kind")
             if isinstance(ident, str):
                 check(ident not in records, loc + ".id", "duplicate expanded record ID")
-                records[ident] = record
+                if ident not in records:
+                    records[ident] = record
             check(isinstance(record.get("status"), str) and record["status"] in STATUS, loc + ".status", "invalid semantic status")
             check(isinstance(record.get("implementation_alignment"), str) and record["implementation_alignment"] in ALIGNMENT, loc + ".implementation_alignment", "separate alignment status required")
             provenance = record.get("provenance")
-            check(isinstance(provenance, dict) and all(isinstance(provenance.get(k), str) and provenance[k].strip() for k in ("source", "locator")) and isinstance(provenance.get("normative"), bool), loc + ".provenance", "source, locator, and normative boolean required")
+            check(isinstance(provenance, dict) and all(isinstance(provenance.get(k), str) and provenance[k].strip() for k in ("source", "locator", "proposer")) and isinstance(provenance.get("normative"), bool) and isinstance(provenance.get("verification_status"), str) and provenance["verification_status"] in EVIDENCE_STATUS, loc + ".provenance", "source, locator, proposer, normative boolean, and evidence verification status required")
             if record.get("status") == "confirmed":
-                check(isinstance(record.get("decision_ref"), str) and bool(record["decision_ref"].strip()), loc + ".decision_ref", "confirmed record needs decision reference")
+                confirmation = record.get("confirmation")
+                check(isinstance(confirmation, dict) and all(isinstance(confirmation.get(k), str) and confirmation[k].strip() for k in ("decision_ref", "decided_at", "confirmer", "reviewer")), loc + ".confirmation", "confirmed record needs decision reference, date, confirmer, and independent reviewer")
+                if isinstance(confirmation, dict) and isinstance(provenance, dict):
+                    check(confirmation.get("reviewer") != provenance.get("proposer"), loc + ".confirmation.reviewer", "reviewer must differ from proposer")
+                check(isinstance(provenance, dict) and provenance.get("verification_status") == "verified", loc + ".provenance.verification_status", "confirmed record needs verified evidence")
+            if record.get("status") == "deprecated":
+                check(isinstance(record.get("replacement_or_reason"), str) and bool(record["replacement_or_reason"].strip()), loc + ".replacement_or_reason", "deprecated record needs replacement or rationale")
             if kind == "proposition":
+                extras = sorted(set(record) - PROPOSITION_FIELDS)
+                check(not extras, loc, "unsupported proposition fields: " + ", ".join(extras) + "; process/extension semantics are not supported")
                 propositions.append((loc, record))
             elif kind == "external_reference":
                 check(absolute_iri(record.get("iri")), loc + ".iri", "absolute external IRI required")
+            elif kind == "rule_reference":
+                check(absolute_iri(record.get("iri")), loc + ".iri", "absolute rule artifact IRI required")
             elif isinstance(kind, str) and kind in KINDS:
                 for field in ("label", "definition"):
                     check(isinstance(record.get(field), str) and bool(record[field].strip()), loc + "." + field, "nonempty string required")
@@ -134,7 +149,7 @@ def validate(manifest_path: Path) -> list[str]:
     taxonomy: dict[str, list[str]] = {}
     for loc, record in propositions:
         predicate = record.get("predicate")
-        check(isinstance(predicate, str) and predicate in ENDPOINTS, loc + ".predicate", "unsupported predicate; process flow and transitions are outside SEAG source vocabulary")
+        check(isinstance(predicate, str) and predicate in ENDPOINTS, loc + ".predicate", "controlled predicate required; process flow and transitions are outside SEAG source vocabulary")
         source, target = record.get("source"), record.get("target")
         source_found = isinstance(source, str) and source in records
         target_found = isinstance(target, str) and target in records
@@ -150,6 +165,12 @@ def validate(manifest_path: Path) -> list[str]:
                 taxonomy.setdefault(source, []).append(target)
         if predicate == "named association":
             check(isinstance(record.get("name"), str) and bool(record["name"].strip()), loc + ".name", "association name required")
+            name = record.get("name")
+            if isinstance(name, str):
+                normalized = " ".join(name.lower().split())
+                check(not PROCESS_NAME.search(normalized), loc + ".name", "process or transition association name forbidden")
+                check(normalized not in VAGUE_NAMES, loc + ".name", "vague association name; use a bounded static semantic relation")
+            check(isinstance(record.get("definition"), str) and bool(record["definition"].strip()), loc + ".definition", "bounded static association definition required")
             for end in ("source_cardinality", "target_cardinality"):
                 check(isinstance(record.get(end), str) and record[end] in CARDINALITY, loc + "." + end, "explicit both-end cardinality required")
                 if record.get("status") == "confirmed":
