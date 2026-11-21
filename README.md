@@ -85,11 +85,16 @@ provenance record. Candidate artifacts are review inputs, not public-release or
 stability claims. Stable publication tags fail closed until the publication
 gate and release-specific independent review requirements are satisfied.
 
+`VERSION` is the authoritative package version and release tags must match it
+exactly as `v<version>`, following the AGF release-numbering pattern. Commit
+identity stays in build provenance rather than being embedded in a synthetic
+CI version. See the [release and version policy](docs/release-policy.md).
+
 Build and verify the same candidate locally:
 
 ```sh
 python3 scripts/build-release-bundle.py \
-  --version 0.1.0-rc.1 --commit HEAD --output-dir dist --verify
+  --commit HEAD --output-dir dist --verify
 ```
 
 See [the project charter](docs/charter.md) and [the 0.1 roadmap](docs/roadmap-0.1.md).

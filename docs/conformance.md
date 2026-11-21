@@ -166,7 +166,7 @@ silently downgrade, discard, or reinterpret required semantics.
 ## Release-candidate bundles
 
 The CI release-candidate archive is reproducible from a Git commit and version
-label. It contains the tracked distributable source plus
+in the authoritative `VERSION` file. It contains the tracked distributable source plus
 `RELEASE-MANIFEST.json`. CI also emits an archive SHA-256 checksum and a build
 provenance record. The archive manifest identifies every included source file,
 its exact Git object, size, and SHA-256 digest.

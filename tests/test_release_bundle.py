@@ -18,6 +18,12 @@ SPEC.loader.exec_module(release_bundle)
 
 
 class ReleaseBundleTests(unittest.TestCase):
+    def test_version_and_tag_match(self):
+        version = release_bundle.package_version("HEAD")
+        self.assertEqual(release_bundle.check_tag(f"v{version}", "HEAD"), version)
+        with self.assertRaises(ValueError):
+            release_bundle.check_tag("v9.9.9", "HEAD")
+
     def test_rejects_unsafe_version(self):
         with tempfile.TemporaryDirectory() as temporary:
             with self.assertRaises(ValueError):
@@ -39,6 +45,11 @@ class ReleaseBundleTests(unittest.TestCase):
                 names = archive.getnames()
             self.assertTrue(any(name.endswith("/RELEASE-MANIFEST.json") for name in names))
             self.assertFalse(any(name.endswith("/.gitlab-ci.yml") for name in names))
+
+    def test_default_version_comes_from_version_file(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            archive, _checksum, _provenance = release_bundle.build(None, "HEAD", Path(temporary))
+            self.assertEqual(archive.name, f"seag-{release_bundle.package_version('HEAD')}.tar.gz")
 
 
 if __name__ == "__main__":

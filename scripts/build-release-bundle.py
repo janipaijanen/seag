@@ -15,11 +15,17 @@ import os
 from pathlib import Path, PurePosixPath
 import re
 import subprocess
+import sys
 import tarfile
 import tempfile
 
 
-VERSION_RE = re.compile(r"[0-9]+\.[0-9]+\.[0-9]+(?:[-+][0-9A-Za-z.-]+)?\Z")
+VERSION_RE = re.compile(
+    r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)"
+    r"(?:-(?:0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*)"
+    r"(?:\.(?:0|[1-9][0-9]*|[0-9A-Za-z-]*[A-Za-z-][0-9A-Za-z-]*))*)?"
+    r"(?:\+[0-9A-Za-z-]+(?:\.[0-9A-Za-z-]+)*)?\Z"
+)
 EXCLUDED = {".gitlab-ci.yml"}
 EXCLUDED_PREFIXES = ("dist/",)
 
@@ -30,6 +36,21 @@ def git(*args: str, text: bool = True) -> str | bytes:
 
 def sha256(data: bytes) -> str:
     return hashlib.sha256(data).hexdigest()
+
+
+def package_version(commitish: str = "HEAD") -> str:
+    version = git("show", f"{commitish}:VERSION").strip()
+    if not VERSION_RE.fullmatch(version):
+        raise ValueError(f"VERSION is not valid Semantic Versioning: {version!r}")
+    return version
+
+
+def check_tag(tag: str, commitish: str = "HEAD") -> str:
+    version = package_version(commitish)
+    expected = f"v{version}"
+    if tag != expected:
+        raise ValueError(f"tag {tag!r} does not match VERSION {version!r}; expected {expected!r}")
+    return version
 
 
 def source_entries(commit: str) -> list[tuple[str, int, bytes, str]]:
@@ -72,7 +93,8 @@ def canonical_json(value: object) -> bytes:
     return (json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode()
 
 
-def build(version: str, commitish: str, output_dir: Path) -> tuple[Path, Path, Path]:
+def build(version: str | None, commitish: str, output_dir: Path) -> tuple[Path, Path, Path]:
+    version = version or package_version(commitish)
     if not VERSION_RE.fullmatch(version):
         raise ValueError(f"invalid release version: {version!r}")
     commit = git("rev-parse", "--verify", f"{commitish}^{{commit}}").strip()
@@ -164,16 +186,24 @@ def verify_archive(archive: Path) -> None:
 
 def parse_args() -> argparse.Namespace:
     parser = argparse.ArgumentParser()
-    parser.add_argument("--version", required=True)
+    parser.add_argument("--version")
     parser.add_argument("--commit", default="HEAD")
     parser.add_argument("--output-dir", type=Path, default=Path("dist"))
     parser.add_argument("--verify", action="store_true")
+    parser.add_argument("--check-tag")
     return parser.parse_args()
 
 
 def main() -> int:
     args = parse_args()
-    archive, checksum, provenance = build(args.version, args.commit, args.output_dir)
+    try:
+        if args.check_tag:
+            print(check_tag(args.check_tag, args.commit))
+            return 0
+        archive, checksum, provenance = build(args.version, args.commit, args.output_dir)
+    except ValueError as error:
+        print(f"error: {error}", file=sys.stderr)
+        return 2
     if args.verify:
         verify_archive(archive)
     print(archive)
