@@ -157,6 +157,24 @@ recognize a newer version without claiming support for it, but must reject an
 artifact whose required standard or capability it cannot satisfy. It must not
 silently downgrade, discard, or reinterpret required semantics.
 
+## Release-candidate bundles
+
+The CI release-candidate archive is reproducible from a Git commit and version
+label. It contains the tracked distributable source plus
+`RELEASE-MANIFEST.json`. CI also emits an archive SHA-256 checksum and a build
+provenance record. The archive manifest identifies every included source file,
+its exact Git object, size, and SHA-256 digest.
+
+The build timestamp is the source commit timestamp (`SOURCE_DATE_EPOCH` in
+effect), not the CI runner clock. Archive paths, ordering, ownership, modes,
+and gzip metadata are normalized and CI compares two independent builds.
+
+A candidate bundle has `release_status: candidate` and does not assert the
+publication gate. Creating it is not a public release, compatibility promise,
+or approval of its semantic content. Stable publication remains blocked until
+licensing, policy, compatibility, security, and independent-review evidence is
+complete for that exact source commit.
+
 ## Normative references
 
 - RFC 2119, *Key words for use in RFCs to Indicate Requirement Levels*

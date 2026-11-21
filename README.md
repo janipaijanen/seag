@@ -74,6 +74,21 @@ semantic mappings, and export profiles are distinguished explicitly.
 The authoritative policy is [standards and conformance](docs/conformance.md).
 Its machine-readable register is [`standards.yaml`](standards.yaml).
 
+## Release candidates
+
+GitLab CI validates the repository and bakes a reproducible source
+release-candidate archive with a content manifest, SHA-256 checksum, and build
+provenance record. Candidate artifacts are review inputs, not public-release or
+stability claims. Stable publication tags fail closed until the publication
+gate and release-specific independent review requirements are satisfied.
+
+Build and verify the same candidate locally:
+
+```sh
+python3 scripts/build-release-bundle.py \
+  --version 0.1.0-rc.1 --commit HEAD --output-dir dist --verify
+```
+
 See [the project charter](docs/charter.md) and [the 0.1 roadmap](docs/roadmap-0.1.md).
 External vocabulary reuse and divergence follow the
 [term adoption and provenance policy](docs/term-adoption-and-provenance.md).
