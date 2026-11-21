@@ -224,6 +224,18 @@ class SourceValidationTest(unittest.TestCase):
         self.assertFalse(any("reviewer and confirmer" in error for error in errors), errors)
         self.assertTrue(any("confirmation block needs" in error for error in errors), errors)
 
+    def test_malformed_proposer_does_not_claim_actor_collapse(self):
+        record = self.fragment["records"][0]
+        record["confirmation"] = {}
+        for proposer in (None, "", "   ", 42):
+            with self.subTest(proposer=proposer):
+                record["provenance"]["proposer"] = proposer
+                errors = self.run_case()
+                self.assertFalse(any("role-collapse" in error or "self-review" in error for error in errors), errors)
+        del record["provenance"]["proposer"]
+        errors = self.run_case()
+        self.assertFalse(any("role-collapse" in error or "self-review" in error for error in errors), errors)
+
     def test_optional_disclosures_and_replacement_are_nonempty_strings(self):
         record = self.fragment["records"][0]
         for value in ("", 42):

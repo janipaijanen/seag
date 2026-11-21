@@ -207,9 +207,12 @@ def validate(manifest_path: Path) -> list[str]:
                     if reviewer and confirmer and reviewer == confirmer and not (isinstance(provenance, dict) and reviewer == normalized_actor(provenance.get("proposer"))):
                         check(isinstance(confirmation.get("review_limit"), str) and bool(confirmation["review_limit"].strip()), loc + ".confirmation.review_limit", "same declared reviewer and confirmer needs review-limit disclosure")
                 if isinstance(confirmation, dict) and isinstance(provenance, dict):
-                    if normalized_actor(confirmation.get("confirmer")) == normalized_actor(provenance.get("proposer")):
+                    proposer = normalized_actor(provenance.get("proposer"))
+                    confirmer = normalized_actor(confirmation.get("confirmer"))
+                    reviewer = normalized_actor(confirmation.get("reviewer"))
+                    if proposer and confirmer and confirmer == proposer:
                         check(isinstance(confirmation.get("role_collapse_note"), str) and bool(confirmation["role_collapse_note"].strip()), loc + ".confirmation.role_collapse_note", "same declared actor needs role-collapse disclosure")
-                    if normalized_actor(confirmation.get("reviewer")) == normalized_actor(provenance.get("proposer")):
+                    if proposer and reviewer and reviewer == proposer:
                         check(isinstance(confirmation.get("review_limit"), str) and bool(confirmation["review_limit"].strip()), loc + ".confirmation.review_limit", "self-review must be disclosed, not called independent")
             if record.get("status") == "confirmed":
                 check(isinstance(confirmation, dict), loc + ".confirmation", "confirmed record needs separate decision and review references, dates, confirmer, and reviewer")
