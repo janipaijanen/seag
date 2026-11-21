@@ -1,0 +1,92 @@
+{
+  "seag_schema": "0.1-draft",
+  "bundle_id": "urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87",
+  "namespace": "urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#",
+  "fragment_id": "terms",
+  "role": "semantic-source",
+  "language": "en",
+  "revision": "draft-1",
+  "records": [
+    {
+      "id": "ThingA",
+      "kind": "concept",
+      "status": "proposed",
+      "implementation_alignment": "not_applicable",
+      "provenance": {
+        "source": "invented fixture",
+        "locator": "fixture/records",
+        "normative": false,
+        "proposer": "invented-fixture-author",
+        "verification_status": "unresolved"
+      },
+      "label": "Thing A",
+      "definition": "An invented thing."
+    },
+    {
+      "id": "ThingB",
+      "kind": "concept",
+      "status": "proposed",
+      "implementation_alignment": "not_applicable",
+      "provenance": {
+        "source": "invented fixture",
+        "locator": "fixture/records",
+        "normative": false,
+        "proposer": "invented-fixture-author",
+        "verification_status": "unresolved"
+      },
+      "label": "Thing B",
+      "definition": "Another invented thing."
+    },
+    {
+      "id": "StateB",
+      "kind": "lifecycle_state",
+      "status": "proposed",
+      "implementation_alignment": "not_applicable",
+      "provenance": {
+        "source": "invented fixture",
+        "locator": "fixture/records",
+        "normative": false,
+        "proposer": "invented-fixture-author",
+        "verification_status": "unresolved"
+      },
+      "label": "State B",
+      "definition": "An invented static state name."
+    },
+    {
+      "id": "RuleC",
+      "kind": "rule_reference",
+      "status": "proposed",
+      "implementation_alignment": "not_applicable",
+      "provenance": {
+        "source": "invented fixture",
+        "locator": "fixture/records",
+        "normative": false,
+        "proposer": "invented-fixture-author",
+        "verification_status": "unresolved"
+      },
+      "label": "Rule C",
+      "definition": "An invented external rule reference.",
+      "iri": "urn:uuid:44444444-4444-4444-8444-444444444444"
+    },
+    {
+      "id": "AssocAB",
+      "kind": "proposition",
+      "status": "proposed",
+      "implementation_alignment": "not_applicable",
+      "provenance": {
+        "source": "invented fixture",
+        "locator": "fixture/records",
+        "normative": false,
+        "proposer": "invented-fixture-author",
+        "verification_status": "unresolved"
+      },
+      "predicate": "named association",
+      "name": "has static descriptor",
+      "source": "ThingA",
+      "target": "ThingB",
+      "source_cardinality": "0..1",
+      "target_cardinality": "0..*",
+      "definition": "A Thing A can have a Thing B as a static descriptor."
+    }
+  ]
+}

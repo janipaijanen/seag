@@ -119,3 +119,12 @@ Tooling code is licensed under Apache-2.0. Framework and methodology documents
 are licensed under CC BY 4.0. Complete licence texts, the per-file SPDX policy,
 and rules for non-commentable formats are documented in
 [licensing and SPDX declarations](docs/licensing.md).
+
+## Source contract and validator draft
+
+The bounded 0.1 source contract is in [docs/source-contract-0.1.md](docs/source-contract-0.1.md),
+with machine-readable shapes in [schema/source-0.1.schema.json](schema/source-0.1.schema.json).
+Run `python3 -m seag.validate fixtures/valid/manifest.json` and
+`python3 -m unittest discover -s tests -v` from the repository root. The
+validator reads only local JSON, makes no network calls, and does not publish
+or transform source bundles.

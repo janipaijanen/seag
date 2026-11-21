@@ -1,0 +1,960 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://example.invalid/seag/source-0.1.schema.json",
+  "title": "SEAG 0.1 draft source file shapes",
+  "description": "Shape only; run seag.validate for cross-file identity, endpoint, provenance and cycle checks. The placeholder $id is not a publication claim.",
+  "oneOf": [
+    {"$ref": "#/$defs/manifest"},
+    {"$ref": "#/$defs/fragment"},
+    {"$ref": "#/$defs/variant"}
+  ],
+  "$defs": {
+    "identity": {
+      "type": "string",
+      "pattern": "^[A-Za-z][A-Za-z0-9._-]*$"
+    },
+    "digest": {
+      "type": "string",
+      "pattern": "^[0-9a-f]{64}$"
+    },
+    "provenance": {
+      "type": "object",
+      "required": [
+        "source",
+        "locator",
+        "proposer",
+        "normative",
+        "verification_status"
+      ],
+      "properties": {
+        "source": {
+          "type": "string",
+          "minLength": 1
+        },
+        "locator": {
+          "type": "string",
+          "minLength": 1
+        },
+        "proposer": {
+          "type": "string",
+          "minLength": 1
+        },
+        "normative": {
+          "type": "boolean"
+        },
+        "verification_status": {
+          "enum": [
+            "unresolved",
+            "qualified",
+            "verified",
+            "rejected"
+          ]
+        }
+      },
+      "additionalProperties": false
+    },
+    "fragment": {
+      "type": "object",
+      "required": [
+        "seag_schema",
+        "bundle_id",
+        "namespace",
+        "fragment_id",
+        "role",
+        "language",
+        "revision",
+        "records"
+      ],
+      "properties": {
+        "seag_schema": {
+          "const": "0.1-draft"
+        },
+        "bundle_id": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "fragment_id": {
+          "$ref": "#/$defs/identity"
+        },
+        "role": {
+          "type": "string",
+          "minLength": 1
+        },
+        "language": {
+          "type": "string",
+          "minLength": 1
+        },
+        "revision": {
+          "type": "string",
+          "minLength": 1
+        },
+        "records": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/record"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "manifest": {
+      "type": "object",
+      "required": [
+        "seag_schema",
+        "bundle_id",
+        "namespace",
+        "title",
+        "default_language",
+        "status",
+        "licence",
+        "fragments"
+      ],
+      "properties": {
+        "seag_schema": {
+          "const": "0.1-draft"
+        },
+        "bundle_id": {
+          "type": "string"
+        },
+        "namespace": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "default_language": {
+          "type": "string",
+          "minLength": 1
+        },
+        "status": {
+          "const": "draft"
+        },
+        "licence": {
+          "type": "string",
+          "minLength": 1
+        },
+        "fragments": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "type": "object",
+            "required": [
+              "fragment_id",
+              "path",
+              "role",
+              "sha256"
+            ],
+            "properties": {
+              "fragment_id": {
+                "$ref": "#/$defs/identity"
+              },
+              "path": {
+                "type": "string",
+                "minLength": 1
+              },
+              "role": {
+                "type": "string",
+                "minLength": 1
+              },
+              "sha256": {
+                "$ref": "#/$defs/digest"
+              }
+            },
+            "additionalProperties": false
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "variant": {
+      "type": "object",
+      "required": [
+        "variant_id",
+        "representation_of",
+        "format",
+        "source_manifest_sha256",
+        "output_sha256",
+        "generator",
+        "generated_at",
+        "lossless",
+        "omissions",
+        "unsupported_constructs"
+      ],
+      "properties": {
+        "variant_id": {
+          "type": "string"
+        },
+        "representation_of": {
+          "type": "string"
+        },
+        "format": {
+          "type": "string"
+        },
+        "source_manifest_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "output_sha256": {
+          "$ref": "#/$defs/digest"
+        },
+        "generator": {
+          "type": "string"
+        },
+        "generated_at": {
+          "type": "string",
+          "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}(?:\\.\\d+)?(?:Z|[+-]\\d{2}:\\d{2})$"
+        },
+        "lossless": {
+          "type": "boolean"
+        },
+        "omissions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "unsupported_constructs": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        }
+      },
+      "additionalProperties": false
+    },
+    "record": {
+      "oneOf": [
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "kind",
+            "status",
+            "implementation_alignment",
+            "provenance",
+            "label",
+            "definition"
+          ],
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/identity"
+            },
+            "kind": {
+              "const": "concept"
+            },
+            "status": {
+              "enum": [
+                "proposed",
+                "confirmed",
+                "deprecated",
+                "unresolved"
+              ]
+            },
+            "implementation_alignment": {
+              "enum": [
+                "unchecked",
+                "matches",
+                "diverges",
+                "not_applicable"
+              ]
+            },
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "confirmation": {
+              "type": "object",
+              "required": [
+                "decision_ref",
+                "decided_at",
+                "confirmer",
+                "reviewer",
+                "review_ref",
+                "reviewed_at"
+              ],
+              "properties": {
+                "decision_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "decided_at": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "confirmer": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "reviewer": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "review_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "reviewed_at": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "role_collapse_note": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "review_limit": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            },
+            "replacement_or_reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1
+            },
+            "definition": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false,
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "confirmed"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "confirmation"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "deprecated"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "replacement_or_reason"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "kind",
+            "status",
+            "implementation_alignment",
+            "provenance",
+            "label",
+            "definition"
+          ],
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/identity"
+            },
+            "kind": {
+              "const": "lifecycle_state"
+            },
+            "status": {
+              "enum": [
+                "proposed",
+                "confirmed",
+                "deprecated",
+                "unresolved"
+              ]
+            },
+            "implementation_alignment": {
+              "enum": [
+                "unchecked",
+                "matches",
+                "diverges",
+                "not_applicable"
+              ]
+            },
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "confirmation": {
+              "type": "object",
+              "required": [
+                "decision_ref",
+                "decided_at",
+                "confirmer",
+                "reviewer",
+                "review_ref",
+                "reviewed_at"
+              ],
+              "properties": {
+                "decision_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "decided_at": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "confirmer": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "reviewer": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "review_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "reviewed_at": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "role_collapse_note": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "review_limit": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            },
+            "replacement_or_reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1
+            },
+            "definition": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false,
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "confirmed"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "confirmation"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "deprecated"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "replacement_or_reason"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "kind",
+            "status",
+            "implementation_alignment",
+            "provenance",
+            "label",
+            "definition",
+            "iri"
+          ],
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/identity"
+            },
+            "kind": {
+              "const": "rule_reference"
+            },
+            "status": {
+              "enum": [
+                "proposed",
+                "confirmed",
+                "deprecated",
+                "unresolved"
+              ]
+            },
+            "implementation_alignment": {
+              "enum": [
+                "unchecked",
+                "matches",
+                "diverges",
+                "not_applicable"
+              ]
+            },
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "confirmation": {
+              "type": "object",
+              "required": [
+                "decision_ref",
+                "decided_at",
+                "confirmer",
+                "reviewer",
+                "review_ref",
+                "reviewed_at"
+              ],
+              "properties": {
+                "decision_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "decided_at": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "confirmer": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "reviewer": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "review_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "reviewed_at": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "role_collapse_note": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "review_limit": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            },
+            "replacement_or_reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1
+            },
+            "definition": {
+              "type": "string",
+              "minLength": 1
+            },
+            "iri": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false,
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "confirmed"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "confirmation"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "deprecated"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "replacement_or_reason"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "kind",
+            "status",
+            "implementation_alignment",
+            "provenance",
+            "label",
+            "definition",
+            "iri"
+          ],
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/identity"
+            },
+            "kind": {
+              "const": "external_reference"
+            },
+            "status": {
+              "enum": [
+                "proposed",
+                "confirmed",
+                "deprecated",
+                "unresolved"
+              ]
+            },
+            "implementation_alignment": {
+              "enum": [
+                "unchecked",
+                "matches",
+                "diverges",
+                "not_applicable"
+              ]
+            },
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "confirmation": {
+              "type": "object",
+              "required": [
+                "decision_ref",
+                "decided_at",
+                "confirmer",
+                "reviewer",
+                "review_ref",
+                "reviewed_at"
+              ],
+              "properties": {
+                "decision_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "decided_at": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "confirmer": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "reviewer": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "review_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "reviewed_at": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "role_collapse_note": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "review_limit": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            },
+            "replacement_or_reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "label": {
+              "type": "string",
+              "minLength": 1
+            },
+            "definition": {
+              "type": "string",
+              "minLength": 1
+            },
+            "iri": {
+              "type": "string",
+              "minLength": 1
+            }
+          },
+          "additionalProperties": false,
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "confirmed"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "confirmation"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "deprecated"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "replacement_or_reason"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "type": "object",
+          "required": [
+            "id",
+            "kind",
+            "status",
+            "implementation_alignment",
+            "provenance",
+            "source",
+            "target",
+            "predicate"
+          ],
+          "properties": {
+            "id": {
+              "$ref": "#/$defs/identity"
+            },
+            "kind": {
+              "const": "proposition"
+            },
+            "status": {
+              "enum": [
+                "proposed",
+                "confirmed",
+                "deprecated",
+                "unresolved"
+              ]
+            },
+            "implementation_alignment": {
+              "enum": [
+                "unchecked",
+                "matches",
+                "diverges",
+                "not_applicable"
+              ]
+            },
+            "provenance": {
+              "$ref": "#/$defs/provenance"
+            },
+            "confirmation": {
+              "type": "object",
+              "required": [
+                "decision_ref",
+                "decided_at",
+                "confirmer",
+                "reviewer",
+                "review_ref",
+                "reviewed_at"
+              ],
+              "properties": {
+                "decision_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "decided_at": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "confirmer": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "reviewer": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "review_ref": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "reviewed_at": {
+                  "type": "string",
+                  "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+                },
+                "role_collapse_note": {
+                  "type": "string",
+                  "minLength": 1
+                },
+                "review_limit": {
+                  "type": "string",
+                  "minLength": 1
+                }
+              },
+              "additionalProperties": false
+            },
+            "replacement_or_reason": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source": {
+              "$ref": "#/$defs/identity"
+            },
+            "target": {
+              "$ref": "#/$defs/identity"
+            },
+            "predicate": {
+              "enum": [
+                "is a kind of",
+                "is part of",
+                "refers to",
+                "has lifecycle state",
+                "is governed by rule",
+                "named association"
+              ]
+            },
+            "name": {
+              "type": "string",
+              "minLength": 1
+            },
+            "definition": {
+              "type": "string",
+              "minLength": 1
+            },
+            "source_cardinality": {
+              "enum": [
+                "0..1",
+                "1..1",
+                "1..*",
+                "0..*",
+                "unresolved"
+              ]
+            },
+            "target_cardinality": {
+              "enum": [
+                "0..1",
+                "1..1",
+                "1..*",
+                "0..*",
+                "unresolved"
+              ]
+            }
+          },
+          "additionalProperties": false,
+          "allOf": [
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "confirmed"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "confirmation"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "status": {
+                    "const": "deprecated"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "replacement_or_reason"
+                ]
+              }
+            },
+            {
+              "if": {
+                "properties": {
+                  "predicate": {
+                    "const": "named association"
+                  }
+                }
+              },
+              "then": {
+                "required": [
+                  "name",
+                  "definition",
+                  "source_cardinality",
+                  "target_cardinality"
+                ]
+              },
+              "else": {
+                "not": {
+                  "anyOf": [
+                    {
+                      "required": [
+                        "name"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "definition"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "source_cardinality"
+                      ]
+                    },
+                    {
+                      "required": [
+                        "target_cardinality"
+                      ]
+                    }
+                  ]
+                }
+              }
+            }
+          ]
+        }
+      ]
+    }
+  }
+}

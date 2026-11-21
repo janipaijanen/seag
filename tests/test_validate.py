@@ -1,0 +1,343 @@
+# SPDX-FileCopyrightText: Copyright (C) 2026 Jani Päijänen
+# SPDX-License-Identifier: Apache-2.0
+
+"""Behavioral rejection tests against invented, domain-neutral fixtures."""
+
+import copy
+import hashlib
+import json
+import subprocess
+import sys
+import tempfile
+import unittest
+from pathlib import Path
+
+from seag.validate import validate, validate_variant
+
+ROOT = Path(__file__).resolve().parents[1]
+VALID = ROOT / "fixtures" / "valid"
+
+
+class SourceValidationTest(unittest.TestCase):
+    def setUp(self):
+        self.temp = tempfile.TemporaryDirectory()
+        self.addCleanup(self.temp.cleanup)
+        self.root = Path(self.temp.name)
+        self.manifest = json.loads((VALID / "manifest.json").read_text())
+        self.fragment = json.loads((VALID / "fragment.json").read_text())
+
+    def run_case(self):
+        payload = (json.dumps(self.fragment, indent=2) + "\n").encode()
+        (self.root / "fragment.json").write_bytes(payload)
+        self.manifest["fragments"][0]["sha256"] = hashlib.sha256(payload).hexdigest()
+        (self.root / "manifest.json").write_text(json.dumps(self.manifest))
+        return validate(self.root / "manifest.json")
+
+    def assert_rejects(self, expected):
+        errors = self.run_case()
+        self.assertTrue(any(expected in error for error in errors), errors)
+
+    def assert_only_error(self, expected):
+        errors = self.run_case()
+        self.assertEqual(1, len(errors), errors)
+        self.assertIn(expected, errors[0])
+
+    def confirm(self, index=0):
+        record = self.fragment["records"][index]
+        record["status"] = "confirmed"
+        record["provenance"]["verification_status"] = "qualified"
+        record["confirmation"] = {"decision_ref": "urn:uuid:33333333-3333-4333-8333-333333333333", "decided_at": "2026-11-21", "confirmer": "fixture-steward", "reviewer": "fixture-reviewer", "review_ref": "fixture/review-1", "reviewed_at": "2026-11-20"}
+        return record
+
+    def test_valid_fixture(self):
+        self.assertEqual([], self.run_case())
+
+    def test_duplicate_record_id(self):
+        self.fragment["records"].append(copy.deepcopy(self.fragment["records"][0]))
+        self.assert_rejects("duplicate expanded record ID")
+
+    def test_wrong_endpoint_type(self):
+        self.fragment["records"][-1]["target"] = "StateB"
+        self.assert_rejects("wrong endpoint type")
+
+    def test_missing_target_cardinality(self):
+        del self.fragment["records"][-1]["target_cardinality"]
+        self.assert_rejects("explicit both-end cardinality")
+
+    def test_process_flow_rejected(self):
+        self.fragment["records"][-1]["predicate"] = "triggers"
+        self.assert_rejects("six static controlled predicates")
+
+    def test_process_name_cannot_hide_as_named_association(self):
+        for name in ("precedes", "changes state to", "is followed by", "changes_state_to", "changes-state-to", "triggered by", "preceding", "changed state to", "leads to", "results in", "is succeeded by", "becomes"):
+            with self.subTest(name=name):
+                self.fragment["records"][-1]["name"] = name
+                self.assert_only_error("process or transition association name forbidden")
+
+    def test_static_names_are_not_over_rejected(self):
+        for name in ("is named after", "has sequence number", "has step count", "has workflow owner", "has transition fee", "has cause code", "follows standard", "enables access to", "is following member of"):
+            with self.subTest(name=name):
+                self.fragment["records"][-1]["name"] = name
+                self.assertEqual([], self.run_case())
+
+    def test_hidden_format_character_rejected(self):
+        self.fragment["records"][-1]["name"] = "pre\u200bcedes"
+        self.assert_rejects("hidden format characters forbidden")
+
+    def test_vague_name_is_rejected(self):
+        for name in ("relates to", "relates to the", "related to", "supports", "uses", "has many", "HAS_MANY"):
+            with self.subTest(name=name):
+                self.fragment["records"][-1]["name"] = name
+                self.assert_only_error("vague association name")
+
+    def test_process_extension_fields_are_rejected(self):
+        for field in ("guard", "next_state", "sequence"):
+            with self.subTest(field=field):
+                self.fragment["records"][-1][field] = "invented"
+                self.assert_only_error("unsupported record fields")
+                del self.fragment["records"][-1][field]
+
+    def test_process_fields_rejected_everywhere(self):
+        self.manifest["sequence"] = ["a"]
+        self.assert_only_error("manifest: unsupported fields: sequence")
+        del self.manifest["sequence"]
+        self.fragment["workflow"] = ["a"]
+        self.assert_only_error("fragment.json: unsupported fields: workflow")
+        del self.fragment["workflow"]
+        self.fragment["records"][2]["transitions_to"] = "StateB"
+        self.assert_only_error("unsupported record fields: transitions_to")
+        del self.fragment["records"][2]["transitions_to"]
+        self.fragment["records"][0]["next_state"] = "StateB"
+        self.assert_only_error("unsupported record fields: next_state")
+
+    def test_non_named_predicate_cannot_hide_process_name(self):
+        self.fragment["records"][-1].update(predicate="is part of", name="precedes")
+        self.assert_only_error("named-association fields unsupported")
+
+    def test_provenance_required(self):
+        del self.fragment["records"][0]["provenance"]
+        self.assert_rejects("evidence verification status required")
+
+    def test_namespace_mismatch(self):
+        self.fragment["namespace"] = "urn:uuid:00000000-0000-4000-8000-000000000000#"
+        self.assert_rejects("does not match manifest")
+
+    def test_taxonomy_cycle(self):
+        base = copy.deepcopy(self.fragment["records"][-1])
+        base.update(id="TaxA", predicate="is a kind of", source="ThingA", target="ThingB")
+        reverse = dict(base, id="TaxB", source="ThingB", target="ThingA")
+        self.fragment["records"].extend([base, reverse])
+        self.assert_rejects("taxonomy: cycle")
+
+    def test_variant_without_source_digest(self):
+        variant = json.loads((VALID / "variant.json").read_text())
+        del variant["source_manifest_sha256"]
+        path = self.root / "variant.json"
+        path.write_text(json.dumps(variant))
+        self.assertTrue(any("source_manifest_sha256" in e for e in validate_variant(path)))
+
+    def test_variant_fixture(self):
+        self.assertEqual([], validate_variant(VALID / "variant.json"))
+
+    def test_variant_closed_shape_and_timestamp(self):
+        variant = json.loads((VALID / "variant.json").read_text())
+        path = self.root / "variant.json"
+        for field, value, message in (
+            ("sequence", ["a"], "unsupported fields: sequence"),
+            ("omissions", ["layout", 1], "explicit string array"),
+            ("unsupported_constructs", [None], "explicit string array"),
+            ("generated_at", "sometime", "ISO timestamp with timezone"),
+            ("source_manifest_sha256", "bad", "SHA-256 hex required"),
+        ):
+            with self.subTest(field=field):
+                changed = dict(variant, **{field: value})
+                path.write_text(json.dumps(changed))
+                errors = validate_variant(path)
+                self.assertEqual(1, len(errors), errors)
+                self.assertIn(message, errors[0])
+
+    def test_variant_lossless_conflict(self):
+        variant = json.loads((VALID / "variant.json").read_text())
+        variant.update(lossless=True, unsupported_constructs=["invented-layout"])
+        path = self.root / "variant.json"
+        path.write_text(json.dumps(variant))
+        self.assertEqual(["variant: lossless claim conflicts with unsupported constructs"], validate_variant(path))
+
+    def test_invalid_fixture_directories(self):
+        for name, expected in (("process-flow", "controlled predicate"), ("wrong-endpoint", "wrong endpoint type"), ("missing-cardinality", "explicit both-end cardinality")):
+            with self.subTest(name=name):
+                errors = validate(ROOT / "fixtures" / "invalid" / name / "manifest.json")
+                self.assertEqual(1, len(errors), errors)
+                self.assertIn(expected, errors[0])
+
+    def test_malformed_endpoint_is_reported(self):
+        self.fragment["records"][-1]["target"] = ["ThingB"]
+        self.assert_rejects("unresolved local endpoint")
+
+    def test_confirmed_association_cannot_hide_cardinality(self):
+        association = self.confirm(-1)
+        association["target_cardinality"] = "unresolved"
+        self.assert_only_error("confirmed cardinality cannot be unresolved")
+
+    def test_confirmed_requires_review_and_decision(self):
+        self.fragment["records"][-1]["status"] = "confirmed"
+        self.assert_rejects("separate decision and review references")
+
+    def test_qualified_evidence_and_distinct_actions_can_be_confirmed(self):
+        self.confirm()
+        self.assertEqual([], self.run_case())
+
+    def test_role_collapse_and_self_review_are_disclosed(self):
+        record = self.confirm()
+        record["confirmation"]["confirmer"] = " INVENTED-FIXTURE-AUTHOR "
+        self.assert_only_error("role-collapse disclosure")
+        record["confirmation"]["role_collapse_note"] = "Same human acting as separate steward; decisions recorded separately."
+        record["confirmation"]["reviewer"] = "Invented-Fixture-Author"
+        self.assert_only_error("self-review must be disclosed")
+        record["confirmation"]["review_limit"] = "Author review is not independent conformance evidence."
+        self.assertEqual([], self.run_case())
+
+    def test_reviewer_confirmer_collapse_is_disclosed(self):
+        record = self.confirm()
+        record["confirmation"]["reviewer"] = " FIXTURE-STEWARD "
+        self.assert_only_error("same declared reviewer and confirmer needs review-limit disclosure")
+        record["confirmation"]["review_limit"] = "Same steward did both actions; no independent review is claimed."
+        self.assertEqual([], self.run_case())
+
+    def test_proposed_confirmation_is_checked(self):
+        record = self.fragment["records"][0]
+        record["confirmation"] = self.confirm(1)["confirmation"].copy()
+        record["confirmation"]["junk"] = "unreviewed"
+        self.assert_only_error("unsupported fields: junk")
+
+    def test_review_must_precede_decision(self):
+        record = self.confirm()
+        record["confirmation"]["reviewed_at"] = "2026-11-22"
+        self.assert_only_error("review date must not follow decision date")
+
+    def test_confirmed_date_and_evidence_status(self):
+        record = self.confirm()
+        record["confirmation"]["decided_at"] = "soon"
+        self.assert_only_error("ISO calendar date required")
+        record["confirmation"]["decided_at"] = "2026-11-21"
+        record["provenance"]["verification_status"] = "unresolved"
+        self.assert_only_error("qualified or verified source evidence")
+
+    def test_rule_and_external_reference_require_label_definition_iri(self):
+        rule = self.fragment["records"][3]
+        for field in ("label", "definition", "iri"):
+            with self.subTest(field=field):
+                value = rule.pop(field)
+                self.assertEqual(1, len(self.run_case()))
+                rule[field] = value
+        external = copy.deepcopy(rule)
+        external.update(id="ExternalX", kind="external_reference", iri="tag:example.org,2026:term")
+        self.fragment["records"].append(external)
+        self.assertEqual([], self.run_case())
+
+    def test_manifest_digest_and_path(self):
+        self.assertEqual([], self.run_case())
+        stored = json.loads((self.root / "manifest.json").read_text())
+        stored["fragments"][0]["sha256"] = "0" * 64
+        (self.root / "manifest.json").write_text(json.dumps(stored))
+        self.assertEqual(1, len(validate(self.root / "manifest.json")))
+        self.manifest["fragments"][0]["path"] = "../fragment.json"
+        self.assert_rejects("safe relative path")
+
+    def test_unknown_inventory_and_provenance_fields(self):
+        self.manifest["fragments"][0]["sequence"] = 1
+        self.assert_only_error("unsupported fields: sequence")
+        del self.manifest["fragments"][0]["sequence"]
+        self.fragment["records"][0]["provenance"]["workflow"] = "unexpected"
+        self.assert_only_error("unsupported fields: workflow")
+
+    def test_core_manifest_shape_rejections(self):
+        cases = (
+            ("seag_schema", "0.2", "expected 0.1-draft"),
+            ("status", "release", "draft bundles only"),
+            ("bundle_id", "relative", "absolute IRI required"),
+            ("namespace", "urn:example:terms", "ending in # or /"),
+            ("title", "", "nonempty string"),
+            ("default_language", "", "nonempty string"),
+            ("licence", "", "nonempty string"),
+        )
+        for field, value, message in cases:
+            with self.subTest(field=field):
+                original = self.manifest[field]
+                original_fragment = self.fragment.get(field)
+                self.manifest[field] = value
+                if field in ("bundle_id", "namespace"):
+                    self.fragment[field] = value
+                self.assert_only_error(message)
+                self.manifest[field] = original
+                if field in ("bundle_id", "namespace"):
+                    self.fragment[field] = original_fragment
+
+    def test_core_record_shape_rejections(self):
+        record = self.fragment["records"][-1]
+        cases = (
+            ("id", "bad id", "stable local ID"),
+            ("status", "certified", "invalid semantic status"),
+            ("implementation_alignment", "shipped", "separate alignment status"),
+        )
+        for field, value, message in cases:
+            with self.subTest(field=field):
+                original = record[field]
+                record[field] = value
+                self.assert_only_error(message)
+                record[field] = original
+        record["provenance"]["normative"] = "yes"
+        self.assert_only_error("normative boolean")
+
+    def test_non_object_fragment_and_non_array_records(self):
+        self.fragment = ["wrong"]
+        self.assert_only_error("fragment must be an object")
+        self.fragment = json.loads((VALID / "fragment.json").read_text())
+        self.fragment["records"] = {}
+        self.assert_only_error("array required")
+
+    def test_duplicate_fragment_id(self):
+        self.manifest["fragments"].append(copy.deepcopy(self.manifest["fragments"][0]))
+        self.assert_rejects("duplicate fragment ID")
+
+    def test_cli_exit_codes(self):
+        ok = subprocess.run([sys.executable, "-I", str(ROOT / "seag" / "validate.py"), str(VALID / "manifest.json")], cwd=ROOT, capture_output=True, text=True)
+        self.assertEqual(0, ok.returncode, ok.stderr)
+        self.assertIn("identities and authority unverified", ok.stdout)
+        bad = subprocess.run([sys.executable, "-I", str(ROOT / "seag" / "validate.py"), str(ROOT / "fixtures" / "invalid" / "process-flow" / "manifest.json")], cwd=ROOT, capture_output=True, text=True)
+        self.assertEqual(1, bad.returncode, bad.stdout)
+
+    def test_deprecated_requires_rationale(self):
+        self.fragment["records"][0]["status"] = "deprecated"
+        self.assert_rejects("deprecated record needs replacement or rationale")
+
+    def test_malformed_record_kind_is_reported(self):
+        self.fragment["records"][0]["kind"] = ["concept"]
+        self.assert_rejects("unknown record kind")
+
+    def test_symlink_cannot_escape_manifest_directory(self):
+        outside = self.root.parent / (self.root.name + "-outside.json")
+        outside.write_text(json.dumps(self.fragment))
+        self.addCleanup(outside.unlink)
+        (self.root / "fragment.json").symlink_to(outside)
+        self.manifest["fragments"][0]["sha256"] = hashlib.sha256(outside.read_bytes()).hexdigest()
+        (self.root / "manifest.json").write_text(json.dumps(self.manifest))
+        errors = validate(self.root / "manifest.json")
+        self.assertEqual(1, len(errors), errors)
+        self.assertIn("path escapes manifest directory", errors[0])
+
+    def test_external_reference_endpoint_is_predicate_scoped(self):
+        external = copy.deepcopy(self.fragment["records"][3])
+        external.update(id="ExternalX", kind="external_reference", iri="tag:example.org,2026:term")
+        self.fragment["records"].append(external)
+        proposition = self.fragment["records"][4]
+        proposition.update(predicate="refers to", target="ExternalX")
+        for key in ("name", "definition", "source_cardinality", "target_cardinality"):
+            del proposition[key]
+        self.assertEqual([], self.run_case())
+        proposition["predicate"] = "is part of"
+        self.assert_only_error("wrong endpoint type")
+
+
+if __name__ == "__main__":
+    unittest.main()
