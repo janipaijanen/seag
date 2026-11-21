@@ -4,7 +4,7 @@
   "generated_at": "2026-11-22T00:00:00Z",
   "generator": "seag/0.1.0",
   "language_selection": "exact",
-  "output_sha256": "a30800c7d5eef8b5396638df6d462d21d88b9dc0897b0dd59ddd1471f55c0532",
+  "output_sha256": "9b1a401364f619edc36e8c8ffaf9fd4485263041cff4061c987a2b52d96136cb",
   "requested_language": "en",
   "schema": "seag/transformation-provenance/v1",
   "source_bundle_id": "urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87",

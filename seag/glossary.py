@@ -40,6 +40,9 @@ def extract(manifest_path: Path, language: str, generated_at: str) -> tuple[dict
         }
         if "iri" in record:
             entry["external_iri"] = record["iri"]
+        for field in ("grammatical_number", "replacement_or_reason", "confirmation"):
+            if field in record:
+                entry[field] = record[field]
         entries.append(entry)
     entries.sort(key=lambda item: item["id"])
     result = {

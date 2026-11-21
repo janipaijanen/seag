@@ -17,8 +17,9 @@ python3 -m seag.glossary source/manifest.json \
 ```
 
 The JSON envelope retains expanded and local identity, kind, label,
-definition, language, semantic status, implementation alignment, licence, and
-the complete source provenance object. Its adjacent provenance sidecar records
+definition, language, semantic status, implementation alignment, confirmation,
+replacement or deprecation rationale, grammatical number, licence, and the
+complete source provenance object. Its adjacent provenance sidecar records
 the generator, source manifest digest, output digest, language request,
 selection result, fallback policy, timestamp, and entry count. The manifest
 digest commits to the fragment digests in its inventory.

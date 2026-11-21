@@ -40,9 +40,14 @@ class ReleaseBundleTests(unittest.TestCase):
             self.assertEqual(digest, release_bundle.sha256(archive_a.read_bytes()))
             provenance = json.loads(provenance_a.read_text())
             self.assertEqual(provenance["subject"]["sha256"], digest)
+            self.assertEqual(provenance["release_status"], "candidate")
             self.assertEqual(provenance["publication_gate"], "not-asserted")
             with tarfile.open(archive_a, "r:gz") as archive:
                 names = archive.getnames()
+                manifest_name = next(name for name in names if name.endswith("/RELEASE-MANIFEST.json"))
+                manifest = json.load(archive.extractfile(manifest_name))
+            self.assertEqual(manifest["release_status"], "candidate")
+            self.assertEqual(manifest["publication_gate"], "not-asserted")
             self.assertTrue(any(name.endswith("/RELEASE-MANIFEST.json") for name in names))
             self.assertFalse(any(name.endswith("/.gitlab-ci.yml") for name in names))
 
@@ -50,6 +55,27 @@ class ReleaseBundleTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as temporary:
             archive, _checksum, _provenance = release_bundle.build(None, "HEAD", Path(temporary))
             self.assertEqual(archive.name, f"seag-{release_bundle.package_version('HEAD')}.tar.gz")
+
+    def test_stable_bundle_records_asserted_gate(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            archive, _checksum, provenance_path = release_bundle.build(
+                None, "HEAD", Path(temporary), "stable", "asserted"
+            )
+            provenance = json.loads(provenance_path.read_text())
+            self.assertEqual(provenance["release_status"], "stable")
+            self.assertEqual(provenance["publication_gate"], "asserted")
+            with tarfile.open(archive, "r:gz") as source:
+                name = next(item for item in source.getnames() if item.endswith("/RELEASE-MANIFEST.json"))
+                manifest = json.load(source.extractfile(name))
+            self.assertEqual(manifest["release_status"], "stable")
+            self.assertEqual(manifest["publication_gate"], "asserted")
+
+    def test_rejects_inconsistent_release_assertions(self):
+        with tempfile.TemporaryDirectory() as temporary:
+            for status, gate in (("stable", "not-asserted"), ("candidate", "asserted")):
+                with self.subTest(status=status, gate=gate):
+                    with self.assertRaises(ValueError):
+                        release_bundle.build(None, "HEAD", Path(temporary), status, gate)
 
 
 if __name__ == "__main__":

@@ -28,7 +28,9 @@ serialization are deterministic.
 The compatible-parser round trip verifies identifiers, labels, linking
 phrases, and directed connections. It does not claim execution in the
 CmapTools desktop application. The profile is intentionally lossy: definitions,
-status, implementation alignment, cardinality, confirmation metadata, and
-layout are not encoded in CXL. The required sidecar declares those omissions,
-retains every source record's provenance, and binds source and output by
-SHA-256. The SEAG JSON source remains authoritative.
+status, implementation alignment, cardinality, confirmation metadata,
+grammatical number, external-reference IRIs, record-kind distinctions,
+replacement or deprecation rationale, per-record language, fragment identity
+and revision, and layout are not encoded in CXL. The required sidecar declares
+those omissions, retains every source record's provenance, and binds source and
+output by SHA-256. The SEAG JSON source remains authoritative.

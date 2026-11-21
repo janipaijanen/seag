@@ -93,10 +93,25 @@ def canonical_json(value: object) -> bytes:
     return (json.dumps(value, ensure_ascii=False, sort_keys=True, separators=(",", ":")) + "\n").encode()
 
 
-def build(version: str | None, commitish: str, output_dir: Path) -> tuple[Path, Path, Path]:
+def build(
+    version: str | None,
+    commitish: str,
+    output_dir: Path,
+    release_status: str = "candidate",
+    publication_gate: str = "not-asserted",
+) -> tuple[Path, Path, Path]:
     version = version or package_version(commitish)
     if not VERSION_RE.fullmatch(version):
         raise ValueError(f"invalid release version: {version!r}")
+    if release_status not in {"candidate", "stable"}:
+        raise ValueError(f"invalid release status: {release_status!r}")
+    if publication_gate not in {"not-asserted", "asserted"}:
+        raise ValueError(f"invalid publication gate state: {publication_gate!r}")
+    if (release_status, publication_gate) not in {
+        ("candidate", "not-asserted"),
+        ("stable", "asserted"),
+    }:
+        raise ValueError("stable status and asserted publication gate must be selected together")
     commit = git("rev-parse", "--verify", f"{commitish}^{{commit}}").strip()
     epoch = int(git("show", "-s", "--format=%ct", commit).strip())
     entries = source_entries(commit)
@@ -116,7 +131,8 @@ def build(version: str | None, commitish: str, output_dir: Path) -> tuple[Path, 
         "version": version,
         "source_commit": commit,
         "source_date_epoch": epoch,
-        "release_status": "candidate",
+        "release_status": release_status,
+        "publication_gate": publication_gate,
         "files": source_files,
     }
     manifest_bytes = canonical_json(manifest)
@@ -153,7 +169,8 @@ def build(version: str | None, commitish: str, output_dir: Path) -> tuple[Path, 
                     if item["path"] == "scripts/build-release-bundle.py"
                 ),
                 "reproducible": True,
-                "publication_gate": "not-asserted",
+                "release_status": release_status,
+                "publication_gate": publication_gate,
             }
         )
     )
@@ -191,6 +208,8 @@ def parse_args() -> argparse.Namespace:
     parser.add_argument("--output-dir", type=Path, default=Path("dist"))
     parser.add_argument("--verify", action="store_true")
     parser.add_argument("--check-tag")
+    parser.add_argument("--release-status", choices=("candidate", "stable"), default="candidate")
+    parser.add_argument("--publication-gate", choices=("not-asserted", "asserted"), default="not-asserted")
     return parser.parse_args()
 
 
@@ -198,9 +217,14 @@ def main() -> int:
     args = parse_args()
     try:
         if args.check_tag:
-            print(check_tag(args.check_tag, args.commit))
-            return 0
-        archive, checksum, provenance = build(args.version, args.commit, args.output_dir)
+            check_tag(args.check_tag, args.commit)
+        archive, checksum, provenance = build(
+            args.version,
+            args.commit,
+            args.output_dir,
+            args.release_status,
+            args.publication_gate,
+        )
     except ValueError as error:
         print(f"error: {error}", file=sys.stderr)
         return 2

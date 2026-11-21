@@ -31,6 +31,31 @@ class TransformTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "fallback policy is none"):
             extract(MANIFEST, "fi", WHEN)
 
+    def test_glossary_retains_confirmation_and_singular_declaration(self):
+        fragment = json.loads((MANIFEST.parent / "fragment.json").read_text())
+        record = fragment["records"][0]
+        record["status"] = "confirmed"
+        record["provenance"]["verification_status"] = "verified"
+        record["confirmation"] = {
+            "decision_ref": "urn:uuid:33333333-3333-4333-8333-333333333333",
+            "decided_at": "2026-11-21",
+            "confirmer": "fixture-steward",
+            "reviewer": "fixture-reviewer",
+            "review_ref": "fixture/review-1",
+            "reviewed_at": "2026-11-20",
+        }
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            fragment_data = json_bytes(fragment)
+            (root / "fragment.json").write_bytes(fragment_data)
+            manifest = json.loads(MANIFEST.read_text())
+            manifest["fragments"][0]["sha256"] = hashlib.sha256(fragment_data).hexdigest()
+            (root / "manifest.json").write_bytes(json_bytes(manifest))
+            glossary, _provenance = extract(root / "manifest.json", "en", WHEN)
+        entry = next(item for item in glossary["entries"] if item["local_id"] == "ThingA")
+        self.assertEqual("singular", entry["grammatical_number"])
+        self.assertEqual(record["confirmation"], entry["confirmation"])
+
     def test_cxl_round_trip_preserves_bounded_graph(self):
         data, sidecar, expected = export(MANIFEST, WHEN)
         with tempfile.TemporaryDirectory() as directory:
@@ -38,7 +63,9 @@ class TransformTest(unittest.TestCase):
             path.write_bytes(data)
             self.assertEqual(expected, parse(path))
         self.assertFalse(sidecar["lossless"])
-        self.assertIn("cardinalities", sidecar["omissions"])
+        self.assertIn("source and target cardinalities", sidecar["omissions"])
+        self.assertIn("external reference IRIs", sidecar["omissions"])
+        self.assertIn("record kind distinctions", sidecar["omissions"])
         self.assertEqual(hashlib.sha256(data).hexdigest(), sidecar["output_sha256"])
 
     def test_outputs_are_deterministic_for_fixed_timestamp(self):

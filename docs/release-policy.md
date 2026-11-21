@@ -43,7 +43,11 @@ not silently redefine the SEAG core version.
    checks, compatibility evidence, and the publication gate on the exact head.
 7. Merge the reviewed release MR.
 8. Create an annotated, protected tag `vX.Y.Z` on that merge commit.
-9. Push the tag; CI verifies that it matches `VERSION` before any publication.
+9. Push the tag; CI verifies that it matches `VERSION` and is contained in
+   `main`, opens the publication gate, and builds a reproducible stable bundle.
+10. Publish only the stable bundle from the tag's `stable-publication-gate`
+    job. Its manifest and provenance must say `release_status: stable` and
+    `publication_gate: asserted`; branch and pre-gate bundles remain candidates.
 
 Direct version-release tags on unreviewed commits are forbidden. A tag that
 does not exactly match `VERSION` is rejected.
