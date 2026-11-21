@@ -114,6 +114,60 @@ SEAG is not:
 - a process or workflow modeller; or
 - proof that a recorded meaning is true or that a named actor had authority.
 
+## Example domain: the concept of a state machine
+
+A state machine is a model for describing a system in terms of its possible
+states and the rules by which it can change from one state to another. It is
+useful when a system's permitted behaviour depends on its current condition.
+
+Consider a simple access turnstile. At a particular moment it may be `locked`
+or `unlocked`. Inserting an accepted token while it is locked may change it to
+unlocked. Passing through while it is unlocked may return it to locked. The
+model makes invalid or unspecified behaviour visible instead of scattering it
+among `if` statements.
+
+The basic concepts are:
+
+| Concept | Introductory meaning |
+| --- | --- |
+| State machine | The model that defines the applicable states and change rules |
+| State | A named condition relevant to the modelled behaviour |
+| Initial state | The state in which an instance begins |
+| Transition | A permitted change from a source state to a target state |
+| Event | An occurrence considered by the state machine |
+| Guard | A condition that must hold before a transition may occur |
+| Action | An effect associated with handling an event or transition |
+
+A behavioural notation might express part of the example as:
+
+```text
+locked -- accepted token --> unlocked
+unlocked -- person passes --> locked
+```
+
+That diagram describes behaviour: ordering, permitted change, and response to
+events. It belongs in a state-machine language or implementation, not in SEAG's
+semantic relation vocabulary.
+
+SEAG can still record the meaning of the vocabulary used by that model. For
+example, it can identify and define the singular concepts `state machine`,
+`state`, `transition`, `event`, and `guard`; record the source and review status
+of each definition; and refer to the external turnstile model by a stable IRI.
+It can also record static semantic statements such as `guard is a kind of
+rule`, if the project's evidence supports that classification.
+
+SEAG must not translate the two turnstile arrows into ordinary semantic
+associations such as `locked precedes unlocked`. Doing so would hide executable
+transition meaning inside a static relation. The state-machine artifact remains
+authoritative for source states, target states, events, guards, actions,
+ordering, and runtime behaviour.
+
+This separation is useful rather than restrictive:
+
+- the state-machine tool answers, “What may happen next?”;
+- SEAG answers, “What do these terms mean, where did those meanings come from,
+  and which reviewed artifact defines the behaviour?”
+
 ## Identity is not a label
 
 A label is presentation. A concept is meaning with stable identity. Renaming a
