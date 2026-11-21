@@ -299,7 +299,7 @@ class SourceValidationTest(unittest.TestCase):
 
     def test_core_manifest_shape_rejections(self):
         cases = (
-            ("seag_schema", "0.2", "expected 0.1-draft"),
+            ("seag_schema", "0.1-draft", "expected 0.1-draft.2"),
             ("status", "release", "draft bundles only"),
             ("bundle_id", "relative", "absolute IRI required"),
             ("namespace", "urn:example:terms", "ending in # or /"),

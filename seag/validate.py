@@ -15,7 +15,7 @@ import unicodedata
 from pathlib import Path
 from urllib.parse import urlsplit
 
-SCHEMA = "0.1-draft"
+SCHEMA = "0.1-draft.2"
 LOCAL_ID = re.compile(r"^[A-Za-z][A-Za-z0-9._-]*$")
 STATUS = {"proposed", "confirmed", "deprecated", "unresolved"}
 ALIGNMENT = {"unchecked", "matches", "diverges", "not_applicable"}

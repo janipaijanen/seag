@@ -1,5 +1,5 @@
 {
-  "seag_schema": "0.1-draft",
+  "seag_schema": "0.1-draft.2",
   "bundle_id": "urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87",
   "namespace": "urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#",
   "fragment_id": "terms",

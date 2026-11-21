@@ -11,7 +11,7 @@ checks cross-file and semantic invariants that JSON Schema cannot express.
 
 ## Files and identity
 
-One `manifest.json` declares `seag_schema: "0.1-draft"`, a permanent absolute
+One `manifest.json` declares `seag_schema: "0.1-draft.2"`, a permanent absolute
 `bundle_id`, one resolved absolute `namespace` ending in `#` or `/`, title,
 default language, draft status, licence, and an inventory of fragments. Each
 inventory entry has a stable `fragment_id`, relative file path, role, and

@@ -11,6 +11,9 @@ CI uses that release section as the future release-note source.
 
 - Added a software-engineer introduction to concept maps, ontologies, and
   SEAG's semantic-source role, linked from the main README.
+- Corrected the source-contract identifier to `0.1-draft.2` for the mandatory
+  singular-concept-label boundary and documented detection and human-reviewed
+  migration from the collided `0.1-draft` identifier.
 - Aligned dependency-free validation with the source schema for optional
   replacement and role-disclosure fields.
 - Removed a misleading actor-collapse diagnostic from incomplete confirmation

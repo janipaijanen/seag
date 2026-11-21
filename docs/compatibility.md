@@ -32,8 +32,24 @@ reject an unknown contract version, unknown required field, unsupported
 required capability, or incompatible profile. It must not silently downgrade,
 discard, reinterpret, or default required semantics.
 
-The current validator accepts exactly `0.1-draft`. This is a closed draft
+The current validator accepts exactly `0.1-draft.2`. This is a closed draft
 contract, not a promise that future SEAG validators will accept it.
+
+### Migration from `0.1-draft`
+
+Release candidates before the draft identifier was corrected required
+`grammatical_number: "singular"` on every concept without changing the
+`0.1-draft` identifier. That was an incompatible accepted-input change and an
+identifier collision, not backward compatibility. `0.1-draft.2` corrects the
+contract identity and retains the singular-label requirement.
+
+Consumers detect the boundary by reading both the pinned SEAG package version
+or commit and `seag_schema`. A source carrying `0.1-draft` must not be relabelled
+automatically. Migration requires a human to inspect every concept label, add
+`grammatical_number: "singular"`, revise a plural preferred label where needed,
+retain the original source wording in provenance, update fragment digests, and
+then set the manifest and every fragment to `0.1-draft.2`. The validator does
+not infer grammatical number.
 
 Backward compatibility means that every artifact valid under an identified
 older supported contract retains its declared meaning and validates under the

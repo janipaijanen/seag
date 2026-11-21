@@ -1,5 +1,5 @@
 {
-  "seag_schema": "0.1-draft",
+  "seag_schema": "0.1-draft.2",
   "bundle_id": "urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87",
   "namespace": "urn:uuid:65a0af22-7ac8-4e89-ae96-ab73d7ea2d87#",
   "title": "Invented neutral fixture",
@@ -11,7 +11,7 @@
       "fragment_id": "terms",
       "path": "fragment.json",
       "role": "semantic-source",
-      "sha256": "e854701c92fa29c460ab89acd75252b32bb3b62e8af5354cc09733ed6d1a21a7"
+      "sha256": "662c068388eac4e43ec2e3beb886f00b5a877baca9cc30df931cf8a5d93aae8b"
     }
   ]
 }

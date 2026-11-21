@@ -67,7 +67,7 @@
       ],
       "properties": {
         "seag_schema": {
-          "const": "0.1-draft"
+          "const": "0.1-draft.2"
         },
         "bundle_id": {
           "type": "string"
@@ -113,7 +113,7 @@
       ],
       "properties": {
         "seag_schema": {
-          "const": "0.1-draft"
+          "const": "0.1-draft.2"
         },
         "bundle_id": {
           "type": "string"
