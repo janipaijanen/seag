@@ -1,0 +1,39 @@
+{
+  "candidate_commit": "5db93977ff017f0086b764f6ef1309aeb12060e7",
+  "release": "0.1.0",
+  "reviews": [
+    {
+      "evidence_ref": "https://github.com/janipaijanen/seag/commit/5db93977ff017f0086b764f6ef1309aeb12060e7#semantic-review",
+      "reviewed_at": "2026-11-21T23:54:05Z",
+      "reviewed_commit": "5db93977ff017f0086b764f6ef1309aeb12060e7",
+      "reviewer": "OpenAI Codex (GPT-5; /root/seag_semantic_review5)",
+      "scope": "semantic",
+      "verdict": "approved"
+    },
+    {
+      "evidence_ref": "https://github.com/janipaijanen/seag/commit/5db93977ff017f0086b764f6ef1309aeb12060e7#framework-boundary-review",
+      "reviewed_at": "2026-11-21T23:54:05Z",
+      "reviewed_commit": "5db93977ff017f0086b764f6ef1309aeb12060e7",
+      "reviewer": "OpenAI Codex (GPT-5; /root/seag_semantic_review5)",
+      "scope": "framework-boundary",
+      "verdict": "approved"
+    },
+    {
+      "evidence_ref": "urn:seag:release-review:0.1.0:5db93977ff017f0086b764f6ef1309aeb12060e7:licensing:openai-codex",
+      "reviewed_at": "2026-11-21T23:53:51Z",
+      "reviewed_commit": "5db93977ff017f0086b764f6ef1309aeb12060e7",
+      "reviewer": "OpenAI Codex (GPT-5; /root/seag_licsec_review5)",
+      "scope": "licensing",
+      "verdict": "approved"
+    },
+    {
+      "evidence_ref": "urn:seag:release-review:0.1.0:5db93977ff017f0086b764f6ef1309aeb12060e7:security:openai-codex",
+      "reviewed_at": "2026-11-21T23:53:51Z",
+      "reviewed_commit": "5db93977ff017f0086b764f6ef1309aeb12060e7",
+      "reviewer": "OpenAI Codex (GPT-5; /root/seag_licsec_review5)",
+      "scope": "security",
+      "verdict": "approved"
+    }
+  ],
+  "schema": "seag/release-review-evidence/v1"
+}
