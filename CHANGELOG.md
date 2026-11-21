@@ -9,6 +9,11 @@ CI uses that release section as the future release-note source.
 
 ## Unreleased
 
+## 0.1.0-rc.2
+
+Public review governance release. This release candidate remains unsupported,
+non-production-ready, and incomplete against the stable publication gate.
+
 - Added contribution and security policies for the single-maintainer public
   review phase.
 - Added the package, contract, profile, validator, deprecation, and evidence
