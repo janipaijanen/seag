@@ -9,6 +9,11 @@ CI uses that release section as the future release-note source.
 
 ## Unreleased
 
+- Added contribution and security policies for the single-maintainer public
+  review phase.
+- Added the package, contract, profile, validator, deprecation, and evidence
+  compatibility policy.
+
 ## 0.1.0-rc.1
 
 Public review release. This release candidate is not a stable or supported

@@ -17,6 +17,7 @@ software work performed by people and LLM agents.
 [Conformance](docs/conformance.md) ·
 [Roadmap](docs/roadmap-0.1.md) ·
 [Release policy](docs/release-policy.md) ·
+[Compatibility](docs/compatibility.md) ·
 [Licensing](docs/licensing.md)
 
 ## Why SEAG
@@ -180,11 +181,10 @@ python3 scripts/build-release-bundle.py \
 
 ## Stewardship and participation
 
-SEAG is currently maintained by Jani Päijänen and is under active private
-incubation. External contribution and security-reporting procedures have not
-yet been established; both are publication gates. SEAG also has no public
-community programme or support commitment, and does not imply that either
-exists.
+SEAG is currently maintained by Jani Päijänen as a single-maintainer project in
+public review. See [Contributing](CONTRIBUTING.md) and
+[Security](SECURITY.md). These procedures do not create a community programme,
+support commitment, review deadline, or production-readiness claim.
 
 ## Licensing
 
