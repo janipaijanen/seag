@@ -50,6 +50,38 @@ Rediflow evidence record and this plan.
 5. Which genuine Rediflow concepts or associations cannot be expressed without
    violating SEAG's domain-neutral and non-process boundaries?
 
+## Cross-artifact participation
+
+This is a Rediflow product pilot, not an ontology-team-only exercise. Rediflow
+must name one semantic owner, one durable-evidence owner, and participating
+contacts for the selected slice across specifications, plans, code, UI, API,
+database, documentation, and tests. One person may cover several areas when
+that reflects the actual team. An area that genuinely does not represent or
+consume the selected concepts records `not applicable` with a reason rather
+than creating artificial work.
+
+Each participating area contributes:
+
+- the exact artifact revision and locator where selected meanings appear;
+- the terms, identifiers, fields, labels, or constraints it owns or consumes;
+- at least one known ambiguity, drift risk, or historical meaning change when
+  available;
+- review of the expected SEAG identity, definition, status, provenance,
+  association, and implementation-alignment result; and
+- observed authoring and review effort for the baseline and SEAG-assisted run.
+
+The artifacts are evidence sources and consumers, not material to convert in
+full. A UI label, API field, database column, code symbol, test name, plan, or
+specification phrase does not automatically become a SEAG concept. The pilot
+selects concepts only where stable identity and cross-artifact meaning provide
+value, and it references concrete artifacts for what they authoritatively own.
+Plans remain plans, code remains executable authority, schemas retain structural
+authority, and SEAG does not model their workflow or runtime behavior.
+
+Rediflow keeps a versioned cross-artifact trace in its evidence store linking
+each selected concept to relevant artifact revisions and review findings. That
+trace is pilot evidence, not a new mandatory SEAG core record type.
+
 ## Corpus selection
 
 The semantic owner selects a small but real vertical slice rather than exporting
