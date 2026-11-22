@@ -17,6 +17,26 @@ exists, release-branch runs test the candidate only. The evidence record must
 name the tag, full commit, archive SHA-256, Python and Git versions, operating
 system, commands, and Rediflow source revisions.
 
+## Fixed schedule
+
+The evaluation window is fixed in the `Europe/Helsinki` time zone:
+
+- release-readiness cutoff: **29 November 2026 at 18:00 EET**;
+- pilot start: **30 November 2026 at 00:00 EET**;
+- baseline and corpus checkpoint: **6 December 2026 at 23:59 EET**;
+- two-way review checkpoint: **13 December 2026 at 23:59 EET**;
+- three-way and version-replay checkpoint: **20 December 2026 at 23:59 EET**;
+  and
+- final evidence package and CTO decision: **27 December 2026 at 23:59 EET
+  (21:59 UTC)**.
+
+The duration is four calendar weeks. Execution begins only with the pinned
+alpha tag, checksum, named Rediflow evidence owner, semantic owner, and writable
+durable evidence location. If those prerequisites miss the readiness cutoff,
+the pilot is recorded as not started and blocked; its dates do not silently
+slide. A changed deadline requires an explicit dated CTO re-baseline in the
+Rediflow evidence record and this plan.
+
 ## Questions
 
 1. Can a Rediflow contributor author and review a bounded semantic source with
