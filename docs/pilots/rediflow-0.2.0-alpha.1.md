@@ -19,23 +19,32 @@ system, commands, and Rediflow source revisions.
 
 ## Fixed schedule
 
-The evaluation window is fixed in the `Europe/Helsinki` time zone:
+The CTO re-baselined the evaluation on 22 November 2026 so read-only discovery
+and candidate testing begin immediately instead of waiting one week for release
+administration. The fixed `Europe/Helsinki` schedule is:
 
-- release-readiness cutoff: **29 November 2026 at 18:00 EET**;
-- pilot start: **30 November 2026 at 00:00 EET**;
-- baseline and corpus checkpoint: **6 December 2026 at 23:59 EET**;
-- two-way review checkpoint: **13 December 2026 at 23:59 EET**;
-- three-way and version-replay checkpoint: **20 December 2026 at 23:59 EET**;
+- pilot start: **22 November 2026 at 13:15 EET**;
+- baseline, owners, durable location, and corpus checkpoint: **29 November 2026
+  at 13:15 EET**;
+- alpha tag and exact tagged-candidate replay target: **29 November 2026 at
+  18:00 EET**;
+- two-way historical-review checkpoint: **6 December 2026 at 13:15 EET**;
+- three-way and version-replay checkpoint: **13 December 2026 at 13:15 EET**;
   and
-- final evidence package and CTO decision: **27 December 2026 at 23:59 EET
-  (21:59 UTC)**.
+- final evidence package and CTO decision: **20 December 2026 at 13:15 EET
+  (11:15 UTC)**.
 
-The duration is four calendar weeks. Execution begins only with the pinned
-alpha tag, checksum, named Rediflow evidence owner, semantic owner, and writable
-durable evidence location. If those prerequisites miss the readiness cutoff,
-the pilot is recorded as not started and blocked; its dates do not silently
-slide. A changed deadline requires an explicit dated CTO re-baseline in the
-Rediflow evidence record and this plan.
+The duration is exactly four calendar weeks. Before the alpha tag exists,
+read-only scratch work and tool runs are candidate evaluation only: every run
+records the exact release-branch commit and archive checksum, changes no
+Rediflow product tree, and cannot count as tagged-release evidence. After the
+tag, Rediflow replays the retained cases against the immutable tagged archive.
+In-repository pilot changes still require the applicable Rediflow owner decision
+and halt exception.
+
+Missing an intermediate checkpoint does not silently move the final deadline.
+A changed deadline requires an explicit dated CTO re-baseline in the Rediflow
+evidence record and this plan.
 
 ## Questions
 
