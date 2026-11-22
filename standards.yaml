@@ -33,6 +33,19 @@ standards:
     versions: ["RFC 3986", "RFC 3987"]
     applies_to: bundle, release, namespace, record, and external identifiers
 
+  - id: ip-address-literals
+    title: Internet Protocol address literals
+    class: core
+    versions: ["RFC 3986", "RFC 4291"]
+    applies_to: typed IPv4 and IPv6 values and URI or IRI authority hosts
+
+  - id: internet-port-range
+    title: Internet transport port number range
+    class: core
+    versions: ["RFC 6335"]
+    claim: numeric-range-only
+    applies_to: typed Internet port values and URI or IRI authority ports
+
   - id: uuid
     title: UUID generation
     class: conditional

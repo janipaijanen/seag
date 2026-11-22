@@ -12,7 +12,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from seag.validate import validate, validate_variant
+from seag.validate import ipv4_address, ipv6_address, port_number, validate, validate_variant
 
 ROOT = Path(__file__).resolve().parents[1]
 VALID = ROOT / "fixtures" / "valid"
@@ -444,7 +444,17 @@ class SourceValidationTest(unittest.TestCase):
 
     def test_invalid_iri_and_namespace_forms(self):
         rule = self.fragment["records"][3]
-        for iri in ("relative", "https://example.invalid/%zz", "https://example.invalid:bad/id", "https://[invalid"):
+        for iri in (
+            "relative",
+            "https://example.invalid/%zz",
+            "https://example.invalid:bad/id",
+            "https://example.invalid:-1/id",
+            "https://example.invalid:65536/id",
+            "https://256.1.1.1/id",
+            "https://192.168.01.1/id",
+            "https://[invalid",
+            "https://[2001:db8:::1]/id",
+        ):
             with self.subTest(iri=iri):
                 rule["iri"] = iri
                 self.assert_only_error("absolute external artifact IRI required")
@@ -455,10 +465,35 @@ class SourceValidationTest(unittest.TestCase):
 
     def test_valid_absolute_iri_forms(self):
         rule = self.fragment["records"][3]
-        for iri in ("HTTPS://example.invalid/path", "https://例え.invalid/用語", "tag:example.org,2026:term", "did:example:123"):
+        for iri in (
+            "HTTPS://example.invalid/path",
+            "https://example.invalid:0/path",
+            "https://example.invalid:65535/path",
+            "https://192.168.1.1/path",
+            "https://[2001:db8::1]/path",
+            "https://例え.invalid/用語",
+            "tag:example.org,2026:term",
+            "did:example:123",
+        ):
             with self.subTest(iri=iri):
                 rule["iri"] = iri
                 self.assertEqual([], self.run_case())
+
+    def test_typed_network_value_validators_do_not_coerce(self):
+        self.assertTrue(port_number(0))
+        self.assertTrue(port_number(65535))
+        for value in (-1, 65536, True, "443", 443.0):
+            with self.subTest(port=value):
+                self.assertFalse(port_number(value))
+        self.assertTrue(ipv4_address("192.0.2.1"))
+        for value in ("256.0.2.1", "192.0.02.1", "192.0.2", 3221225985):
+            with self.subTest(ipv4=value):
+                self.assertFalse(ipv4_address(value))
+        self.assertTrue(ipv6_address("2001:db8::1"))
+        self.assertTrue(ipv6_address("2001:0DB8:0:0:0:0:0:1"))
+        for value in ("2001:db8:::1", "fe80::1%eth0", "192.0.2.1", 1):
+            with self.subTest(ipv6=value):
+                self.assertFalse(ipv6_address(value))
 
     def test_unknown_record_kind_and_non_object_record(self):
         self.fragment["records"][0]["kind"] = "unknown"

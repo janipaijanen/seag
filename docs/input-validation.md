@@ -19,7 +19,9 @@ remove trust-boundary validation for brevity.
 | --- | --- |
 | JSON manifest, fragment, variant, and release evidence | UTF-8 JSON; one top-level value; duplicate object members and `NaN`/infinities rejected; closed field sets |
 | BCP 47 field or CLI language argument | RFC 5646 well-formed tag; repeated variants and extension singletons rejected; comparison is case-insensitive without rewriting authored bytes |
-| Absolute IRI | Syntactically valid absolute IRI; valid percent escapes; valid authority, port, and bracketed host when present |
+| Absolute IRI | Syntactically valid absolute IRI; valid percent escapes; authority ports in `0..65535`; IPv4-looking hosts with exactly four decimal octets in `0..255`; valid bracketed IPv6 when present |
+| Typed Internet port | JSON integer in `0..65535`; booleans, strings, fractions, negative values, and larger values are rejected. A profile that means an assignable or connectable service port may narrow this to `1..65535` |
+| Typed IPv4 or IPv6 address | Strict IPv4 dotted decimal or a valid IPv6 address; legacy shortened/octal IPv4 forms and IPv6 interface zone IDs are not accepted |
 | Local identifier | Exact ASCII pattern `[A-Za-z][A-Za-z0-9._-]*` |
 | SHA-256 | Exactly 64 lower-case hexadecimal digits |
 | Date and timestamp | Exact ISO date or RFC 3339 timestamp shape required by that field, followed by calendar validation |
@@ -34,6 +36,12 @@ decimal digits, its source representation is a string with the contract
 `^[0-9]{3}$`; it is not parsed as an integer that would erase a leading zero.
 If a field instead represents a numeric quantity, its contract separately
 defines range, precision, scale, and whether exponent notation is permitted.
+
+These network checks apply only to fields whose contract declares an absolute
+IRI, Internet port, IPv4 address, or IPv6 address. CI exercises the shared
+validators and their boundary values. It does not search labels, definitions,
+notes, locators, or other human text for strings that merely resemble network
+values; such a scan would reject legitimate concepts and examples.
 
 ## Validation, normalization, and sanitation
 

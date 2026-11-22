@@ -20,7 +20,15 @@ import unicodedata
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from seag.cxl import export, parse_bytes
-from seag.validate import absolute_iri, iso_timestamp, language_tag, strict_json_loads
+from seag.validate import (
+    absolute_iri,
+    ipv4_address,
+    ipv6_address,
+    iso_timestamp,
+    language_tag,
+    port_number,
+    strict_json_loads,
+)
 
 
 ROOT = Path(__file__).resolve().parents[1]
@@ -31,6 +39,8 @@ EXPECTED = {
     "rfc2119-rfc8174": "core",
     "bcp47": "core",
     "uri-iri": "core",
+    "ip-address-literals": "core",
+    "internet-port-range": "core",
     "uuid": "conditional",
     "json": "core",
     "json-schema": "core",
@@ -93,6 +103,8 @@ def check_register() -> list[str]:
         errors.append("semantic-web-exports must remain not-yet-conformant until tested profiles exist")
     if entries.get("cmaptools-cxl", {}).get("claim") != "compatible-parser-round-trip":
         errors.append("cmaptools-cxl claim must be limited to compatible-parser-round-trip")
+    if entries.get("internet-port-range", {}).get("claim") != "numeric-range-only":
+        errors.append("internet-port-range must not claim assignment or service suitability")
     if 'registry_version: "2026-11-18"' not in raw:
         errors.append("bcp47: pinned IANA registry File-Date is missing")
     if "sha256:aa8ffda7d51ce4864e76186a349240cb6f01e086fab9cbc34e9c816bd778802a" not in raw:
@@ -113,8 +125,14 @@ def check_behavior() -> list[str]:
             "bcp47: malformed tag rejection probe failed")
     require(all(absolute_iri(value) for value in ("https://example.invalid/id", "urn:uuid:12345678-1234-4234-8234-123456789abc", "https://example.invalid/ä")),
             "uri-iri: absolute IRI acceptance probe failed")
-    require(not any(absolute_iri(value) for value in ("relative/path", "https://", "https://example.invalid/%GG")),
+    require(not any(absolute_iri(value) for value in ("relative/path", "https://", "https://example.invalid/%GG", "https://example.invalid:65536/", "https://256.1.1.1/", "https://[2001:db8:::1]/")),
             "uri-iri: malformed IRI rejection probe failed")
+    require(port_number(0) and port_number(65535) and not port_number(-1) and not port_number(65536),
+            "network values: port range probe failed")
+    require(ipv4_address("192.0.2.1") and not ipv4_address("256.0.2.1"),
+            "network values: IPv4 octet probe failed")
+    require(ipv6_address("2001:db8::1") and not ipv6_address("2001:db8:::1"),
+            "network values: IPv6 syntax probe failed")
     require(iso_timestamp("2026-11-22T12:34:56Z") and iso_timestamp("2026-11-22T14:34:56+02:00"),
             "timestamp: RFC 3339 acceptance probe failed")
     require(not iso_timestamp("2026-11-22T12:34:56"), "timestamp: timezone-less value was accepted")

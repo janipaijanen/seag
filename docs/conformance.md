@@ -56,6 +56,22 @@ When SEAG tooling generates UUIDs, it follows RFC 9562. A UUID is an identity
 mechanism, not evidence of ownership, authority, chronology, or uniqueness
 beyond the guarantees of the selected generation method.
 
+### Network values
+
+IPv4-looking URI or IRI authority hosts follow the dotted-decimal grammar in
+RFC 3986, including exactly four octets in the range `0..255`. IPv6 address
+literals follow RFC 4291 and use the bracketed authority form required by RFC
+3986. The current strict profile rejects ambiguous legacy shortened or
+leading-zero IPv4 spellings and IPv6 interface zone identifiers.
+
+An Internet transport port is an integer in `0..65535`, following the numeric
+space described by RFC 6335. Port zero is structurally within that space but
+reserved. Therefore a profile for an assigned, listening, or connectable
+service should narrow the field to `1..65535` and may additionally require
+IANA registration or an explicitly documented private/dynamic-port policy.
+The core validator claims numeric range validation only; it does not claim
+that a port is assigned, reachable, safe, or appropriate for a protocol.
+
 ### JSON and schemas
 
 Normative JSON interchange follows RFC 8259 and uses UTF-8. SEAG 0.1 JSON
@@ -174,7 +190,8 @@ promoted from `not-yet-conformant` without updating the gate.
 The bounded behavioral probes cover strict UTF-8 JSON, the supported RFC 5646
 language-tag syntax profile, absolute URI/IRI fields, RFC 3339 timestamps,
 JSON Schema Draft 2020-12 declarations, the validated Unicode data versions
-and NFC operation, and the pinned CXL compatible-parser round trip. The normal
+and NFC operation, typed port and IP address boundaries used by URI/IRI
+authorities, and the pinned CXL compatible-parser round trip. The normal
 test suite provides broader positive, negative, and adversarial coverage. SPDX
 and DCO checks remain separate required commands in the same validation job so
 their failures are attributable.
@@ -218,6 +235,9 @@ complete for that exact source commit.
 - RFC 8174, *Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words*
 - RFC 3986, *Uniform Resource Identifier (URI): Generic Syntax*
 - RFC 3987, *Internationalized Resource Identifiers (IRIs)*
+- RFC 4291, *IP Version 6 Addressing Architecture*
+- RFC 6335, *Internet Assigned Numbers Authority (IANA) Procedures for the
+  Management of the Service Name and Transport Protocol Port Number Registry*
 - RFC 5646, *Tags for Identifying Languages*
 - RFC 4647, *Matching of Language Tags*
 - RFC 6901, *JavaScript Object Notation (JSON) Pointer*

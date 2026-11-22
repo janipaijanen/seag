@@ -8,6 +8,7 @@ from __future__ import annotations
 import argparse
 import datetime
 import hashlib
+import ipaddress
 import json
 import re
 import sys
@@ -122,6 +123,35 @@ def iso_timestamp(value: object) -> bool:
         return False
 
 
+def port_number(value: object) -> bool:
+    """Return whether value is an uncoerced 16-bit Internet port number."""
+
+    return isinstance(value, int) and not isinstance(value, bool) and 0 <= value <= 65535
+
+
+def ipv4_address(value: object) -> bool:
+    """Return whether value is an unambiguous dotted-decimal IPv4 address."""
+
+    if not isinstance(value, str):
+        return False
+    try:
+        return str(ipaddress.IPv4Address(value)) == value
+    except ipaddress.AddressValueError:
+        return False
+
+
+def ipv6_address(value: object) -> bool:
+    """Return whether value is an IPv6 address without an interface zone ID."""
+
+    if not isinstance(value, str) or "%" in value:
+        return False
+    try:
+        ipaddress.IPv6Address(value)
+        return True
+    except ipaddress.AddressValueError:
+        return False
+
+
 def language_tag(value: object) -> bool:
     if not isinstance(value, str) or value.casefold() in GRANDFATHERED_LANGUAGE_TAGS:
         return isinstance(value, str) and value.casefold() in GRANDFATHERED_LANGUAGE_TAGS
@@ -190,11 +220,19 @@ def absolute_iri(value: object) -> bool:
     try:
         parts = urlsplit(value)
         hostname = parts.hostname
-        parts.port
+        port = parts.port
     except ValueError:
         return False
     if parts.scheme.casefold() in {"http", "https"}:
-        return remainder.startswith("//") and bool(parts.netloc) and bool(hostname)
+        if not (remainder.startswith("//") and parts.netloc and hostname):
+            return False
+        if port is not None and not port_number(port):
+            return False
+        if ":" in hostname and not ipv6_address(hostname):
+            return False
+        if "." in hostname and re.fullmatch(r"[0-9.]+", hostname) and not ipv4_address(hostname):
+            return False
+        return True
     return parts.scheme.casefold() == scheme.casefold()
 
 
