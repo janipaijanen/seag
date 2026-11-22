@@ -153,8 +153,13 @@ class TransformTest(unittest.TestCase):
     def test_generated_timestamp_requires_rfc3339(self):
         from seag.transform import timestamp
 
-        with self.assertRaisesRegex(ValueError, "RFC 3339"):
-            timestamp("2026-11-22T00:00:00")
+        for value in (
+            "2026-11-22T00:00:00",
+            "2026-11-22T12:34:56+02:60",
+            "2026-11-22T12:34:56+24:00",
+        ):
+            with self.subTest(value=value), self.assertRaisesRegex(ValueError, "RFC 3339"):
+                timestamp(value)
 
     def test_generated_timestamp_requires_reproducible_source(self):
         from unittest.mock import patch

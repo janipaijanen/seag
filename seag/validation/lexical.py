@@ -34,9 +34,18 @@ def iso_date(value: object) -> bool:
 
 
 def iso_timestamp(value: object) -> bool:
-    if not isinstance(value, str) or not re.fullmatch(
-        r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?(?:Z|[+-]\d{2}:\d{2})",
+    if not isinstance(value, str):
+        return False
+    match = re.fullmatch(
+        r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?"
+        r"(?:Z|(?P<offset_sign>[+-])(?P<offset_hour>\d{2}):(?P<offset_minute>\d{2}))",
         value,
+    )
+    if match is None:
+        return False
+    if match.group("offset_sign") is not None and (
+        int(match.group("offset_hour")) > 23
+        or int(match.group("offset_minute")) > 59
     ):
         return False
     try:
@@ -144,6 +153,22 @@ def absolute_iri(value: object) -> bool:
         return False
     scheme, separator, remainder = value.partition(":")
     if not separator or not SCHEME.fullmatch(scheme) or not remainder:
+        return False
+    # RFC 3987 reserves raw square brackets for an IP-literal host and permits
+    # only one raw fragment delimiter. urlsplit() is intentionally permissive
+    # about these delimiters, so enforce their component positions first.
+    if value.count("#") > 1:
+        return False
+    hierarchy = remainder.split("?", 1)[0].split("#", 1)[0]
+    suffix = remainder[len(hierarchy):]
+    if hierarchy.startswith("//"):
+        authority_and_path = hierarchy[2:]
+        authority, path_separator, path = authority_and_path.partition("/")
+        if authority.count("@") > 1:
+            return False
+        if any(character in "[]" for character in (path if path_separator else "") + suffix):
+            return False
+    elif any(character in "[]" for character in remainder):
         return False
     try:
         parts = urlsplit(value)

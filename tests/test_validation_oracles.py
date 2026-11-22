@@ -22,6 +22,7 @@ from seag.validation import (
     absolute_iri,
     ipv4_address,
     ipv6_address,
+    iso_timestamp,
     language_tag,
     port_number,
     strict_json_loads,
@@ -79,10 +80,32 @@ class ValidationOracleTest(unittest.TestCase):
         internationalized = "https://example.invalid/ä"
         validator.validate(rfc3986.uri_reference(internationalized))
         self.assertTrue(absolute_iri(internationalized), "SEAG's declared field accepts an RFC 3987 IRI")
-        for policy_rejection in ("https://", "https://example.invalid/%GG"):
+        for policy_rejection in (
+            "https://",
+            "https://example.invalid/%GG",
+            "urn:thing[bad",
+            "https://user@@example.org/x",
+            "https://example.org/a[b]",
+            "https://example.org/#a#b",
+        ):
             with self.subTest(policy_rejection=policy_rejection):
-                validator.validate(rfc3986.uri_reference(policy_rejection))
                 self.assertFalse(absolute_iri(policy_rejection))
+
+    def test_rfc3339_offset_components_are_bounded(self):
+        for value in (
+            "2026-11-22T12:34:56Z",
+            "2026-11-22T12:34:56+00:00",
+            "2026-11-22T12:34:56-23:59",
+        ):
+            with self.subTest(value=value):
+                self.assertTrue(iso_timestamp(value))
+        for value in (
+            "2026-11-22T12:34:56+01:60",
+            "2026-11-22T12:34:56+00:99",
+            "2026-11-22T12:34:56+24:00",
+        ):
+            with self.subTest(value=value):
+                self.assertFalse(iso_timestamp(value))
 
     def test_source_schema_and_retained_fixtures_validate_with_pinned_jsonschema(self):
         schema = strict_json_loads((ROOT / "schema/source-0.1.schema.json").read_bytes())

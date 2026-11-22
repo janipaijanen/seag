@@ -220,6 +220,7 @@ class SourceValidationTest(unittest.TestCase):
             ("omissions", ["layout", 1], "explicit string array"),
             ("unsupported_constructs", [None], "explicit string array"),
             ("generated_at", "sometime", "ISO timestamp with timezone"),
+            ("generated_at", "2026-11-22T12:34:56+02:60", "ISO timestamp with timezone"),
             ("source_manifest_sha256", "bad", "SHA-256 hex required"),
         ):
             with self.subTest(field=field):
@@ -454,6 +455,10 @@ class SourceValidationTest(unittest.TestCase):
             "https://192.168.01.1/id",
             "https://[invalid",
             "https://[2001:db8:::1]/id",
+            "urn:thing[bad",
+            "https://user@@example.org/x",
+            "https://example.org/a[b]",
+            "https://example.org/#a#b",
         ):
             with self.subTest(iri=iri):
                 rule["iri"] = iri
