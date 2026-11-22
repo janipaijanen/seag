@@ -3,9 +3,9 @@
 
 # Semantic diff and bounded conflict detection
 
-> **Status: post-0.1 experimental capability.** This document describes the
-> implementation on `main`; it is not part of the immutable 0.1.0 contract or
-> evidence that the 0.2 roadmap exit gate has passed.
+> **Status: 0.2.0-alpha.1 evaluation capability.** It is not part of the
+> immutable 0.1.0 contract, a supported compatibility baseline, or evidence
+> that the 0.2 roadmap exit gate has passed.
 
 SEAG semantic diff compares validated source bundles by stable expanded record
 identity. It helps a reviewer see meaning-affecting changes that may be obscured

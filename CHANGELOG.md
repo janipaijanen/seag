@@ -9,6 +9,13 @@ CI uses that release section as the future release-note source.
 
 ## Unreleased
 
+## 0.2.0-alpha.1
+
+Unsupported evaluation release for the Rediflow pilot and other controlled
+experiments. It retains the 0.1 source contract while adding experimental
+canonical and semantic-review tooling. It does not satisfy the 0.2 adoption
+gate or establish a supported compatibility baseline.
+
 - Clarified the state-machine example with distinct `Logging` semantic and
   component identities, a `Configuration` concept, and explicit optional and
   required target cardinalities separated from the relation phrases.
