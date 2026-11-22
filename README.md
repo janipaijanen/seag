@@ -19,7 +19,7 @@ software work performed by people and LLM agents.
 [Enterprise integration](docs/enterprise-integration.md) ·
 [Maturity](docs/maturity.md) ·
 [Conformance](docs/conformance.md) ·
-[Roadmap](docs/roadmap-0.1.md) ·
+[Roadmap to 1.0](docs/roadmap-to-1.0.md) ·
 [Release policy](docs/release-policy.md) ·
 [Compatibility](docs/compatibility.md) ·
 [Licensing](docs/licensing.md)
@@ -223,6 +223,7 @@ See [standards and conformance](docs/conformance.md) and the machine-readable
 - [SEAG concepts for software engineers](docs/introduction-for-software-engineers.md)
 - [Project charter](docs/charter.md)
 - [0.1 roadmap](docs/roadmap-0.1.md)
+- [Evidence-gated roadmap toward 1.0](docs/roadmap-to-1.0.md)
 - [Source contract](docs/source-contract-0.1.md)
 - [Identity, bundles, and variants](docs/identity-bundles-and-variants.md)
 - [Term adoption and provenance](docs/term-adoption-and-provenance.md)

@@ -16,6 +16,9 @@ CI uses that release section as the future release-note source.
   architecture, multi-user conflict boundary, bidirectional adapter contract,
   evidence-informed priorities, and readiness gates without claiming that the
   proposed service or interoperability features are implemented.
+- Added an evidence-gated implementation roadmap from discovery through 1.0,
+  with per-increment scope, order, exit evidence, stop conditions, permanent
+  exclusions, and a narrow adoption-backed definition of 1.0 stability.
 
 ## 0.1.0
 
