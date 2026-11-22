@@ -12,6 +12,10 @@ CI uses that release section as the future release-note source.
 - Clarified the state-machine example with distinct `Logging` semantic and
   component identities, a `Configuration` concept, and explicit optional and
   required target cardinalities separated from the relation phrases.
+- Documented the text-first enterprise integration lifecycle, four-plane
+  architecture, multi-user conflict boundary, bidirectional adapter contract,
+  evidence-informed priorities, and readiness gates without claiming that the
+  proposed service or interoperability features are implemented.
 
 ## 0.1.0
 

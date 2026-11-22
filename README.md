@@ -16,6 +16,7 @@ software work performed by people and LLM agents.
 
 [Source contract](docs/source-contract-0.1.md) ·
 [Concept maps and ontologies](docs/introduction-for-software-engineers.md) ·
+[Enterprise integration](docs/enterprise-integration.md) ·
 [Maturity](docs/maturity.md) ·
 [Conformance](docs/conformance.md) ·
 [Roadmap](docs/roadmap-0.1.md) ·
@@ -91,6 +92,45 @@ The optional AGF, Ponytail, and Caveman profiles remain planned. CmapTools
 desktop import is not yet tested or claimed. See the
 [machine-readable maturity assessment](maturity.yaml) for exact levels,
 evidence, and limitations.
+
+## Text first, including at enterprise scale
+
+SEAG's authoritative source is intended to remain editable with any text
+editor, understandable by a learner, reviewable in Git, usable offline, and
+directly consumable by an AI. A database, visual editor, index, or hosted
+service may consume or coordinate that source; it must not silently replace it
+as semantic authority. This repository remains the framework and toolchain, not
+the future collaboration web application.
+
+Enterprises usually already have concepts spread across glossaries, catalogs,
+schemas, APIs, policies, architecture repositories, knowledge graphs, and
+code. A project should reference those authoritative identities when meanings
+fit, create local identities only for genuine specialization or difference,
+and retain the external version, licence, provenance, mapping, and access
+restrictions. Matching labels alone never justify merging concepts.
+
+The proposed integration lifecycle is:
+
+1. inventory sources and owners;
+2. assign authority by subject and claim;
+3. pin namespace, version, locator, licence, access, and digest;
+4. select the smallest project-relevant slice;
+5. reference before copying;
+6. create project-local meaning deliberately;
+7. review mappings and conflicts;
+8. generate bounded human and agent views;
+9. report upstream change and downstream impact without silent acceptance; and
+10. generate proposals for useful local concepts for the enterprise authority,
+    without writing directly to its source.
+
+Multi-user scale first means Git-safe modular sources, exact base revisions,
+semantic diffs, conflict reports, and loss-aware bidirectional adapters. It
+does not mean live synchronization or direct upstream writes, and it does not
+yet mean real-time co-editing, SSO, a hosted graph database, or a web application
+in this repository. See
+[enterprise integration and multi-user direction](docs/enterprise-integration.md)
+for the proposed architecture, priorities, market evidence, and readiness
+gates. None of those proposed capabilities is claimed by the 0.1 release.
 
 ## Try the validator
 
@@ -186,6 +226,7 @@ See [standards and conformance](docs/conformance.md) and the machine-readable
 - [Source contract](docs/source-contract-0.1.md)
 - [Identity, bundles, and variants](docs/identity-bundles-and-variants.md)
 - [Term adoption and provenance](docs/term-adoption-and-provenance.md)
+- [Enterprise integration and multi-user direction](docs/enterprise-integration.md)
 - [Glossary extraction](docs/glossary-extraction.md)
 - [CmapTools CXL export profile](docs/cxl-profile.md)
 - [PROV and SKOS mappings](docs/semantic-mappings.md)
