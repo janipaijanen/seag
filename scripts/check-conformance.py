@@ -13,14 +13,13 @@ from __future__ import annotations
 import hashlib
 import json
 from pathlib import Path
-import re
 import sys
 import unicodedata
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from seag.cxl import export, parse_bytes
-from seag.validate import (
+from seag.validation import (
     absolute_iri,
     ipv4_address,
     ipv6_address,
@@ -32,7 +31,7 @@ from seag.validate import (
 
 
 ROOT = Path(__file__).resolve().parents[1]
-REGISTER = ROOT / "standards.yaml"
+REGISTER = ROOT / "standards.json"
 WHEN = "2026-11-22T00:00:00Z"
 CLASSES = {"core", "conditional", "mapping", "export-profile", "publication-gate"}
 EXPECTED = {
@@ -54,36 +53,86 @@ EXPECTED = {
     "cmaptools-cxl": "export-profile",
     "semantic-web-exports": "export-profile",
 }
-
-
-def register_entries(raw: str) -> tuple[dict[str, dict[str, str]], list[str]]:
-    """Read the deliberately small top-level entry subset used by this gate."""
-
-    entries: dict[str, dict[str, str]] = {}
-    errors: list[str] = []
-    current: dict[str, str] | None = None
-    for line_number, line in enumerate(raw.splitlines(), 1):
-        match = re.fullmatch(r"  - id: ([a-z0-9][a-z0-9-]*)", line)
-        if match:
-            identifier = match.group(1)
-            if identifier in entries:
-                errors.append(f"standards.yaml:{line_number}: duplicate standard id {identifier}")
-            current = {"id": identifier}
-            entries.setdefault(identifier, current)
-            continue
-        if current is not None:
-            scalar = re.fullmatch(r"    ([a-z][a-z0-9_]*): (.+)", line)
-            if scalar:
-                current[scalar.group(1)] = scalar.group(2).strip('"')
-    return entries, errors
+COMMON_FIELDS = {"id", "title", "class"}
+ENTRY_FIELDS = {
+    "rfc2119-rfc8174": COMMON_FIELDS | {"versions", "applies_to"},
+    "bcp47": COMMON_FIELDS | {
+        "versions", "registry", "registry_version_field", "registry_version", "applies_to"
+    },
+    "uri-iri": COMMON_FIELDS | {"versions", "applies_to"},
+    "ip-address-literals": COMMON_FIELDS | {"versions", "applies_to"},
+    "internet-port-range": COMMON_FIELDS | {"versions", "claim", "applies_to"},
+    "uuid": COMMON_FIELDS | {"versions", "condition"},
+    "json": COMMON_FIELDS | {"versions", "applies_to"},
+    "json-schema": COMMON_FIELDS | {"versions", "applies_to"},
+    "json-pointer": COMMON_FIELDS | {"versions", "applies_to"},
+    "timestamp": COMMON_FIELDS | {"versions", "applies_to"},
+    "unicode-normalization": COMMON_FIELDS | {
+        "versions", "normalization_form", "version_evidence",
+        "runtime_version_recorded_in_transformation_provenance", "validated_versions",
+    },
+    "json-canonicalization": COMMON_FIELDS | {"versions", "condition"},
+    "w3c-prov": COMMON_FIELDS | {"versions", "claim", "serialization_required"},
+    "w3c-skos": COMMON_FIELDS | {"versions", "claim", "serialization_required"},
+    "spdx": COMMON_FIELDS | {"versions", "license_list_version"},
+    "cmaptools-cxl": COMMON_FIELDS | {
+        "version", "claim", "compatible_parser", "limitations"
+    },
+    "semantic-web-exports": COMMON_FIELDS | {"version", "claim"},
+}
 
 
 def check_register() -> list[str]:
     try:
-        raw = REGISTER.read_bytes().decode("utf-8")
-    except (OSError, UnicodeError) as error:
-        return [f"cannot read standards.yaml as UTF-8: {error}"]
-    entries, errors = register_entries(raw)
+        register = strict_json_loads(REGISTER.read_bytes())
+    except (OSError, UnicodeError, ValueError, json.JSONDecodeError) as error:
+        return [f"cannot parse standards.json as strict UTF-8 JSON: {error}"]
+    if not isinstance(register, dict):
+        return ["standards.json: top-level value must be an object"]
+
+    errors: list[str] = []
+    required_top = {"seag_standards_register", "status", "conformance_classes", "standards"}
+    if set(register) != required_top:
+        errors.append("standards.json: top-level fields do not match the closed register contract")
+    if register.get("seag_standards_register") != "0.1":
+        errors.append("standards.json: unsupported register version")
+    if register.get("status") != "pinned-for-0.1":
+        errors.append("standards.json: status must remain pinned-for-0.1")
+    if register.get("conformance_classes") != [
+        "core", "conditional", "mapping", "export-profile", "publication-gate"
+    ]:
+        errors.append("standards.json: conformance classes or their canonical order changed")
+
+    raw_entries = register.get("standards")
+    if not isinstance(raw_entries, list):
+        return errors + ["standards.json: standards must be an array"]
+    entries: dict[str, dict[str, object]] = {}
+    for index, entry in enumerate(raw_entries):
+        if not isinstance(entry, dict):
+            errors.append(f"standards.json: standards/{index} must be an object")
+            continue
+        identifier = entry.get("id")
+        if not isinstance(identifier, str):
+            errors.append(f"standards.json: standards/{index}/id must be a string")
+            continue
+        if identifier in entries:
+            errors.append(f"standards.json: duplicate standard id {identifier}")
+            continue
+        entries[identifier] = entry
+        expected_fields = ENTRY_FIELDS.get(identifier)
+        if expected_fields is not None and set(entry) != expected_fields:
+            errors.append(f"{identifier}: fields do not match its closed register contract")
+        if not isinstance(entry.get("title"), str) or not entry["title"]:
+            errors.append(f"{identifier}: title must be a nonempty string")
+        versions = entry.get("versions")
+        version = entry.get("version")
+        if not (
+            isinstance(version, str) and version
+            or isinstance(versions, list) and versions
+            and all(isinstance(item, str) and item for item in versions)
+        ):
+            errors.append(f"{identifier}: version or versions must identify a nonempty pin")
+
     missing = sorted(set(EXPECTED) - set(entries))
     extra = sorted(set(entries) - set(EXPECTED))
     if missing:
@@ -105,10 +154,18 @@ def check_register() -> list[str]:
         errors.append("cmaptools-cxl claim must be limited to compatible-parser-round-trip")
     if entries.get("internet-port-range", {}).get("claim") != "numeric-range-only":
         errors.append("internet-port-range must not claim assignment or service suitability")
-    if 'registry_version: "2026-11-18"' not in raw:
+    if entries.get("bcp47", {}).get("registry_version") != "2026-11-18":
         errors.append("bcp47: pinned IANA registry File-Date is missing")
-    if "sha256:aa8ffda7d51ce4864e76186a349240cb6f01e086fab9cbc34e9c816bd778802a" not in raw:
+    if entries.get("cmaptools-cxl", {}).get("version") != (
+        "IHMC public cmap.xsd sha256:"
+        "aa8ffda7d51ce4864e76186a349240cb6f01e086fab9cbc34e9c816bd778802a"
+    ):
         errors.append("cmaptools-cxl: pinned cmap.xsd digest is missing")
+    compatible_parser = entries.get("cmaptools-cxl", {}).get("compatible_parser")
+    if not isinstance(compatible_parser, dict) or set(compatible_parser) != {
+        "implementation", "ci_image", "linux_amd64_manifest"
+    } or not all(isinstance(value, str) and value for value in compatible_parser.values()):
+        errors.append("cmaptools-cxl: compatible parser evidence is malformed")
     return errors
 
 

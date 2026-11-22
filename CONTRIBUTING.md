@@ -119,11 +119,21 @@ an authority for accepting semantic content.
 Run:
 
 ```sh
-python3 scripts/check-spdx.py
-python3 scripts/check-dco.py
-python3 -m unittest discover -s tests -v
+uv sync --locked --only-group conformance
+python scripts/check-dependency-policy.py
+uv lock --check
+uv run --locked --no-sync reuse lint
+uv run --locked --no-sync python scripts/check-spdx.py
+uv run --locked --no-sync python scripts/check-dco.py
+uv run --locked --no-sync python scripts/check-conformance.py
+uv run --locked --no-sync python -m unittest discover -s tests -v
 git diff --check
 ```
+
+Use exactly uv 0.12.9 and Python 3.14.8. Direct requirements must use exact
+`name==version` pins; resolved packages and artifact hashes belong in the
+committed `uv.lock`. Dependency changes require deliberate lock regeneration
+and review, never an implicit update during validation.
 
 External changes should normally arrive through a merge request. Independent
 review is required where SEAG's release or conformance policy calls for it; the

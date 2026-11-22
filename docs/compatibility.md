@@ -10,7 +10,7 @@ SEAG distinguishes:
 - the package release in `VERSION`;
 - each source-contract and schema identifier;
 - each representation or integration profile version; and
-- external standard versions recorded in `standards.yaml`.
+- external standard versions recorded in `standards.json`.
 
 Compatibility on one surface does not imply compatibility on another. A tool
 must identify every surface it claims to support.

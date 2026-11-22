@@ -11,7 +11,8 @@ import os
 from pathlib import Path
 import stat
 
-from .validate import strict_json_loads, validate
+from .validate import validate
+from .validation import strict_json_loads
 
 
 def _read_confined(root: Path, relative: str) -> bytes:

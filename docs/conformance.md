@@ -6,7 +6,7 @@
 ## Purpose
 
 This document is the authoritative register policy for external standards used
-by SEAG. The machine-readable register is [`standards.yaml`](../standards.yaml).
+by SEAG. The machine-readable register is [`standards.json`](../standards.json).
 If the two disagree, this document governs until the inconsistency is corrected.
 
 SEAG uses the terms **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD
@@ -181,7 +181,8 @@ silently downgrade, discard, or reinterpret required semantics.
 
 ## CI standards-conformance gate
 
-Every pipeline runs `python scripts/check-conformance.py`. The gate fails
+Every pipeline runs `uv run --locked --no-sync python
+scripts/check-conformance.py`. The gate fails
 closed when a required registered standard is absent or changes conformance
 class, a pin is removed, a machine-verifiable behavioral probe fails, a
 required mapping correspondence disappears, or an unimplemented export is
@@ -210,6 +211,14 @@ That keeps builds reproducible and prevents an upstream change from silently
 changing the result. Updating a standard, registry snapshot, compatible tool,
 or evidence fixture is an explicit reviewed change to the register, its tests,
 and the applicable profile documentation.
+
+The conformance environment is managed with uv. Direct conformance dependencies
+are exact `name==version` pins in `pyproject.toml`; `uv.lock` pins resolved
+artifacts and SHA-256 hashes. CI requires uv 0.12.9, runs `uv lock --check`, and
+uses `uv sync --locked` followed by `uv run --locked --no-sync`. It never
+updates dependencies while evaluating a commit. Established libraries provide
+differential or adversarial evidence; they do not silently redefine SEAG's
+field contracts.
 
 ## Release-candidate bundles
 

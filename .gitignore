@@ -3,5 +3,7 @@
 
 /dist/
 /reproducibility-check/
+.venv/
+.hypothesis/
 __pycache__/
 *.py[cod]

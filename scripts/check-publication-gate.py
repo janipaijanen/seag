@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from seag.cxl import export, parse
 from seag.glossary import extract
 from seag.transform import json_bytes
-from seag.validate import strict_json_loads
+from seag.validation import strict_json_loads
 
 
 REQUIRED_FILES = (

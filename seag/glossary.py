@@ -12,7 +12,7 @@ import unicodedata
 
 from .source import load_bundle, package_version
 from .transform import timestamp, write_with_provenance
-from .validate import language_tag
+from .validation import language_tag
 
 
 NAMED_KINDS = {"concept", "lifecycle_state", "rule_reference", "external_reference"}

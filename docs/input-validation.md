@@ -13,6 +13,15 @@ This is an application of the pinned
 use the existing shared validator, make the smallest complete change, and never
 remove trust-boundary validation for brevity.
 
+The standard-library-only `seag.validation` package is the shared lexical and
+strict-JSON boundary used by commands, transformations, and repository gates.
+Field-specific semantic checks remain in the source validator. Pinned
+`jsonschema`, `check-jsonschema`, `defusedxml`, `langcodes`, `rfc3986`, and
+Hypothesis packages run as conformance or differential oracles under uv; they
+do not replace this contract or become shipped runtime dependencies. A
+difference from an oracle must be rejected as a defect or documented as an
+intentional SEAG profile boundary.
+
 ## Current boundaries
 
 | Boundary | Required behavior |
@@ -42,6 +51,11 @@ IRI, Internet port, IPv4 address, or IPv6 address. CI exercises the shared
 validators and their boundary values. It does not search labels, definitions,
 notes, locators, or other human text for strings that merely resemble network
 values; such a scan would reject legitimate concepts and examples.
+
+Property-based boundary tests are deterministic and bounded in CI. Their role
+is to search larger input classes, especially port, IP-address, and strict-JSON
+edges; retained hand-written fixtures remain the readable compatibility
+contract.
 
 ## Validation, normalization, and sanitation
 

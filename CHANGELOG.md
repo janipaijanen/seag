@@ -9,6 +9,15 @@ CI uses that release section as the future release-note source.
 
 ## Unreleased
 
+- Adopted uv 0.12.9 for the contributor and conformance environment, with
+  exact direct dependency pins, a hash-bearing lock, a fail-closed dependency
+  policy gate, and no added shipped runtime dependencies.
+- Centralized strict JSON and lexical field validation in `seag.validation`,
+  and added deterministic property and differential-oracle tests for schemas,
+  language tags, identifiers, network values, and bounded XML parsing.
+- Replaced the hand-parsed YAML standards register with strict UTF-8 JSON and
+  a closed, machine-checked top-level contract.
+
 ## 0.2.0-alpha.1
 
 Unsupported evaluation release for the Rediflow pilot and other controlled

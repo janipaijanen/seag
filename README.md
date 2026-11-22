@@ -233,7 +233,7 @@ does not itself claim compatibility.
   profiles.
 
 See [standards and conformance](docs/conformance.md) and the machine-readable
-[`standards.yaml`](standards.yaml) register.
+[`standards.json`](standards.json) register.
 
 ## Documentation
 

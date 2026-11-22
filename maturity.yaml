@@ -40,7 +40,7 @@ capabilities:
     evidence:
       - document:docs/identity-bundles-and-variants.md
       - document:docs/language-tags.md
-      - register:standards.yaml
+      - register:standards.json
       - test:test_transforms.TransformTest.test_glossary_retains_identity_language_and_source_provenance
       - test:test_validate.SourceValidationTest.test_provenance_required
       - gitlab-pipeline:3098450288

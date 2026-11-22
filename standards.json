@@ -1,0 +1,147 @@
+{
+  "seag_standards_register": "0.1",
+  "status": "pinned-for-0.1",
+  "conformance_classes": [
+    "core",
+    "conditional",
+    "mapping",
+    "export-profile",
+    "publication-gate"
+  ],
+  "standards": [
+    {
+      "id": "rfc2119-rfc8174",
+      "title": "Normative requirement keywords",
+      "class": "core",
+      "versions": ["RFC 2119", "RFC 8174"],
+      "applies_to": "SEAG normative specifications"
+    },
+    {
+      "id": "bcp47",
+      "title": "Language tags and matching",
+      "class": "core",
+      "versions": ["RFC 5646", "RFC 4647"],
+      "registry": "IANA Language Subtag Registry",
+      "registry_version_field": "File-Date",
+      "registry_version": "2026-11-18",
+      "applies_to": "language-bearing values and language selection"
+    },
+    {
+      "id": "uri-iri",
+      "title": "Resource identifiers",
+      "class": "core",
+      "versions": ["RFC 3986", "RFC 3987"],
+      "applies_to": "bundle, release, namespace, record, and external identifiers"
+    },
+    {
+      "id": "ip-address-literals",
+      "title": "Internet Protocol address literals",
+      "class": "core",
+      "versions": ["RFC 3986", "RFC 4291"],
+      "applies_to": "typed IPv4 and IPv6 values and URI or IRI authority hosts"
+    },
+    {
+      "id": "internet-port-range",
+      "title": "Internet transport port number range",
+      "class": "core",
+      "versions": ["RFC 6335"],
+      "claim": "numeric-range-only",
+      "applies_to": "typed Internet port values and URI or IRI authority ports"
+    },
+    {
+      "id": "uuid",
+      "title": "UUID generation",
+      "class": "conditional",
+      "versions": ["RFC 9562"],
+      "condition": "SEAG tooling generates a UUID"
+    },
+    {
+      "id": "json",
+      "title": "JSON interchange",
+      "class": "core",
+      "versions": ["RFC 8259"],
+      "applies_to": "normative JSON artifacts"
+    },
+    {
+      "id": "json-schema",
+      "title": "JSON Schema",
+      "class": "core",
+      "versions": ["Draft 2020-12"],
+      "applies_to": "SEAG 0.1 JSON schemas"
+    },
+    {
+      "id": "json-pointer",
+      "title": "JSON Pointer",
+      "class": "core",
+      "versions": ["RFC 6901"],
+      "applies_to": "machine-readable JSON diagnostic locations"
+    },
+    {
+      "id": "timestamp",
+      "title": "Internet timestamps",
+      "class": "core",
+      "versions": ["RFC 3339"],
+      "applies_to": "machine-readable instants"
+    },
+    {
+      "id": "unicode-normalization",
+      "title": "Unicode normalization",
+      "class": "core",
+      "versions": ["Unicode Standard", "UAX #15"],
+      "normalization_form": "NFC",
+      "version_evidence": "required",
+      "runtime_version_recorded_in_transformation_provenance": true,
+      "validated_versions": ["15.0.0", "16.0.0"]
+    },
+    {
+      "id": "json-canonicalization",
+      "title": "JSON Canonicalization Scheme",
+      "class": "conditional",
+      "versions": ["RFC 8785"],
+      "condition": "a digest or signature covers canonical semantic JSON"
+    },
+    {
+      "id": "w3c-prov",
+      "title": "W3C provenance model",
+      "class": "mapping",
+      "versions": ["PROV-DM", "PROV-O 2013 Recommendation"],
+      "claim": "mapping-required",
+      "serialization_required": false
+    },
+    {
+      "id": "w3c-skos",
+      "title": "Simple Knowledge Organization System",
+      "class": "mapping",
+      "versions": ["SKOS Reference 2009 Recommendation"],
+      "claim": "mapping-required",
+      "serialization_required": false
+    },
+    {
+      "id": "spdx",
+      "title": "Licence expressions and licence list",
+      "class": "publication-gate",
+      "versions": ["SPDX Specification 3.0.1"],
+      "license_list_version": "3.29.0"
+    },
+    {
+      "id": "cmaptools-cxl",
+      "title": "CmapTools CXL interoperability",
+      "class": "export-profile",
+      "version": "IHMC public cmap.xsd sha256:aa8ffda7d51ce4864e76186a349240cb6f01e086fab9cbc34e9c816bd778802a",
+      "claim": "compatible-parser-round-trip",
+      "compatible_parser": {
+        "implementation": "CPython 3.14.8 xml.etree.ElementTree 1.3.0",
+        "ci_image": "python:3.14.8-alpine@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d750607710cc56da3bc72",
+        "linux_amd64_manifest": "sha256:7f2ec713f0436c59df2362d973b6a05af9e87ba78f0e94f5245c302984a7a1fd"
+      },
+      "limitations": "CmapTools desktop import not tested; see docs/cxl-profile.md"
+    },
+    {
+      "id": "semantic-web-exports",
+      "title": "JSON-LD, RDF, OWL, and PROV-O serialization",
+      "class": "export-profile",
+      "version": "pending-profile",
+      "claim": "not-yet-conformant"
+    }
+  ]
+}

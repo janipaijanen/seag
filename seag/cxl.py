@@ -17,7 +17,7 @@ import xml.etree.ElementTree as ET
 
 from .source import load_bundle, package_version
 from .transform import json_bytes, timestamp
-from .validate import absolute_iri, language_tag
+from .validation import absolute_iri, language_tag
 
 
 CXL = "http://cmap.ihmc.us/xml/cmap/"
