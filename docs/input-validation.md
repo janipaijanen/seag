@@ -28,7 +28,7 @@ intentional SEAG profile boundary.
 | --- | --- |
 | JSON manifest, fragment, variant, and release evidence | UTF-8 JSON; one top-level value; duplicate object members and `NaN`/infinities rejected; closed field sets |
 | BCP 47 field or CLI language argument | RFC 5646 well-formed tag; repeated variants and extension singletons rejected; comparison is case-insensitive without rewriting authored bytes |
-| Absolute IRI | Syntactically valid absolute IRI; valid percent escapes; authority ports in `0..65535`; IPv4-looking hosts with exactly four decimal octets in `0..255`; valid bracketed IPv6 when present |
+| Absolute IRI | Syntactically valid absolute IRI using the exact RFC 3987 `ucschar` ranges and `iprivate` only in a query; valid percent escapes; authority ports in `0..65535`; IPv4-looking hosts with exactly four decimal octets in `0..255`; valid bracketed IPv6 when present. The strict SEAG profile additionally rejects Unicode whitespace instead of normalizing or preserving visually ambiguous spacing |
 | Typed Internet port | JSON integer in `0..65535`; booleans, strings, fractions, negative values, and larger values are rejected. A profile that means an assignable or connectable service port may narrow this to `1..65535` |
 | Typed IPv4 or IPv6 address | Strict IPv4 dotted decimal or a valid IPv6 address; legacy shortened/octal IPv4 forms and IPv6 interface zone IDs are not accepted |
 | Local identifier | Exact ASCII pattern `[A-Za-z][A-Za-z0-9._-]*` |

@@ -92,10 +92,31 @@ class ValidationOracleTest(unittest.TestCase):
             "https://example.org/a[b]",
             "https://example.org/#a#b",
             "urn:neutral:\ufdd0",
+            "urn:neutral:\ufff0",
+            "urn:neutral:\ufffd",
+            "urn:neutral:\U000e0000",
+            "urn:neutral:\U000e0fff",
             "urn:neutral:#\ue000",
         ):
             with self.subTest(policy_rejection=policy_rejection):
                 self.assertFalse(absolute_iri(policy_rejection))
+
+        for ucschar_boundary in (
+            "urn:neutral:\ufdf0",
+            "urn:neutral:\uffef",
+            "urn:neutral:\U000e1000",
+            "urn:neutral:\U000efffd",
+        ):
+            with self.subTest(ucschar_boundary=ucschar_boundary):
+                self.assertTrue(absolute_iri(ucschar_boundary))
+
+        for private_query_boundary in (
+            "urn:neutral:?\ue000",
+            "urn:neutral:?\U000f0000",
+            "urn:neutral:?\U0010fffd",
+        ):
+            with self.subTest(private_query_boundary=private_query_boundary):
+                self.assertTrue(absolute_iri(private_query_boundary))
 
     def test_rfc3339_offset_components_are_bounded(self):
         for value in (

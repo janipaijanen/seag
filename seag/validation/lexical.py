@@ -24,11 +24,31 @@ SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*$")
 INVALID_IRI_ASCII = frozenset('<>"{}|\\^`')
 
 
-def _unicode_noncharacter(character: str) -> bool:
-    """Return whether a scalar value is permanently reserved as a noncharacter."""
+def _unicode_ucschar(character: str) -> bool:
+    """Return whether a scalar value is in RFC 3987's ``ucschar`` ranges."""
 
     codepoint = ord(character)
-    return 0xFDD0 <= codepoint <= 0xFDEF or codepoint & 0xFFFF in {0xFFFE, 0xFFFF}
+    return (
+        0xA0 <= codepoint <= 0xD7FF
+        or 0xF900 <= codepoint <= 0xFDCF
+        or 0xFDF0 <= codepoint <= 0xFFEF
+        or (
+            0x10000 <= codepoint <= 0xDFFFD
+            and codepoint & 0xFFFF <= 0xFFFD
+        )
+        or 0xE1000 <= codepoint <= 0xEFFFD
+    )
+
+
+def _unicode_iprivate(character: str) -> bool:
+    """Return whether a scalar value is in RFC 3987's ``iprivate`` ranges."""
+
+    codepoint = ord(character)
+    return (
+        0xE000 <= codepoint <= 0xF8FF
+        or 0xF0000 <= codepoint <= 0xFFFFD
+        or 0x100000 <= codepoint <= 0x10FFFD
+    )
 
 
 def iso_date(value: object) -> bool:
@@ -152,8 +172,11 @@ def absolute_iri(value: object) -> bool:
     if not isinstance(value, str) or not value or any(
         character.isspace()
         or unicodedata.category(character) in {"Cc", "Cs"}
-        or _unicode_noncharacter(character)
         or character in INVALID_IRI_ASCII
+        or (
+            ord(character) >= 0x80
+            and not (_unicode_ucschar(character) or _unicode_iprivate(character))
+        )
         for character in value
     ):
         return False
@@ -171,7 +194,7 @@ def absolute_iri(value: object) -> bool:
     hierarchy, _query_separator, _query = hierarchy_and_query.partition("?")
     # RFC 3987 iprivate characters are admitted only by iquery, not by the
     # hierarchy/path or fragment productions.
-    if any(unicodedata.category(character) == "Co" for character in hierarchy + fragment):
+    if any(_unicode_iprivate(character) for character in hierarchy + fragment):
         return False
     suffix = remainder[len(hierarchy):]
     if hierarchy.startswith("//"):

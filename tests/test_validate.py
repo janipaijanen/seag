@@ -460,6 +460,10 @@ class SourceValidationTest(unittest.TestCase):
             "https://example.org/a[b]",
             "https://example.org/#a#b",
             "urn:neutral:\ufdd0",
+            "urn:neutral:\ufff0",
+            "urn:neutral:\ufffd",
+            "urn:neutral:\U000e0000",
+            "urn:neutral:\U000e0fff",
             "urn:neutral:#\ue000",
         ):
             with self.subTest(iri=iri):
@@ -482,6 +486,12 @@ class SourceValidationTest(unittest.TestCase):
             "tag:example.org,2026:term",
             "did:example:123",
             "urn:neutral:?\ue000",
+            "urn:neutral:\ufdf0",
+            "urn:neutral:\uffef",
+            "urn:neutral:\U000e1000",
+            "urn:neutral:\U000efffd",
+            "urn:neutral:?\U000f0000",
+            "urn:neutral:?\U0010fffd",
         ):
             with self.subTest(iri=iri):
                 rule["iri"] = iri

@@ -47,10 +47,11 @@ gate or establish a supported compatibility baseline.
   that sorts source deterministically, updates fragment digests, stages output,
   and validates the completed bundle without modifying the input.
 - Hardened absolute-IRI validation against malformed percent escapes,
-  authorities, ports, and IPv6 literals, and completed structural RFC 5646
-  language-tag checks for duplicate variants and extension singletons. The
-  documentation now distinguishes structural validation from unimplemented
-  IANA-registry membership validation.
+  authorities, ports, IPv6 literals, and Unicode values outside RFC 3987
+  `ucschar` and query-only `iprivate` ranges, and completed structural RFC
+  5646 language-tag checks for duplicate variants and extension singletons.
+  The documentation now distinguishes structural validation from
+  unimplemented IANA-registry membership validation.
 - Adopted the pinned Ponytail full discipline for SEAG development and added a
   strict input-boundary policy. JSON now rejects duplicate members and
   non-finite numbers, language CLI input is validated, reproducible timestamps
