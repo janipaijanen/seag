@@ -80,6 +80,28 @@ class SourceValidationTest(unittest.TestCase):
         (self.root / "manifest.json").write_text(json.dumps(manifest))
         self.assertTrue(any("duplicate JSON object member" in error for error in validate(self.root / "manifest.json")))
 
+    def test_json_files_accept_utf8_only(self):
+        self.assertEqual([], self.run_case())
+        manifest_path = self.root / "manifest.json"
+        fragment_path = self.root / "fragment.json"
+        manifest_text = manifest_path.read_text()
+        fragment_text = fragment_path.read_text()
+        manifest_path.write_bytes(manifest_text.encode("utf-16"))
+        self.assertTrue(any("cannot read JSON" in error for error in validate(manifest_path)))
+
+        manifest_path.write_text(manifest_text)
+        fragment_raw = fragment_text.encode("utf-32")
+        fragment_path.write_bytes(fragment_raw)
+        manifest = json.loads(manifest_text)
+        manifest["fragments"][0]["sha256"] = hashlib.sha256(fragment_raw).hexdigest()
+        manifest_path.write_text(json.dumps(manifest))
+        self.assertTrue(any("cannot read fragment" in error for error in validate(manifest_path)))
+
+        variant_path = self.root / "variant.json"
+        variant = json.loads((VALID / "variant.json").read_text())
+        variant_path.write_bytes(json.dumps(variant).encode("utf-16"))
+        self.assertTrue(any("cannot read JSON" in error for error in validate_variant(variant_path)))
+
     def test_language_tags_require_supported_bcp47_shape(self):
         for tag in ("en_US", "not a tag", "en-a-foo-a-bar", "sl-rozaj-rozaj", "en-u-ca-gregory-u-nu-latn"):
             with self.subTest(tag=tag):

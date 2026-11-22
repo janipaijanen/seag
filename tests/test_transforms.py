@@ -109,6 +109,9 @@ class TransformTest(unittest.TestCase):
             "invalid language": data.replace(b'<dc:language>en</dc:language>', b'<dc:language>en-a-foo-a-bar</dc:language>'),
             "undeclared endpoint": data.replace(b'from-id="urn:', b'from-id="missing:', 1),
             "comment": data.replace(b'<map>', b'<!-- hidden --><map>', 1),
+            "connection-list attribute": data.replace(b'<connection-list>', b'<connection-list unreviewed="true">', 1),
+            "connection-list text": data.replace(b'<connection-list>', b'<connection-list>unreviewed', 1),
+            "leading processing instruction": b'<?xml-stylesheet href="unreviewed"?>\n' + data,
         }
         for name, raw in cases.items():
             with self.subTest(name=name), self.assertRaises(ValueError):

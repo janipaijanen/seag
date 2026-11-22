@@ -10,6 +10,7 @@ import hashlib
 import json
 import platform
 from pathlib import Path
+import re
 import sys
 import unicodedata
 import xml.etree.ElementTree as ET
@@ -129,10 +130,19 @@ def parse_bytes(raw: bytes) -> dict:
     if "<!DOCTYPE" in upper or "<!ENTITY" in upper:
         raise ValueError("DTD and entity declarations are forbidden in CXL verification")
     body = text.lstrip()
-    if body.startswith("<?xml"):
+    if body.startswith("<?"):
         end = body.find("?>")
         if end < 0:
-            raise ValueError("unterminated XML declaration")
+            raise ValueError("unterminated XML declaration or processing instruction")
+        declaration = body[: end + 2]
+        declaration_pattern = (
+            r"<\?xml[ \t\r\n]+version=(?P<version_quote>['\"])1\.0(?P=version_quote)"
+            r"(?:[ \t\r\n]+encoding=(?P<encoding_quote>['\"])[Uu][Tt][Ff]-8(?P=encoding_quote))?"
+            r"(?:[ \t\r\n]+standalone=(?P<standalone_quote>['\"])(?:yes|no)(?P=standalone_quote))?"
+            r"[ \t\r\n]*\?>"
+        )
+        if not re.fullmatch(declaration_pattern, declaration):
+            raise ValueError("processing instructions are outside the SEAG CXL profile")
         body = body[end + 2 :]
     if "<?" in body or "<!--" in body or "<![CDATA[" in body:
         raise ValueError("processing instructions, comments, and CDATA are outside the SEAG CXL profile")
@@ -191,6 +201,8 @@ def parse_bytes(raw: bytes) -> dict:
     links = nodes(link_list, f"{{{CXL}}}linking-phrase")
     if set(concepts) & set(links):
         raise ValueError("CXL concept and linking-phrase identifiers must be disjoint")
+    if connection_list.attrib or (connection_list.text and connection_list.text.strip()):
+        raise ValueError("invalid CXL connection list")
     connections = []
     for child in connection_list:
         if child.tag != f"{{{CXL}}}connection" or set(child.attrib) != {"from-id", "to-id"} or list(child):

@@ -69,6 +69,9 @@ INVALID_IRI_ASCII = frozenset('<>"{}|\\^`')
 def strict_json_loads(raw: str | bytes) -> object:
     """Decode one RFC 8259 value without duplicate names or non-finite numbers."""
 
+    if isinstance(raw, bytes):
+        raw = raw.decode("utf-8")
+
     def object_from_pairs(pairs: list[tuple[str, object]]) -> dict[str, object]:
         result: dict[str, object] = {}
         for name, value in pairs:
