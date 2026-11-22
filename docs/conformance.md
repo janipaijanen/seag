@@ -163,6 +163,37 @@ recognize a newer version without claiming support for it, but must reject an
 artifact whose required standard or capability it cannot satisfy. It must not
 silently downgrade, discard, or reinterpret required semantics.
 
+## CI standards-conformance gate
+
+Every pipeline runs `python scripts/check-conformance.py`. The gate fails
+closed when a required registered standard is absent or changes conformance
+class, a pin is removed, a machine-verifiable behavioral probe fails, a
+required mapping correspondence disappears, or an unimplemented export is
+promoted from `not-yet-conformant` without updating the gate.
+
+The bounded behavioral probes cover strict UTF-8 JSON, the supported RFC 5646
+language-tag syntax profile, absolute URI/IRI fields, RFC 3339 timestamps,
+JSON Schema Draft 2020-12 declarations, the validated Unicode data versions
+and NFC operation, and the pinned CXL compatible-parser round trip. The normal
+test suite provides broader positive, negative, and adversarial coverage. SPDX
+and DCO checks remain separate required commands in the same validation job so
+their failures are attributable.
+
+The gate does **not** certify an entire RFC, W3C Recommendation, external
+application, or standards organization test suite. W3C PROV and SKOS are
+reported as documented mappings, inactive conditional features are reported
+as not applicable, and pending serializers are reported as not claimed. In
+particular, the dependency-free language-tag validator checks well-formed
+syntax, not membership in the pinned IANA registry. Human semantic,
+interoperability, licensing, security, and release reviews remain required
+where their judgement cannot be reduced to a deterministic local check.
+
+CI uses pinned local evidence and does not fetch live standards or registries.
+That keeps builds reproducible and prevents an upstream change from silently
+changing the result. Updating a standard, registry snapshot, compatible tool,
+or evidence fixture is an explicit reviewed change to the register, its tests,
+and the applicable profile documentation.
+
 ## Release-candidate bundles
 
 The CI release-candidate archive is reproducible from a Git commit and version
