@@ -17,34 +17,32 @@ exists, release-branch runs test the candidate only. The evidence record must
 name the tag, full commit, archive SHA-256, Python and Git versions, operating
 system, commands, and Rediflow source revisions.
 
-## Fixed schedule
+## Adopter-controlled schedule
 
-The CTO re-baselined the evaluation on 22 November 2026 so read-only discovery
-and candidate testing begin immediately instead of waiting one week for release
-administration. The fixed `Europe/Helsinki` schedule is:
+The adopter owns its dates, decision authority, staffing, and deadline changes.
+Those product-governance decisions belong in the adopter's versioned evidence
+record and are deliberately not distributed in a SEAG release.
 
-- pilot start: **22 November 2026 at 13:15 EET**;
-- baseline, owners, durable location, and corpus checkpoint: **29 November 2026
-  at 13:15 EET**;
-- alpha tag and exact tagged-candidate replay target: **29 November 2026 at
-  18:00 EET**;
-- two-way historical-review checkpoint: **6 December 2026 at 13:15 EET**;
-- three-way and version-replay checkpoint: **13 December 2026 at 13:15 EET**;
-  and
-- final evidence package and CTO decision: **20 December 2026 at 13:15 EET
-  (11:15 UTC)**.
+For a time-bounded evaluation, SEAG recommends recording these checkpoints in
+that evidence record:
 
-The duration is exactly four calendar weeks. Before the alpha tag exists,
-read-only scratch work and tool runs are candidate evaluation only: every run
-records the exact release-branch commit and archive checksum, changes no
-Rediflow product tree, and cannot count as tagged-release evidence. After the
-tag, Rediflow replays the retained cases against the immutable tagged archive.
-In-repository pilot changes still require the applicable Rediflow owner decision
-and halt exception.
+- start and source-freeze;
+- baseline, named owners, durable location, and corpus readiness;
+- immutable SEAG tag and exact tagged-candidate replay;
+- two-way historical review;
+- three-way review and version replay; and
+- final evidence package and adopter decision.
 
-Missing an intermediate checkpoint does not silently move the final deadline.
-A changed deadline requires an explicit dated CTO re-baseline in the Rediflow
-evidence record and this plan.
+Before the selected SEAG tag exists, read-only scratch work and tool runs are
+candidate evaluation only: every run records the exact release-branch commit
+and archive checksum, changes no adopter product tree, and cannot count as
+tagged-release evidence. After the tag, the adopter replays the retained cases
+against the immutable tagged archive.
+
+Missing a checkpoint must not silently change the evaluation window. The
+adopter records any dated re-baseline, its authority, and its reason in the
+adopter-controlled evidence record. SEAG defines neither that authority nor an
+approval workflow.
 
 ## Questions
 

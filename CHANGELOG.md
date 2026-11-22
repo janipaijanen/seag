@@ -28,6 +28,8 @@ gate or establish a supported compatibility baseline.
 - Added a Rediflow-owned, replayable pilot-evidence contract for immutable
   corpora, expectations, run results, tool identity, and version-lift migration
   exercises without placing Rediflow domain content in SEAG.
+- Moved adopter schedules and product-governance decisions out of the release
+  content while retaining a reusable public evaluation protocol.
 
 - Clarified the state-machine example with distinct `Logging` semantic and
   component identities, a `Configuration` concept, and explicit optional and
