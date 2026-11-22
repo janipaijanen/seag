@@ -156,6 +156,48 @@ of each definition; and refer to the external turnstile model by a stable IRI.
 It can also record static semantic statements such as `guard is a kind of
 rule`, if the project's evidence supports that classification.
 
+### Static logging concepts around a state machine
+
+A project may separately describe static architecture associated with a state
+machine. For example, it may define these distinct identities:
+
+| Local ID | SEAG kind | Preferred label | Meaning in the example |
+| --- | --- | --- | --- |
+| `LoggingConcept` | `concept` | Logging | The semantic notion or capability of recording diagnostic information |
+| `LoggingComponent` | `concept` | Logging component | A software component that implements logging |
+| `Configuration` | `concept` | Configuration | The static settings used by a component |
+
+The state-machine concept **may have** the `LoggingConcept`, and the
+`LoggingComponent` **has** `Configuration`. In authoritative SEAG source, the
+relation and quantity remain separate:
+
+```text
+source: StateMachine
+relation: has logging
+target: LoggingConcept
+source cardinality: unresolved
+target cardinality: 0..1
+
+source: LoggingComponent
+relation: has configuration
+target: Configuration
+source cardinality: unresolved
+target cardinality: 1..1
+```
+
+An exporter may therefore render the first statement as “state machine may
+have Logging” and the second as “Logging component has Configuration.” The
+cardinalities above are explicit example decisions: use `0..*` instead of
+`0..1` if a state machine may have several logging concepts, and do not infer
+`1..1` merely from the English word “has” when the project has not decided the
+quantity.
+
+`LoggingConcept` and `LoggingComponent` must not share an identifier merely
+because a diagram shortens both labels to “Logging.” If “Logging” denotes one
+concrete code module or deployed resource rather than a domain concept, record
+that artifact as an `external_reference` and keep its implementation model
+authoritative.
+
 SEAG must not translate the two turnstile arrows into ordinary semantic
 associations such as `locked precedes unlocked`. Doing so would hide executable
 transition meaning inside a static relation. The state-machine artifact remains

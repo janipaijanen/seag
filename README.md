@@ -142,6 +142,13 @@ artifact. The external notation remains authoritative for transition
 behaviour. Complete SEAG bundles also carry manifest identity, namespace,
 fragment inventory, digests, language, licensing, and revision information.
 
+Static architecture may still be described separately: a state machine may
+have the `Logging` concept, while a `Logging` component has `Configuration`.
+SEAG gives the semantic concept, implementation component, and configuration
+distinct identities and records optionality as cardinality rather than hiding
+it inside the relation phrase. See the
+[worked state-machine example](docs/introduction-for-software-engineers.md#static-logging-concepts-around-a-state-machine).
+
 ## Explicit non-goal: process modelling
 
 SEAG is not process-modelling, workflow-design, orchestration, or execution

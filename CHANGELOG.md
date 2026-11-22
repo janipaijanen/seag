@@ -9,6 +9,10 @@ CI uses that release section as the future release-note source.
 
 ## Unreleased
 
+- Clarified the state-machine example with distinct `Logging` semantic and
+  component identities, a `Configuration` concept, and explicit optional and
+  required target cardinalities separated from the relation phrases.
+
 ## 0.1.0
 
 Initial stable release of the bounded SEAG semantic-source and transformation
