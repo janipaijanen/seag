@@ -1,0 +1,63 @@
+{
+  "seag_schema": "0.1-draft.2",
+  "bundle_id": "urn:uuid:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "namespace": "urn:uuid:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa#",
+  "fragment_id": "terms",
+  "role": "semantic-source",
+  "language": "en",
+  "revision": "after",
+  "records": [
+    {
+      "id": "ThingA",
+      "kind": "concept",
+      "status": "proposed",
+      "implementation_alignment": "not_applicable",
+      "provenance": {
+        "source": "invented semantic-diff fixture",
+        "locator": "fixture/before/ThingA",
+        "normative": false,
+        "proposer": "invented-fixture-author",
+        "verification_status": "unresolved"
+      },
+      "label": "Thing A",
+      "grammatical_number": "singular",
+      "definition": "An invented source thing with a revised definition."
+    },
+    {
+      "id": "ThingB",
+      "kind": "concept",
+      "status": "proposed",
+      "implementation_alignment": "not_applicable",
+      "provenance": {
+        "source": "invented semantic-diff fixture",
+        "locator": "fixture/before/ThingB",
+        "normative": false,
+        "proposer": "invented-fixture-author",
+        "verification_status": "unresolved"
+      },
+      "label": "Thing B",
+      "grammatical_number": "singular",
+      "definition": "An invented target thing."
+    },
+    {
+      "id": "AssociationAB",
+      "kind": "proposition",
+      "status": "proposed",
+      "implementation_alignment": "not_applicable",
+      "provenance": {
+        "source": "invented semantic-diff fixture",
+        "locator": "fixture/before/AssociationAB",
+        "normative": false,
+        "proposer": "invented-fixture-author",
+        "verification_status": "unresolved"
+      },
+      "predicate": "named association",
+      "name": "has static descriptor",
+      "source": "ThingA",
+      "target": "ThingB",
+      "source_cardinality": "0..1",
+      "target_cardinality": "1..*",
+      "definition": "A Thing A may have Thing B as a static descriptor."
+    }
+  ]
+}

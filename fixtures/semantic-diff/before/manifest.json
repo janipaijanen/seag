@@ -1,0 +1,17 @@
+{
+  "seag_schema": "0.1-draft.2",
+  "bundle_id": "urn:uuid:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa",
+  "namespace": "urn:uuid:aaaaaaaa-aaaa-4aaa-8aaa-aaaaaaaaaaaa#",
+  "title": "Invented semantic-diff fixture",
+  "default_language": "en",
+  "status": "draft",
+  "licence": "CC-BY-4.0",
+  "fragments": [
+    {
+      "fragment_id": "terms",
+      "path": "fragment.json",
+      "role": "semantic-source",
+      "sha256": "ea83f31e173d7dc29f96ec73faae39a40bd8c48ae5ce601f93b7f45682531e57"
+    }
+  ]
+}

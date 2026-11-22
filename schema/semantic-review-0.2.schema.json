@@ -1,0 +1,124 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "urn:seag:schema:semantic-review:0.2-draft.1",
+  "title": "SEAG experimental semantic review result",
+  "oneOf": [
+    {"$ref": "#/$defs/two_way"},
+    {"$ref": "#/$defs/three_way"}
+  ],
+  "$defs": {
+    "source": {
+      "type": "object",
+      "required": ["role", "bundle_id", "namespace", "seag_schema", "manifest_sha256"],
+      "properties": {
+        "role": {"enum": ["before", "after", "base", "ours", "theirs"]},
+        "bundle_id": {"type": "string", "minLength": 1},
+        "namespace": {"type": "string", "minLength": 1},
+        "seag_schema": {"type": "string", "minLength": 1},
+        "manifest_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"}
+      },
+      "additionalProperties": false
+    },
+    "change": {
+      "type": "object",
+      "required": ["code", "category", "severity", "description", "record_id", "field", "before", "after"],
+      "properties": {
+        "code": {"type": "string", "pattern": "^SD[0-9]{3}$"},
+        "category": {"type": "string", "minLength": 1},
+        "severity": {"enum": ["informational", "review", "breaking"]},
+        "description": {"type": "string", "minLength": 1},
+        "record_id": {"type": ["string", "null"]},
+        "field": {"type": "string", "minLength": 1},
+        "before": true,
+        "after": true
+      },
+      "additionalProperties": false
+    },
+    "conflict": {
+      "type": "object",
+      "required": ["code", "severity", "description", "record_id", "field", "base", "ours", "theirs"],
+      "properties": {
+        "code": {"type": "string", "pattern": "^SC[0-9]{3}$"},
+        "severity": {"const": "conflict"},
+        "description": {"type": "string", "minLength": 1},
+        "record_id": {"type": ["string", "null"]},
+        "field": {"type": "string", "minLength": 1},
+        "base": true,
+        "ours": true,
+        "theirs": true
+      },
+      "additionalProperties": false
+    },
+    "counts": {
+      "type": "object",
+      "additionalProperties": {"type": "integer", "minimum": 0}
+    },
+    "two_way": {
+      "type": "object",
+      "required": ["schema", "generator", "implementation_sha256", "operation", "sources", "summary", "changes"],
+      "properties": {
+        "schema": {"const": "seag/semantic-diff/0.2-draft.1"},
+        "generator": {"type": "string", "minLength": 1},
+        "implementation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "operation": {"const": "two-way"},
+        "sources": {
+          "type": "array",
+          "prefixItems": [
+            {"allOf": [{"$ref": "#/$defs/source"}, {"properties": {"role": {"const": "before"}}}]},
+            {"allOf": [{"$ref": "#/$defs/source"}, {"properties": {"role": {"const": "after"}}}]}
+          ],
+          "items": false,
+          "minItems": 2,
+          "maxItems": 2
+        },
+        "summary": {
+          "type": "object",
+          "required": ["total", "by_severity", "by_category"],
+          "properties": {
+            "total": {"type": "integer", "minimum": 0},
+            "by_severity": {"$ref": "#/$defs/counts"},
+            "by_category": {"$ref": "#/$defs/counts"}
+          },
+          "additionalProperties": false
+        },
+        "changes": {"type": "array", "items": {"$ref": "#/$defs/change"}}
+      },
+      "additionalProperties": false
+    },
+    "three_way": {
+      "type": "object",
+      "required": ["schema", "generator", "implementation_sha256", "operation", "sources", "summary", "ours_changes", "theirs_changes", "conflicts"],
+      "properties": {
+        "schema": {"const": "seag/semantic-conflict/0.2-draft.1"},
+        "generator": {"type": "string", "minLength": 1},
+        "implementation_sha256": {"type": "string", "pattern": "^[0-9a-f]{64}$"},
+        "operation": {"const": "three-way"},
+        "sources": {
+          "type": "array",
+          "prefixItems": [
+            {"allOf": [{"$ref": "#/$defs/source"}, {"properties": {"role": {"const": "base"}}}]},
+            {"allOf": [{"$ref": "#/$defs/source"}, {"properties": {"role": {"const": "ours"}}}]},
+            {"allOf": [{"$ref": "#/$defs/source"}, {"properties": {"role": {"const": "theirs"}}}]}
+          ],
+          "items": false,
+          "minItems": 3,
+          "maxItems": 3
+        },
+        "summary": {
+          "type": "object",
+          "required": ["ours_changes", "theirs_changes", "conflicts"],
+          "properties": {
+            "ours_changes": {"type": "integer", "minimum": 0},
+            "theirs_changes": {"type": "integer", "minimum": 0},
+            "conflicts": {"type": "integer", "minimum": 0}
+          },
+          "additionalProperties": false
+        },
+        "ours_changes": {"type": "array", "items": {"$ref": "#/$defs/change"}},
+        "theirs_changes": {"type": "array", "items": {"$ref": "#/$defs/change"}},
+        "conflicts": {"type": "array", "items": {"$ref": "#/$defs/conflict"}}
+      },
+      "additionalProperties": false
+    }
+  }
+}

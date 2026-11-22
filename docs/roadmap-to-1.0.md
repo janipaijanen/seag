@@ -106,6 +106,16 @@ product expansion.
 
 ## 0.2 — semantic review core
 
+### Current implementation status
+
+The `main` branch now contains an experimental two-way semantic diff and
+bounded three-way conflict detector with a draft result schema, retained
+fixtures, stable draft codes, and documented failure policies. It has not yet
+supplied a canonical source formatter, editor assistance, mapping conflicts,
+real-history replay, learner evidence, or independent adoption evidence.
+Therefore this is implementation progress, not completion of the discovery or
+0.2 exit gate.
+
 ### User outcome
 
 A learner or reviewer can understand what meaning changed between two source

@@ -17,6 +17,7 @@ software work performed by people and LLM agents.
 [Source contract](docs/source-contract-0.1.md) ·
 [Concept maps and ontologies](docs/introduction-for-software-engineers.md) ·
 [Enterprise integration](docs/enterprise-integration.md) ·
+[Semantic diff](docs/semantic-diff.md) ·
 [Maturity](docs/maturity.md) ·
 [Conformance](docs/conformance.md) ·
 [Roadmap to 1.0](docs/roadmap-to-1.0.md) ·
@@ -93,6 +94,14 @@ desktop import is not yet tested or claimed. See the
 [machine-readable maturity assessment](maturity.yaml) for exact levels,
 evidence, and limitations.
 
+### Experimental capability on `main`
+
+Development after 0.1.0 includes deterministic two-way semantic diff and
+bounded three-way conflict detection. It has stable draft diagnostic codes,
+machine-readable output, explicit CI failure policies, and retained tests, but
+has not passed the learner, repository-history, or independent-adopter gates
+for a 0.2 release. See [semantic diff and conflict detection](docs/semantic-diff.md).
+
 ## Text first, including at enterprise scale
 
 SEAG's authoritative source is intended to remain editable with any text
@@ -143,6 +152,7 @@ cd seag
 
 python3 -m seag.validate fixtures/valid/manifest.json
 python3 -m seag.validate --variant fixtures/valid/variant.json
+python3 -m seag.semantic_diff fixtures/valid/manifest.json fixtures/valid/manifest.json
 python3 -m seag.glossary fixtures/valid/manifest.json --language en --generated-at 2026-11-22T00:00:00Z --output glossary.json
 python3 -m seag.cxl fixtures/valid/manifest.json --generated-at 2026-11-22T00:00:00Z --output concept-map.cxl --verify
 python3 -m unittest discover -s tests -v
@@ -228,6 +238,7 @@ See [standards and conformance](docs/conformance.md) and the machine-readable
 - [Identity, bundles, and variants](docs/identity-bundles-and-variants.md)
 - [Term adoption and provenance](docs/term-adoption-and-provenance.md)
 - [Enterprise integration and multi-user direction](docs/enterprise-integration.md)
+- [Semantic diff and bounded conflict detection](docs/semantic-diff.md)
 - [Glossary extraction](docs/glossary-extraction.md)
 - [CmapTools CXL export profile](docs/cxl-profile.md)
 - [PROV and SKOS mappings](docs/semantic-mappings.md)

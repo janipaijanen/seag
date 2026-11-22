@@ -19,6 +19,10 @@ CI uses that release section as the future release-note source.
 - Added an evidence-gated implementation roadmap from discovery through 1.0,
   with per-increment scope, order, exit evidence, stop conditions, permanent
   exclusions, and a narrow adoption-backed definition of 1.0 stability.
+- Added an experimental deterministic semantic-diff command with stable draft
+  change codes, machine-readable output, selectable CI failure policies, and
+  bounded three-way conflict detection. This is post-0.1 development and does
+  not claim that the 0.2 evidence gate has passed.
 
 ## 0.1.0
 
