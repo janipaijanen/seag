@@ -42,6 +42,11 @@ gate or establish a supported compatibility baseline.
   language-tag checks for duplicate variants and extension singletons. The
   documentation now distinguishes structural validation from unimplemented
   IANA-registry membership validation.
+- Adopted the pinned Ponytail full discipline for SEAG development and added a
+  strict input-boundary policy. JSON now rejects duplicate members and
+  non-finite numbers, language CLI input is validated, reproducible timestamps
+  require canonical decimal input, unsafe control text is rejected, and CXL
+  verification accepts only the bounded SEAG graph profile.
 
 ## 0.1.0
 

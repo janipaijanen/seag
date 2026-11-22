@@ -6,7 +6,6 @@
 
 from pathlib import Path
 import datetime
-import json
 import re
 import subprocess
 import sys
@@ -18,6 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from seag.cxl import export, parse
 from seag.glossary import extract
 from seag.transform import json_bytes
+from seag.validate import strict_json_loads
 
 
 REQUIRED_FILES = (
@@ -67,10 +67,15 @@ def valid_evidence_ref(value: object) -> bool:
 
 def check_review_evidence(path: Path) -> list[str]:
     try:
-        evidence = json.loads(path.read_text())
-    except (OSError, json.JSONDecodeError) as error:
+        evidence = strict_json_loads(path.read_bytes())
+    except (OSError, UnicodeError, ValueError) as error:
         return [f"cannot read release review evidence: {error}"]
+    if not isinstance(evidence, dict):
+        return ["release review evidence must be an object"]
     errors = []
+    extras = sorted(set(evidence) - {"schema", "release", "candidate_commit", "reviews"})
+    if extras:
+        errors.append("release review evidence has unsupported fields: " + ", ".join(extras))
     if evidence.get("schema") != "seag/release-review-evidence/v1":
         errors.append("unexpected review evidence schema")
     if evidence.get("release") != "0.1.0":
@@ -97,6 +102,9 @@ def check_review_evidence(path: Path) -> list[str]:
         if not isinstance(review, dict):
             errors.append(f"review {index} must be an object")
             continue
+        extras = sorted(set(review) - {"scope", "reviewer", "verdict", "reviewed_commit", "reviewed_at", "evidence_ref"})
+        if extras:
+            errors.append(f"review {index} has unsupported fields: " + ", ".join(extras))
         scope = review.get("scope")
         if scope not in REVIEW_SCOPES:
             errors.append(f"review {index} has an invalid scope")

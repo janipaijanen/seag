@@ -8,6 +8,10 @@ bounded part of roadmap increments 1 and 2. It does not define a domain
 ontology, process model, exchange format, release procedure, or publication
 claim. `schema/source-0.1.schema.json` describes the file shapes; the CLI also
 checks cross-file and semantic invariants that JSON Schema cannot express.
+All files use the strict decoding and field rules in the
+[input-validation policy](input-validation.md): duplicate object members,
+non-finite numbers, unknown fields, and malformed typed values fail rather than
+being ignored or coerced.
 
 ## Files and identity
 

@@ -10,6 +10,7 @@ import hashlib
 import json
 import os
 from pathlib import Path
+import re
 
 from .validate import iso_timestamp
 
@@ -22,7 +23,12 @@ def timestamp(value: str | None) -> str:
     epoch = os.environ.get("SOURCE_DATE_EPOCH")
     if epoch is None:
         raise ValueError("generated timestamp requires --generated-at or SOURCE_DATE_EPOCH")
-    moment = datetime.datetime.fromtimestamp(int(epoch), datetime.timezone.utc)
+    if not re.fullmatch(r"(?:0|[1-9][0-9]*)", epoch):
+        raise ValueError("SOURCE_DATE_EPOCH must be a canonical nonnegative decimal integer")
+    try:
+        moment = datetime.datetime.fromtimestamp(int(epoch), datetime.timezone.utc)
+    except (OverflowError, OSError, ValueError) as error:
+        raise ValueError("SOURCE_DATE_EPOCH is outside the supported timestamp range") from error
     return moment.replace(microsecond=0).isoformat().replace("+00:00", "Z")
 
 

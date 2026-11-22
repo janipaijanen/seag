@@ -40,6 +40,12 @@ class ReleaseEvidenceTest(unittest.TestCase):
             finally:
                 __import__("os").chdir(previous)
 
+    def check_raw(self, raw):
+        with tempfile.TemporaryDirectory() as directory:
+            path = Path(directory) / "evidence.json"
+            path.write_text(raw)
+            return GATE.check_review_evidence(path)
+
     def test_accepts_complete_exact_candidate_evidence(self):
         self.assertEqual([], self.check(self.evidence()))
 
@@ -59,6 +65,15 @@ class ReleaseEvidenceTest(unittest.TestCase):
         errors = self.check(evidence)
         self.assertTrue(any("RFC 3339 UTC" in error for error in errors), errors)
         self.assertTrue(any("valid absolute URI" in error for error in errors), errors)
+
+    def test_rejects_duplicate_unknown_and_wrong_top_level_content(self):
+        errors = self.check_raw('{"schema":"first","schema":"second"}')
+        self.assertTrue(any("duplicate JSON object member" in error for error in errors), errors)
+        evidence = self.evidence()
+        evidence["unexpected"] = True
+        errors = self.check(evidence)
+        self.assertTrue(any("unsupported fields" in error for error in errors), errors)
+        self.assertEqual(["release review evidence must be an object"], self.check_raw("[]"))
 
 
 if __name__ == "__main__":

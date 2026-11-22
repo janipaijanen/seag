@@ -16,6 +16,7 @@ import xml.etree.ElementTree as ET
 
 from .source import load_bundle, package_version
 from .transform import json_bytes, timestamp
+from .validate import absolute_iri, language_tag
 
 
 CXL = "http://cmap.ihmc.us/xml/cmap/"
@@ -127,11 +128,89 @@ def parse_bytes(raw: bytes) -> dict:
     upper = text.upper()
     if "<!DOCTYPE" in upper or "<!ENTITY" in upper:
         raise ValueError("DTD and entity declarations are forbidden in CXL verification")
+    body = text.lstrip()
+    if body.startswith("<?xml"):
+        end = body.find("?>")
+        if end < 0:
+            raise ValueError("unterminated XML declaration")
+        body = body[end + 2 :]
+    if "<?" in body or "<!--" in body or "<![CDATA[" in body:
+        raise ValueError("processing instructions, comments, and CDATA are outside the SEAG CXL profile")
     root = ET.fromstring(text)
-    ns = {"c": CXL}
-    concepts = {e.attrib["id"]: e.attrib["label"] for e in root.findall(".//c:concept-list/c:concept", ns)}
-    links = {e.attrib["id"]: e.attrib["label"] for e in root.findall(".//c:linking-phrase-list/c:linking-phrase", ns)}
-    connections = sorted((e.attrib["from-id"], e.attrib["to-id"]) for e in root.findall(".//c:connection-list/c:connection", ns))
+
+    def expect_container(element: ET.Element, tag: str, children: list[str]) -> list[ET.Element]:
+        if element.tag != tag or element.attrib:
+            raise ValueError(f"unexpected CXL element or attributes: {element.tag}")
+        if element.text and element.text.strip():
+            raise ValueError(f"unexpected text in CXL container: {element.tag}")
+        actual = list(element)
+        if [child.tag for child in actual] != children:
+            raise ValueError(f"unexpected CXL children in {element.tag}")
+        if any(child.tail and child.tail.strip() for child in actual):
+            raise ValueError(f"unexpected mixed content in {element.tag}")
+        return actual
+
+    metadata, map_node = expect_container(root, f"{{{CXL}}}cmap", [f"{{{CXL}}}res-meta", f"{{{CXL}}}map"])
+    title_node, identifier_node, language_node = expect_container(
+        metadata,
+        f"{{{CXL}}}res-meta",
+        [f"{{{DC}}}title", f"{{{DC}}}identifier", f"{{{DC}}}language"],
+    )
+    for node in (title_node, identifier_node, language_node):
+        if node.attrib or list(node) or node.text is None or not node.text.strip():
+            raise ValueError(f"invalid CXL metadata value: {node.tag}")
+    if not absolute_iri(identifier_node.text):
+        raise ValueError("CXL identifier must be an absolute IRI")
+    if not language_tag(language_node.text):
+        raise ValueError("CXL language must be a well-formed BCP 47 tag")
+
+    concept_list, link_list, connection_list = expect_container(
+        map_node,
+        f"{{{CXL}}}map",
+        [f"{{{CXL}}}concept-list", f"{{{CXL}}}linking-phrase-list", f"{{{CXL}}}connection-list"],
+    )
+
+    def nodes(element: ET.Element, child_tag: str) -> dict[str, str]:
+        if element.attrib or (element.text and element.text.strip()):
+            raise ValueError(f"invalid CXL list: {element.tag}")
+        result: dict[str, str] = {}
+        for child in element:
+            if child.tag != child_tag or set(child.attrib) != {"id", "label"} or list(child):
+                raise ValueError(f"unexpected CXL node shape: {child.tag}")
+            if (child.text and child.text.strip()) or (child.tail and child.tail.strip()):
+                raise ValueError(f"unexpected CXL node mixed content: {child.tag}")
+            identifier, label = child.attrib["id"], child.attrib["label"]
+            if not absolute_iri(identifier) or not label.strip():
+                raise ValueError("CXL nodes require an absolute IRI and nonempty label")
+            if identifier in result:
+                raise ValueError(f"duplicate CXL node identifier: {identifier!r}")
+            result[identifier] = label
+        return result
+
+    concepts = nodes(concept_list, f"{{{CXL}}}concept")
+    links = nodes(link_list, f"{{{CXL}}}linking-phrase")
+    if set(concepts) & set(links):
+        raise ValueError("CXL concept and linking-phrase identifiers must be disjoint")
+    connections = []
+    for child in connection_list:
+        if child.tag != f"{{{CXL}}}connection" or set(child.attrib) != {"from-id", "to-id"} or list(child):
+            raise ValueError(f"unexpected CXL connection shape: {child.tag}")
+        if (child.text and child.text.strip()) or (child.tail and child.tail.strip()):
+            raise ValueError("unexpected CXL connection mixed content")
+        edge = (child.attrib["from-id"], child.attrib["to-id"])
+        if edge[0] not in concepts | links or edge[1] not in concepts | links:
+            raise ValueError("CXL connection endpoint is not declared")
+        if (edge[0] in concepts) == (edge[1] in concepts):
+            raise ValueError("CXL connection must join one concept and one linking phrase")
+        if edge in connections:
+            raise ValueError("duplicate CXL connection")
+        connections.append(edge)
+    for identifier in links:
+        incoming = [edge for edge in connections if edge[1] == identifier and edge[0] in concepts]
+        outgoing = [edge for edge in connections if edge[0] == identifier and edge[1] in concepts]
+        if len(incoming) != 1 or len(outgoing) != 1:
+            raise ValueError("each SEAG CXL linking phrase requires one source and one target concept")
+    connections.sort()
     return {"concepts": concepts, "linking_phrases": links, "connections": connections}
 
 

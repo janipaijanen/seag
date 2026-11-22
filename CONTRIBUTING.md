@@ -108,6 +108,14 @@ Keep proposals focused and reviewable. A contribution should:
 - use the repository's per-file SPDX policy; and
 - pass the complete validation suite.
 
+SEAG adopts the pinned Ponytail `v5.3.3` full discipline described in
+[`docs/semantic-minimality.md`](docs/semantic-minimality.md): inspect every
+affected caller, test, fixture, configuration, and export; reuse an existing
+path before adding one; implement the smallest complete change; and retain
+validation, error handling, security, accessibility, and user-required
+behavior. This is a contributor discipline, not permission to omit evidence or
+an authority for accepting semantic content.
+
 Run:
 
 ```sh

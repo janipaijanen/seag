@@ -8,9 +8,10 @@
 Use the smallest expression that preserves the complete intended meaning,
 constraints, uncertainty, and provenance.
 
-Semantic minimality is influenced by Ponytail's smallest-complete-change
-discipline. SEAG applies the principle to semantic capture and transformation;
-it does not bundle Ponytail or require an agent skill.
+SEAG adopts Ponytail's pinned `full` smallest-complete-change discipline for
+project development and applies the same principle to semantic capture and
+transformation. It does not bundle the agent skill, make Ponytail normative for
+SEAG source files, or delegate project authority to it.
 
 ## Required practice
 

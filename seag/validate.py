@@ -66,6 +66,23 @@ SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*$")
 INVALID_IRI_ASCII = frozenset('<>"{}|\\^`')
 
 
+def strict_json_loads(raw: str | bytes) -> object:
+    """Decode one RFC 8259 value without duplicate names or non-finite numbers."""
+
+    def object_from_pairs(pairs: list[tuple[str, object]]) -> dict[str, object]:
+        result: dict[str, object] = {}
+        for name, value in pairs:
+            if name in result:
+                raise ValueError(f"duplicate JSON object member: {name!r}")
+            result[name] = value
+        return result
+
+    def reject_constant(value: str) -> object:
+        raise ValueError(f"non-finite JSON number forbidden: {value}")
+
+    return json.loads(raw, object_pairs_hook=object_from_pairs, parse_constant=reject_constant)
+
+
 def normalized_actor(value: object) -> str:
     return unicodedata.normalize("NFKC", value).strip().casefold() if isinstance(value, str) else ""
 
@@ -74,6 +91,14 @@ def normalized_name(value: str) -> str:
     # Fold separators, case and compatibility forms; hidden format characters are rejected separately.
     folded = unicodedata.normalize("NFKC", value).casefold()
     return " ".join(re.sub(r"[_\-\W]+", " ", folded, flags=re.UNICODE).split())
+
+
+def nonempty_text(value: object) -> bool:
+    return (
+        isinstance(value, str)
+        and bool(value.strip())
+        and all(character in "\t\n\r" or unicodedata.category(character) not in {"Cc", "Cs"} for character in value)
+    )
 
 
 def iso_date(value: object) -> bool:
@@ -171,8 +196,7 @@ def absolute_iri(value: object) -> bool:
 
 
 def _load_json(path: Path) -> object:
-    with path.open(encoding="utf-8") as handle:
-        return json.load(handle)
+    return strict_json_loads(path.read_bytes())
 
 
 def validate(
@@ -188,8 +212,8 @@ def validate(
             errors.append(f"{location}: {message}")
 
     try:
-        manifest = json.loads(manifest_raw) if manifest_raw is not None else _load_json(manifest_path)
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+        manifest = strict_json_loads(manifest_raw) if manifest_raw is not None else _load_json(manifest_path)
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
         return [f"{manifest_path}: cannot read JSON: {exc}"]
     if not isinstance(manifest, dict):
         return [f"{manifest_path}: manifest must be an object"]
@@ -200,7 +224,7 @@ def validate(
     check(absolute_iri(bundle_id), "manifest.bundle_id", "absolute IRI required")
     check(absolute_iri(namespace) and namespace.endswith(("#", "/")), "manifest.namespace", "absolute IRI ending in # or / required")
     for field in ("title", "default_language", "licence"):
-        check(isinstance(manifest.get(field), str) and bool(manifest[field].strip()), f"manifest.{field}", "nonempty string required")
+        check(nonempty_text(manifest.get(field)), f"manifest.{field}", "nonempty string without forbidden control characters required")
     if isinstance(manifest.get("default_language"), str) and manifest["default_language"].strip():
         check(language_tag(manifest["default_language"]), "manifest.default_language", "supported well-formed BCP 47 tag required")
     check(manifest.get("status") == "draft", "manifest.status", "this validator accepts draft bundles only")
@@ -219,7 +243,7 @@ def validate(
         check(not (set(item) - INVENTORY_FIELDS), where, "unsupported fields: " + ", ".join(sorted(set(item) - INVENTORY_FIELDS)))
         fragment_id = item.get("fragment_id")
         check(isinstance(fragment_id, str) and bool(LOCAL_ID.fullmatch(fragment_id)), where + ".fragment_id", "stable local ID required")
-        check(isinstance(item.get("role"), str) and bool(item["role"].strip()), where + ".role", "nonempty role required")
+        check(nonempty_text(item.get("role")), where + ".role", "nonempty role without forbidden control characters required")
         if isinstance(fragment_id, str):
             check(fragment_id not in seen_fragments, where + ".fragment_id", "duplicate fragment ID")
             seen_fragments.add(fragment_id)
@@ -236,8 +260,8 @@ def validate(
                 raw = fragment_raws[name]
             else:
                 raw = path.read_bytes()
-            fragment = json.loads(raw)
-        except (KeyError, OSError, UnicodeError, json.JSONDecodeError) as exc:
+            fragment = strict_json_loads(raw)
+        except (KeyError, OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
             errors.append(f"{where}.path: cannot read fragment: {exc}")
             continue
         digest = hashlib.sha256(raw).hexdigest()
@@ -249,7 +273,7 @@ def validate(
         for field, expected in (("seag_schema", SCHEMA), ("bundle_id", bundle_id), ("namespace", namespace), ("fragment_id", fragment_id), ("role", item.get("role"))):
             check(fragment.get(field) == expected, name + "." + field, "does not match manifest")
         for field in ("language", "revision"):
-            check(isinstance(fragment.get(field), str) and bool(fragment[field].strip()), name + "." + field, "nonempty string required")
+            check(nonempty_text(fragment.get(field)), name + "." + field, "nonempty string required; forbidden control characters are not accepted")
         if isinstance(fragment.get("language"), str) and fragment["language"].strip():
             check(language_tag(fragment["language"]), name + ".language", "supported well-formed BCP 47 tag required")
         source_records = fragment.get("records")
@@ -274,19 +298,19 @@ def validate(
             check(isinstance(record.get("status"), str) and record["status"] in STATUS, loc + ".status", "invalid semantic status")
             check(isinstance(record.get("implementation_alignment"), str) and record["implementation_alignment"] in ALIGNMENT, loc + ".implementation_alignment", "separate alignment status required")
             provenance = record.get("provenance")
-            check(isinstance(provenance, dict) and all(isinstance(provenance.get(k), str) and provenance[k].strip() for k in ("source", "locator", "proposer")) and isinstance(provenance.get("normative"), bool) and isinstance(provenance.get("verification_status"), str) and provenance["verification_status"] in EVIDENCE_STATUS, loc + ".provenance", "source, locator, proposer, normative boolean, and evidence verification status required")
+            check(isinstance(provenance, dict) and all(nonempty_text(provenance.get(k)) for k in ("source", "locator", "proposer")) and isinstance(provenance.get("normative"), bool) and isinstance(provenance.get("verification_status"), str) and provenance["verification_status"] in EVIDENCE_STATUS, loc + ".provenance", "safe nonempty source, locator, proposer, normative boolean, and evidence verification status required")
             if isinstance(provenance, dict):
                 check(not (set(provenance) - PROVENANCE_FIELDS), loc + ".provenance", "unsupported fields: " + ", ".join(sorted(set(provenance) - PROVENANCE_FIELDS)))
             confirmation = record.get("confirmation")
             if "replacement_or_reason" in record:
-                check(isinstance(record["replacement_or_reason"], str) and bool(record["replacement_or_reason"].strip()), loc + ".replacement_or_reason", "when present, replacement or rationale must be a nonempty string")
+                check(nonempty_text(record["replacement_or_reason"]), loc + ".replacement_or_reason", "when present, replacement or rationale must be a nonempty string without forbidden control characters")
             if "confirmation" in record:
-                check(isinstance(confirmation, dict) and all(isinstance(confirmation.get(k), str) and confirmation[k].strip() for k in ("decision_ref", "decided_at", "confirmer", "reviewer", "review_ref", "reviewed_at")), loc + ".confirmation", "confirmation block needs separate decision and review references, dates, confirmer, and reviewer")
+                check(isinstance(confirmation, dict) and all(nonempty_text(confirmation.get(k)) for k in ("decision_ref", "decided_at", "confirmer", "reviewer", "review_ref", "reviewed_at")), loc + ".confirmation", "confirmation block needs safe separate decision and review references, dates, confirmer, and reviewer")
                 if isinstance(confirmation, dict):
                     check(not (set(confirmation) - CONFIRMATION_FIELDS), loc + ".confirmation", "unsupported fields: " + ", ".join(sorted(set(confirmation) - CONFIRMATION_FIELDS)))
                     for field in ("role_collapse_note", "review_limit"):
                         if field in confirmation:
-                            check(isinstance(confirmation[field], str) and bool(confirmation[field].strip()), loc + ".confirmation." + field, "when present, disclosure must be a nonempty string")
+                            check(nonempty_text(confirmation[field]), loc + ".confirmation." + field, "when present, disclosure must be a nonempty string without forbidden control characters")
                     check(iso_date(confirmation.get("decided_at")), loc + ".confirmation.decided_at", "ISO calendar date required")
                     check(iso_date(confirmation.get("reviewed_at")), loc + ".confirmation.reviewed_at", "ISO calendar date required")
                     if iso_date(confirmation.get("decided_at")) and iso_date(confirmation.get("reviewed_at")):
@@ -307,12 +331,12 @@ def validate(
                 check(isinstance(confirmation, dict), loc + ".confirmation", "confirmed record needs separate decision and review references, dates, confirmer, and reviewer")
                 check(isinstance(provenance, dict) and provenance.get("verification_status") in {"qualified", "verified"}, loc + ".provenance.verification_status", "confirmed record needs qualified or verified source evidence")
             if record.get("status") == "deprecated":
-                check(isinstance(record.get("replacement_or_reason"), str) and bool(record["replacement_or_reason"].strip()), loc + ".replacement_or_reason", "deprecated record needs replacement or rationale")
+                check(nonempty_text(record.get("replacement_or_reason")), loc + ".replacement_or_reason", "deprecated record needs replacement or rationale without forbidden control characters")
             if kind == "proposition":
                 propositions.append((loc, record))
             elif isinstance(kind, str) and kind in KINDS:
                 for field in ("label", "definition"):
-                    check(isinstance(record.get(field), str) and bool(record[field].strip()), loc + "." + field, "nonempty string required")
+                    check(nonempty_text(record.get(field)), loc + "." + field, "nonempty text without forbidden control characters required")
                 if kind == "concept":
                     check(record.get("grammatical_number") == "singular", loc + ".grammatical_number", "concept label must be declared singular")
                 if kind in {"external_reference", "rule_reference"}:
@@ -336,14 +360,14 @@ def validate(
             if predicate == "is a kind of":
                 taxonomy.setdefault(source, []).append(target)
         if predicate == "named association":
-            check(isinstance(record.get("name"), str) and bool(record["name"].strip()), loc + ".name", "association name required")
+            check(nonempty_text(record.get("name")), loc + ".name", "safe nonempty association name required")
             name = record.get("name")
             if isinstance(name, str):
                 normalized = normalized_name(name)
                 check(not any(unicodedata.category(c) == "Cf" for c in name), loc + ".name", "hidden format characters forbidden")
                 check(not PROCESS_NAME.search(normalized), loc + ".name", "process or transition association name forbidden")
                 check(normalized not in VAGUE_NAMES, loc + ".name", "vague association name; use a bounded static semantic relation")
-            check(isinstance(record.get("definition"), str) and bool(record["definition"].strip()), loc + ".definition", "bounded static association definition required")
+            check(nonempty_text(record.get("definition")), loc + ".definition", "safe bounded static association definition required")
             for end in ("source_cardinality", "target_cardinality"):
                 check(isinstance(record.get(end), str) and record[end] in CARDINALITY, loc + "." + end, "explicit both-end cardinality required")
                 if record.get("status") == "confirmed":
@@ -377,7 +401,7 @@ def validate_variant(path: Path) -> list[str]:
     """Check metadata shape only; release provenance needs independent review."""
     try:
         variant = _load_json(path)
-    except (OSError, UnicodeError, json.JSONDecodeError) as exc:
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
         return [f"{path}: cannot read JSON: {exc}"]
     if not isinstance(variant, dict):
         return [f"{path}: variant must be an object"]
@@ -389,8 +413,8 @@ def validate_variant(path: Path) -> list[str]:
         if not absolute_iri(variant.get(field)):
             errors.append(f"variant.{field}: absolute immutable IRI required")
     for field in ("format", "generator", "generated_at"):
-        if not isinstance(variant.get(field), str) or not variant[field].strip():
-            errors.append(f"variant.{field}: nonempty string required")
+        if not nonempty_text(variant.get(field)):
+            errors.append(f"variant.{field}: nonempty text without forbidden control characters required")
     if isinstance(variant.get("generated_at"), str) and variant["generated_at"].strip() and not iso_timestamp(variant["generated_at"]):
         errors.append("variant.generated_at: ISO timestamp with timezone required")
     for field in ("source_manifest_sha256", "output_sha256"):
@@ -401,8 +425,8 @@ def validate_variant(path: Path) -> list[str]:
         errors.append("variant.lossless: boolean required")
     for field in ("omissions", "unsupported_constructs"):
         value = variant.get(field)
-        if not isinstance(value, list) or not all(isinstance(item, str) for item in value):
-            errors.append(f"variant.{field}: explicit string array required")
+        if not isinstance(value, list) or not all(nonempty_text(item) for item in value):
+            errors.append(f"variant.{field}: explicit string array of nonempty values without forbidden control characters required")
     if variant.get("lossless") and variant.get("unsupported_constructs"):
         errors.append("variant: lossless claim conflicts with unsupported constructs")
     return errors

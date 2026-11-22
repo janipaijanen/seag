@@ -52,6 +52,34 @@ class SourceValidationTest(unittest.TestCase):
     def test_valid_fixture(self):
         self.assertEqual([], self.run_case())
 
+    def test_json_rejects_duplicate_members_and_non_finite_numbers(self):
+        self.assertEqual([], self.run_case())
+        manifest_path = self.root / "manifest.json"
+        original = manifest_path.read_text()
+        duplicate = original.replace(
+            '"title": "Invented neutral fixture"',
+            '"title": "Invented neutral fixture", "title": "Hidden replacement"',
+            1,
+        )
+        manifest_path.write_text(duplicate)
+        self.assertTrue(any("duplicate JSON object member" in error for error in validate(manifest_path)))
+        manifest_path.write_text(original.replace('"title": "Invented neutral fixture"', '"title": NaN', 1))
+        self.assertTrue(any("non-finite JSON number forbidden" in error for error in validate(manifest_path)))
+
+    def test_fragment_json_rejects_duplicate_members(self):
+        self.assertEqual([], self.run_case())
+        fragment_path = self.root / "fragment.json"
+        raw = fragment_path.read_text().replace(
+            '"revision": "draft-1"',
+            '"revision": "draft-1", "revision": "hidden"',
+            1,
+        ).encode()
+        fragment_path.write_bytes(raw)
+        manifest = json.loads((self.root / "manifest.json").read_text())
+        manifest["fragments"][0]["sha256"] = hashlib.sha256(raw).hexdigest()
+        (self.root / "manifest.json").write_text(json.dumps(manifest))
+        self.assertTrue(any("duplicate JSON object member" in error for error in validate(self.root / "manifest.json")))
+
     def test_language_tags_require_supported_bcp47_shape(self):
         for tag in ("en_US", "not a tag", "en-a-foo-a-bar", "sl-rozaj-rozaj", "en-u-ca-gregory-u-nu-latn"):
             with self.subTest(tag=tag):
@@ -102,6 +130,10 @@ class SourceValidationTest(unittest.TestCase):
     def test_hidden_format_character_rejected(self):
         self.fragment["records"][-1]["name"] = "pre\u200bcedes"
         self.assert_rejects("hidden format characters forbidden")
+
+    def test_required_human_text_rejects_forbidden_control_characters(self):
+        self.fragment["records"][0]["label"] = "Thing\u0000A"
+        self.assert_only_error("forbidden control characters")
 
     def test_vague_name_is_rejected(self):
         for name in ("relates to", "relates to the", "related to", "supports", "uses", "has many", "HAS_MANY"):

@@ -87,6 +87,16 @@ capabilities:
       - test:test_transforms.TransformTest.test_cxl_round_trip_preserves_bounded_graph
       - fixture:fixtures/expected/concept-map.cxl
       - gitlab-pipeline:3098412613
-  optional-integration-profiles:
+  ponytail-contributor-discipline:
+    level: 3
+    name: Implemented
+    evidence:
+      - source:https://github.com/DietrichGebert/ponytail/blob/7801d061243d7b753bad0e0b3c057cd250b11755/skills/ponytail/SKILL.md
+      - document:docs/semantic-minimality.md
+      - document:docs/input-validation.md
+      - document:CONTRIBUTING.md
+      - test:test_validate.SourceValidationTest.test_json_rejects_duplicate_members_and_non_finite_numbers
+      - test:test_transforms.TransformTest.test_cxl_parser_rejects_content_outside_the_profile
+  optional-agf-caveman-profiles:
     level: 1
     name: Planned

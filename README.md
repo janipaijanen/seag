@@ -18,6 +18,7 @@ software work performed by people and LLM agents.
 [Concept maps and ontologies](docs/introduction-for-software-engineers.md) ·
 [Enterprise integration](docs/enterprise-integration.md) ·
 [Semantic diff](docs/semantic-diff.md) ·
+[Input validation](docs/input-validation.md) ·
 [Rediflow pilot](docs/pilots/rediflow-0.2.0-alpha.1.md) ·
 [Maturity](docs/maturity.md) ·
 [Conformance](docs/conformance.md) ·
@@ -90,8 +91,10 @@ are disclosed instead of being silently presented as equivalent semantics.
 - Reproducible release bundles with manifests, checksums, build
   provenance, SPDX enforcement, and fail-closed publication gating.
 
-The optional AGF, Ponytail, and Caveman profiles remain planned. CmapTools
-desktop import is not yet tested or claimed. See the
+SEAG adopts the pinned Ponytail full discipline for smallest-complete changes
+and strict trust-boundary validation; it does not bundle the agent skill or
+make Ponytail part of the semantic source contract. Optional AGF and Caveman
+profiles remain planned. CmapTools desktop import is not yet tested or claimed. See the
 [machine-readable maturity assessment](maturity.yaml) for exact levels,
 evidence, and limitations.
 
