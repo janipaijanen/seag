@@ -53,11 +53,16 @@ class SourceValidationTest(unittest.TestCase):
         self.assertEqual([], self.run_case())
 
     def test_language_tags_require_supported_bcp47_shape(self):
-        self.manifest["default_language"] = "en_US"
-        self.assert_rejects("well-formed BCP 47")
-        self.manifest["default_language"] = "en"
-        self.fragment["language"] = "not a tag"
-        self.assert_rejects("well-formed BCP 47")
+        for tag in ("en_US", "not a tag", "en-a-foo-a-bar", "sl-rozaj-rozaj", "en-u-ca-gregory-u-nu-latn"):
+            with self.subTest(tag=tag):
+                self.manifest["default_language"] = tag
+                self.assert_only_error("well-formed BCP 47")
+
+    def test_supported_well_formed_bcp47_shapes(self):
+        for tag in ("en", "en-GB", "sr-Latn", "zh-Hant-TW", "de-CH-1901", "en-a-foo-b-bar", "x-seag", "i-klingon"):
+            with self.subTest(tag=tag):
+                self.manifest["default_language"] = tag
+                self.assertEqual([], self.run_case())
 
     def test_concept_requires_singular_number_declaration(self):
         record = self.fragment["records"][0]
@@ -385,12 +390,21 @@ class SourceValidationTest(unittest.TestCase):
 
     def test_invalid_iri_and_namespace_forms(self):
         rule = self.fragment["records"][3]
-        rule["iri"] = "relative"
-        self.assert_only_error("absolute external artifact IRI required")
+        for iri in ("relative", "https://example.invalid/%zz", "https://example.invalid:bad/id", "https://[invalid"):
+            with self.subTest(iri=iri):
+                rule["iri"] = iri
+                self.assert_only_error("absolute external artifact IRI required")
         rule["iri"] = "urn:uuid:22222222-2222-4222-8222-222222222222"
         self.manifest["namespace"] = "https://example.invalid/terms"
         self.fragment["namespace"] = self.manifest["namespace"]
         self.assert_only_error("ending in # or / required")
+
+    def test_valid_absolute_iri_forms(self):
+        rule = self.fragment["records"][3]
+        for iri in ("HTTPS://example.invalid/path", "https://例え.invalid/用語", "tag:example.org,2026:term", "did:example:123"):
+            with self.subTest(iri=iri):
+                rule["iri"] = iri
+                self.assertEqual([], self.run_case())
 
     def test_unknown_record_kind_and_non_object_record(self):
         self.fragment["records"][0]["kind"] = "unknown"

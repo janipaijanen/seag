@@ -37,6 +37,11 @@ gate or establish a supported compatibility baseline.
 - Added an experimental no-overwrite canonical source renderer and checker
   that sorts source deterministically, updates fragment digests, stages output,
   and validates the completed bundle without modifying the input.
+- Hardened absolute-IRI validation against malformed percent escapes,
+  authorities, ports, and IPv6 literals, and completed structural RFC 5646
+  language-tag checks for duplicate variants and extension singletons. The
+  documentation now distinguishes structural validation from unimplemented
+  IANA-registry membership validation.
 
 ## 0.1.0
 

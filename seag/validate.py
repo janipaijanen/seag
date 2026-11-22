@@ -54,13 +54,16 @@ PROCESS_NAME = re.compile(
 )
 VAGUE_NAMES = {"relates to", "relates to the", "related to", "is related to", "associated with", "is associated with", "linked to", "is linked to", "connection", "relation", "supports", "uses", "has many"}
 EVIDENCE_STATUS = {"unresolved", "qualified", "verified", "rejected"}
-LANGUAGE_TAG = re.compile(
-    r"^(?:(?:[A-Za-z]{2,3}(?:-[A-Za-z]{3}){0,3}|[A-Za-z]{4}|[A-Za-z]{5,8})"
-    r"(?:-[A-Za-z]{4})?(?:-(?:[A-Za-z]{2}|[0-9]{3}))?"
-    r"(?:-(?:[A-Za-z0-9]{5,8}|[0-9][A-Za-z0-9]{3}))*"
-    r"(?:-[0-9A-WY-Za-wy-z](?:-[A-Za-z0-9]{2,8})+)*"
-    r"(?:-x(?:-[A-Za-z0-9]{1,8})+)?|x(?:-[A-Za-z0-9]{1,8})+)$"
-)
+GRANDFATHERED_LANGUAGE_TAGS = {
+    "art-lojban", "cel-gaulish", "en-gb-oed", "i-ami", "i-bnn",
+    "i-default", "i-enochian", "i-hak", "i-klingon", "i-lux",
+    "i-mingo", "i-navajo", "i-pwn", "i-tao", "i-tay", "i-tsu",
+    "no-bok", "no-nyn", "sgn-be-fr", "sgn-be-nl", "sgn-ch-de",
+    "zh-guoyu", "zh-hakka", "zh-min", "zh-min-nan", "zh-xiang",
+}
+ALNUM_SUBTAG = re.compile(r"^[A-Za-z0-9]+$")
+SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*$")
+INVALID_IRI_ASCII = frozenset('<>"{}|\\^`')
 
 
 def normalized_actor(value: object) -> str:
@@ -92,16 +95,79 @@ def iso_timestamp(value: object) -> bool:
 
 
 def language_tag(value: object) -> bool:
-    return isinstance(value, str) and bool(LANGUAGE_TAG.fullmatch(value))
+    if not isinstance(value, str) or value.casefold() in GRANDFATHERED_LANGUAGE_TAGS:
+        return isinstance(value, str) and value.casefold() in GRANDFATHERED_LANGUAGE_TAGS
+    subtags = value.split("-")
+    if not subtags or any(not part or len(part) > 8 or not ALNUM_SUBTAG.fullmatch(part) for part in subtags):
+        return False
+    index = 0
+    language = subtags[index]
+    if not language.isalpha() or not 2 <= len(language) <= 8:
+        if language.casefold() != "x":
+            return False
+    if language.casefold() == "x":
+        return len(subtags) > 1
+    index += 1
+    if len(language) in (2, 3):
+        extlang_count = 0
+        while index < len(subtags) and len(subtags[index]) == 3 and subtags[index].isalpha() and extlang_count < 3:
+            index += 1
+            extlang_count += 1
+    if index < len(subtags) and len(subtags[index]) == 4 and subtags[index].isalpha():
+        index += 1
+    if index < len(subtags) and ((len(subtags[index]) == 2 and subtags[index].isalpha()) or (len(subtags[index]) == 3 and subtags[index].isdigit())):
+        index += 1
+    variants: set[str] = set()
+    while index < len(subtags) and ((5 <= len(subtags[index]) <= 8) or (len(subtags[index]) == 4 and subtags[index][0].isdigit())):
+        variant = subtags[index].casefold()
+        if variant in variants:
+            return False
+        variants.add(variant)
+        index += 1
+    singletons: set[str] = set()
+    while index < len(subtags) and len(subtags[index]) == 1 and subtags[index].casefold() != "x":
+        singleton = subtags[index].casefold()
+        if singleton in singletons:
+            return False
+        singletons.add(singleton)
+        index += 1
+        start = index
+        while index < len(subtags) and 2 <= len(subtags[index]) <= 8:
+            index += 1
+        if index == start:
+            return False
+    if index < len(subtags) and subtags[index].casefold() == "x":
+        index += 1
+        start = index
+        while index < len(subtags) and 1 <= len(subtags[index]) <= 8:
+            index += 1
+        if index == start:
+            return False
+    return index == len(subtags)
 
 
 def absolute_iri(value: object) -> bool:
-    if not isinstance(value, str) or not value or any(c.isspace() or unicodedata.category(c) == "Cc" for c in value):
+    if not isinstance(value, str) or not value or any(
+        c.isspace()
+        or unicodedata.category(c) in {"Cc", "Cs"}
+        or c in INVALID_IRI_ASCII
+        for c in value
+    ):
         return False
-    parts = urlsplit(value)
-    if parts.scheme in {"http", "https"}:
-        return bool(parts.netloc)
-    return bool(re.fullmatch(r"[A-Za-z][A-Za-z0-9+.-]*", parts.scheme)) and bool(value.split(":", 1)[1])
+    if re.search(r"%(?![0-9A-Fa-f]{2})", value):
+        return False
+    scheme, separator, remainder = value.partition(":")
+    if not separator or not SCHEME.fullmatch(scheme) or not remainder:
+        return False
+    try:
+        parts = urlsplit(value)
+        hostname = parts.hostname
+        parts.port
+    except ValueError:
+        return False
+    if parts.scheme.casefold() in {"http", "https"}:
+        return remainder.startswith("//") and bool(parts.netloc) and bool(hostname)
+    return parts.scheme.casefold() == scheme.casefold()
 
 
 def _load_json(path: Path) -> object:

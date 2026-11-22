@@ -56,9 +56,16 @@ translation is absent, not an empty value tagged `und`.
 ## Validation and normalization
 
 SEAG tooling must reject malformed language tags with a diagnostic identifying
-the field and value. Validation and normalization must use a pinned version of
-the IANA Language Subtag Registry, and the tool or validation report must expose
-that registry version.
+the field. RFC 5646 well-formedness includes the complete subtag shape, at most
+one occurrence of each extension singleton, and no repeated variant subtag.
+
+The dependency-free 0.1 validator checks RFC 5646 well-formedness, including
+grandfathered tags, but does not claim registry-aware validation: it does not
+check whether a syntactically valid language, extlang, script, region, or
+variant subtag is registered. A tool that claims registry-aware validation or
+normalization must use a pinned version of the IANA Language Subtag Registry,
+and its validation report must expose that registry's `File-Date`. This bounded
+validator capability must not be presented as registry membership evidence.
 
 Deprecated subtags remain recognizable input. A tool may recommend or emit an
 IANA `Preferred-Value`, but it must not silently change authored data. Such a
