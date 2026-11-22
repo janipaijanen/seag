@@ -69,6 +69,70 @@ two-way CI experiments and the default fail-on-conflict policy for three-way
 experiments. The pilot may recommend different policy, but SEAG does not encode
 Rediflow's approval workflow or reviewer authority.
 
+## Durable evidence on the Rediflow side
+
+Rediflow MUST preserve the pilot corpus, expectations, executions, findings,
+and migration exercises in a Rediflow-controlled versioned repository or
+equivalently durable controlled evidence store. A SEAG issue, CI log, checksum,
+or summary report alone is insufficient because it cannot replay a later
+version lift. The retained evidence must contain the actual exercisable input
+bytes; restricted inputs may remain encrypted or access-controlled, but they
+must remain recoverable by authorized Rediflow maintainers.
+
+A recommended logical layout is:
+
+```text
+seag-evidence/
+  corpus/v1/cases/<case-id>/
+    before/ or base/
+    after/ or ours/ and theirs/
+    case.json
+  expectations/v1.json
+  baselines/<baseline-id>/
+  runs/<seag-version>/<run-id>/
+    run.json
+    stdout/
+    stderr/
+    outputs/
+    findings.json
+  migrations/<source-contract-from>--<source-contract-to>/<case-id>/
+  tools/<seag-version>/
+  index.json
+```
+
+The physical path and storage technology belong to Rediflow. The logical
+evidence MUST retain:
+
+- exact input manifest and fragment bytes for every two-way and three-way case;
+- stable case IDs, corpus version, expected codes and severities, and the human
+  rationale for each expectation;
+- the ordinary Git or JSON baseline inputs, outputs, review time, and verdict;
+- the exact SEAG archive or another durable immutable copy, tag, full commit,
+  archive checksum, and implementation digest;
+- operating system, architecture, Python and Git versions, relevant locale and
+  environment values, complete command arguments, exit codes, stdout, stderr,
+  and generated files;
+- measured duration and resource observations where collected;
+- the responsible semantic owner, executor, reviewer, execution time, and
+  source revision; and
+- every finding, disposition, workaround, confidentiality classification, and
+  link to any sanitized SEAG defect.
+
+Corpus and expectation versions are immutable. Corrections create a new corpus
+or expectation version with a recorded decision and predecessor; old cases and
+results are not rewritten. Runs are append-only and receive stable run IDs. A
+new SEAG version first replays an unchanged historical corpus and expectations.
+If the source contract requires migration, Rediflow preserves the old source,
+stores the migrated copy under `migrations/`, records the migration tool and
+loss assessment, and exercises both the old-version baseline and the new-version
+result. It must never relabel or overwrite old input to make a new tool pass.
+
+All evidence inherits the most restrictive classification of its inputs. Public
+SEAG issues receive only separately reviewed sanitized reproducers. Expiring CI
+artifacts may be convenient run outputs but are not the system of record. The
+Rediflow evidence owner must verify backup, restoration, access continuity, and
+the ability to run the corpus before a pilot is called preserved.
+
 ## Feedback record
 
 Each finding records:

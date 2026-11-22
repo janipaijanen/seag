@@ -16,6 +16,10 @@ experiments. It retains the 0.1 source contract while adding experimental
 canonical and semantic-review tooling. It does not satisfy the 0.2 adoption
 gate or establish a supported compatibility baseline.
 
+- Added a Rediflow-owned, replayable pilot-evidence contract for immutable
+  corpora, expectations, run results, tool identity, and version-lift migration
+  exercises without placing Rediflow domain content in SEAG.
+
 - Clarified the state-machine example with distinct `Logging` semantic and
   component identities, a `Configuration` concept, and explicit optional and
   required target cardinalities separated from the relation phrases.
