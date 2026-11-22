@@ -459,6 +459,8 @@ class SourceValidationTest(unittest.TestCase):
             "https://user@@example.org/x",
             "https://example.org/a[b]",
             "https://example.org/#a#b",
+            "urn:neutral:\ufdd0",
+            "urn:neutral:#\ue000",
         ):
             with self.subTest(iri=iri):
                 rule["iri"] = iri
@@ -479,6 +481,7 @@ class SourceValidationTest(unittest.TestCase):
             "https://例え.invalid/用語",
             "tag:example.org,2026:term",
             "did:example:123",
+            "urn:neutral:?\ue000",
         ):
             with self.subTest(iri=iri):
                 rule["iri"] = iri

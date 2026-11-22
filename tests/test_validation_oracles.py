@@ -69,7 +69,11 @@ class ValidationOracleTest(unittest.TestCase):
         validator = Rfc3986Validator().require_presence_of("scheme").check_validity_of(
             "scheme", "host", "port"
         )
-        for value in ("https://example.invalid/path", "urn:uuid:12345678-1234-4234-8234-123456789abc"):
+        for value in (
+            "https://example.invalid/path",
+            "urn:uuid:12345678-1234-4234-8234-123456789abc",
+            "urn:neutral:?\ue000",
+        ):
             with self.subTest(value=value):
                 validator.validate(rfc3986.uri_reference(value))
                 self.assertTrue(absolute_iri(value))
@@ -87,6 +91,8 @@ class ValidationOracleTest(unittest.TestCase):
             "https://user@@example.org/x",
             "https://example.org/a[b]",
             "https://example.org/#a#b",
+            "urn:neutral:\ufdd0",
+            "urn:neutral:#\ue000",
         ):
             with self.subTest(policy_rejection=policy_rejection):
                 self.assertFalse(absolute_iri(policy_rejection))

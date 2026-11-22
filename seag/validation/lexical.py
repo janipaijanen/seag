@@ -24,6 +24,13 @@ SCHEME = re.compile(r"^[A-Za-z][A-Za-z0-9+.-]*$")
 INVALID_IRI_ASCII = frozenset('<>"{}|\\^`')
 
 
+def _unicode_noncharacter(character: str) -> bool:
+    """Return whether a scalar value is permanently reserved as a noncharacter."""
+
+    codepoint = ord(character)
+    return 0xFDD0 <= codepoint <= 0xFDEF or codepoint & 0xFFFF in {0xFFFE, 0xFFFF}
+
+
 def iso_date(value: object) -> bool:
     if not isinstance(value, str):
         return False
@@ -145,6 +152,7 @@ def absolute_iri(value: object) -> bool:
     if not isinstance(value, str) or not value or any(
         character.isspace()
         or unicodedata.category(character) in {"Cc", "Cs"}
+        or _unicode_noncharacter(character)
         or character in INVALID_IRI_ASCII
         for character in value
     ):
@@ -159,7 +167,12 @@ def absolute_iri(value: object) -> bool:
     # about these delimiters, so enforce their component positions first.
     if value.count("#") > 1:
         return False
-    hierarchy = remainder.split("?", 1)[0].split("#", 1)[0]
+    hierarchy_and_query, _fragment_separator, fragment = remainder.partition("#")
+    hierarchy, _query_separator, _query = hierarchy_and_query.partition("?")
+    # RFC 3987 iprivate characters are admitted only by iquery, not by the
+    # hierarchy/path or fragment productions.
+    if any(unicodedata.category(character) == "Co" for character in hierarchy + fragment):
+        return False
     suffix = remainder[len(hierarchy):]
     if hierarchy.startswith("//"):
         authority_and_path = hierarchy[2:]
