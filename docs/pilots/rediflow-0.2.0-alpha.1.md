@@ -82,6 +82,46 @@ Rediflow keeps a versioned cross-artifact trace in its evidence store linking
 each selected concept to relevant artifact revisions and review findings. That
 trace is pilot evidence, not a new mandatory SEAG core record type.
 
+## Rediflow repository placement
+
+The default system of record is the existing Rediflow product repository. This
+keeps semantic source, product artifacts, tests, instructions, and evidence on
+one commit graph and requires no additional service credential. Rediflow should
+use these paths:
+
+| Path | Contents | Primary steward |
+| --- | --- | --- |
+| `semantics/seag/` | Authoritative Rediflow-owned SEAG manifest and fragments | Semantic owner |
+| `docs/testing/seag/` | Human instructions, pilot scope, interpretation guidance, and decision summaries | Evidence owner and documentation contact |
+| `scripts/seag/` | Thin Rediflow runner, checksum verification, replay, and report-index scripts | Build/test contact |
+| `test/fixtures/seag/corpus/` | Immutable sanitized or repository-authorized replay cases | Evidence owner |
+| `test/fixtures/seag/expectations/` | Versioned expected diagnostics, conflicts, and rationales | Semantic owner and test contact |
+| `test/evidence/seag/runs/` | Append-only baseline and SEAG run manifests, outputs, timings, and findings | Evidence owner |
+| `test/evidence/seag/migrations/` | Derived version-lift copies and migration/loss evidence; never original replacement | Evidence owner and migration reviewer |
+| `test/tools/seag/<version>/` | Exact SEAG release archive, checksum, and release provenance used for replay | Build/test contact |
+
+The authoritative SEAG Python implementation remains inside the pinned SEAG
+release archive under `test/tools/seag/<version>/`; Rediflow must not copy
+individual SEAG modules into its own source tree. Rediflow-specific Python
+scripts live under `scripts/seag/` and remain thin orchestration: verify the
+archive checksum, create an isolated temporary extraction, invoke the pinned
+commands, capture outputs, and write a run manifest. Generated canonical source
+stays under the run evidence until a human reviews and deliberately commits it
+to `semantics/seag/`.
+
+The initial corpus and JSON results are small enough for ordinary Git. Do not
+introduce Git LFS, a database, or a hosted evidence service without measured
+need. If some evidence is more restricted than the Rediflow product repository,
+place only that material in a dedicated Rediflow-controlled private evidence
+repository using the same logical layout. The product repository then retains
+an access-safe immutable locator, digest, classification, corpus version, and
+replay instructions. SEAG never receives that credential or restricted content.
+
+Pilot work uses ordinary Rediflow branches and merge requests. Suggested owner
+rules require semantic-owner review for `semantics/seag/` and expectations,
+evidence-owner review for corpus and runs, and build/test review for runners and
+pinned tools. These are Rediflow repository controls, not SEAG workflow fields.
+
 ## Corpus selection
 
 The semantic owner selects a small but real vertical slice rather than exporting
