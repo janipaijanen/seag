@@ -39,7 +39,8 @@ def _read_confined(root: Path, relative: str) -> bytes:
         os.close(directory)
 
 
-def load_bundle(manifest_path: Path) -> tuple[dict, list[tuple[dict, dict]], str]:
+def load_snapshot(manifest_path: Path) -> tuple[dict, list[tuple[dict, dict, bytes]], str]:
+    """Read and validate one immutable manifest-plus-fragments snapshot."""
     manifest_path = manifest_path.resolve()
     try:
         raw = manifest_path.read_bytes()
@@ -59,11 +60,19 @@ def load_bundle(manifest_path: Path) -> tuple[dict, list[tuple[dict, dict]], str
     errors = validate(manifest_path, manifest_raw=raw, fragment_raws=fragment_raws)
     if errors:
         raise ValueError("invalid SEAG bundle:\n" + "\n".join(errors))
-    records: list[tuple[dict, dict]] = []
+    fragments: list[tuple[dict, dict, bytes]] = []
     for item in manifest["fragments"]:
         fragment = json.loads(fragment_raws[item["path"]])
+        fragments.append((item, fragment, fragment_raws[item["path"]]))
+    return manifest, fragments, hashlib.sha256(raw).hexdigest()
+
+
+def load_bundle(manifest_path: Path) -> tuple[dict, list[tuple[dict, dict]], str]:
+    manifest, fragments, digest = load_snapshot(manifest_path)
+    records: list[tuple[dict, dict]] = []
+    for _item, fragment, _raw in fragments:
         records.extend((fragment, record) for record in fragment["records"])
-    return manifest, records, hashlib.sha256(raw).hexdigest()
+    return manifest, records, digest
 
 
 def package_version() -> str:

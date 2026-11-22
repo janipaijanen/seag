@@ -23,6 +23,9 @@ CI uses that release section as the future release-note source.
   change codes, machine-readable output, selectable CI failure policies, and
   bounded three-way conflict detection. This is post-0.1 development and does
   not claim that the 0.2 evidence gate has passed.
+- Added an experimental no-overwrite canonical source renderer and checker
+  that sorts source deterministically, updates fragment digests, stages output,
+  and validates the completed bundle without modifying the input.
 
 ## 0.1.0
 
