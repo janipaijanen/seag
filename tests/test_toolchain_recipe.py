@@ -93,8 +93,11 @@ class ToolchainRecipeTests(unittest.TestCase):
             proof,
         )
         self.assertIn(
-            'for path in ci/toolchain/downloads/*; do test -f "$path" -a ! -L "$path";',
+            'for path in ci/toolchain/downloads/*; do test -f "$path" -a ! -L "$path" || exit 1;',
             proof,
+        )
+        self.assertIn(
+            'cp "$path" "$context_dir/ci/toolchain/downloads/" || exit 1;', proof
         )
         self.assertIn('chmod -R a-w "$context_dir"', proof)
         self.assertIn(

@@ -90,7 +90,7 @@ toolchain-context-proof:
     - test -f ci/toolchain/inputs.json -a ! -L ci/toolchain/inputs.json
     - test -f ci/toolchain/install.py -a ! -L ci/toolchain/install.py
     - cp ci/toolchain/inputs.json ci/toolchain/install.py "$context_dir/ci/toolchain/"
-    - for path in ci/toolchain/downloads/*; do test -f "$path" -a ! -L "$path"; cp "$path" "$context_dir/ci/toolchain/downloads/"; done
+    - for path in ci/toolchain/downloads/*; do test -f "$path" -a ! -L "$path" || exit 1; cp "$path" "$context_dir/ci/toolchain/downloads/" || exit 1; done
     - chmod -R a-w "$context_dir"
     - test -z "$(find "$context_dir" ! -type d ! -type f -print -quit)"
     - test ! -e "$context_dir/.git"

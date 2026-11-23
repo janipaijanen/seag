@@ -55,11 +55,14 @@ verified before use, and every `RUN` is network-disabled. The flag must not be
 reused for untrusted source, user-supplied build instructions, or an input set
 that has not passed the same identity checks.
 
-The offline pip installation disables bytecode compilation because `.pyc`
-headers otherwise inherit artifact-extraction times. The timestamped apk
-transaction log is removed after the structured inventory and SBOM are
-written. Neither generated cache bytecode nor that wall-clock log is retained
-as toolchain evidence.
+The offline installation of the added uv wheel disables generation of new
+bytecode because `.pyc` headers would otherwise inherit artifact-extraction
+times. This does not remove bytecode or cache files already present in the
+pinned CPython/pip base; those inherited bytes remain part of the pinned base
+layers and OCI identity. The timestamped apk transaction log is removed after
+the structured inventory and SBOM are written. No bytecode derived from the
+downloaded addition closure, and no transaction log containing the build wall
+clock, is retained as toolchain evidence.
 
 A candidate build must run before any registry login and with no credentials
 or CI variables forwarded into the build environment. Registry authentication,
