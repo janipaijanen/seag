@@ -58,6 +58,18 @@ not silently redefine the SEAG core version.
     job. Its manifest and provenance must say `release_status: stable` and
     `publication_gate: asserted`; branch and pre-gate bundles remain candidates.
 
+The tag pipeline treats default-branch containment as live authorization
+evidence, not as a reproducible build input. Before any tag bundle job starts,
+`tag-authorization` verifies that `origin` names the expected GitLab host and
+project, fetches only the current default-branch ref without tags, records the
+observed commit, and fails closed unless the tag commit is its ancestor. Bundle
+construction has no live branch fetch. Reproducing bundle bytes therefore does
+not claim to reproduce a later publication-policy decision.
+If the forge is unavailable, rate-limits the fetch, or returns ambiguous state,
+authorization fails closed: the tag pipeline fails, no bundle job starts, and
+the release waits for a new successful pipeline rather than bypassing the
+check.
+
 Direct version-release tags on unreviewed commits are forbidden. A tag that
 does not exactly match `VERSION`, is lightweight rather than annotated, or
 does not identify the requested release commit is rejected.
