@@ -7,3 +7,4 @@
 .hypothesis/
 __pycache__/
 *.py[cod]
+/ci/toolchain/downloads/

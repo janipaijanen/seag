@@ -1,0 +1,15 @@
+# SPDX-FileCopyrightText: Copyright (C) 2026 Jani Päijänen
+# SPDX-License-Identifier: Apache-2.0
+
+FROM docker.io/library/python@sha256:7f2ec713f0436c59df2362d973b6a05af9e87ba78f0e94f5245c302984a7a1fd
+
+COPY ci/toolchain/inputs.json /usr/local/share/seag-toolchain/inputs.json
+COPY ci/toolchain/install.py /usr/local/share/seag-toolchain/install.py
+COPY ci/toolchain/downloads/ /tmp/seag-toolchain-inputs/
+
+RUN test "$(uname -m)" = x86_64 \
+ && python /usr/local/share/seag-toolchain/install.py \
+ && test "$(python --version)" = "Python 3.14.8" \
+ && test "$(git --version)" = "git version 2.54.1" \
+ && test "$(python -c 'import importlib.metadata; print(importlib.metadata.version("uv"))')" = "0.12.9" \
+ && rm -rf /tmp/seag-toolchain-inputs /root/.cache
