@@ -219,6 +219,7 @@ class ToolchainPublishAdmissionTests(unittest.TestCase):
             "\ntag-authorization:", 1
         )[0]
         self.assertIn("toolchain-reproducibility-proof", admission_job)
+        self.assertIn("- job: validate", admission_job)
         self.assertNotIn("CI_REGISTRY_PASSWORD", admission_job)
         self.assertIn("when: manual", publisher)
         self.assertIn("resource_group: seag-toolchain-publisher", publisher)
