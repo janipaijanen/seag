@@ -56,6 +56,8 @@ class ToolchainRecipeTests(unittest.TestCase):
         self.assertNotIn("http://", recipe)
         self.assertNotIn("https://", recipe)
         self.assertIn('"--no-network"', installer)
+        self.assertIn('"query"', installer)
+        self.assertIn('"installed"', installer)
         self.assertIn('"--no-index"', installer)
         self.assertIn('"--no-deps"', installer)
         self.assertIn('"CycloneDX"', installer)
