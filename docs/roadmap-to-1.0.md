@@ -425,6 +425,16 @@ succeeds. Optional CXL, SKOS, agent-protocol, and vendor profiles remain
 separately versioned unless evidence justifies promoting one into the support
 floor.
 
+AGF interoperability is also optional and evidence-gated. The attributed
+AGF26 maturity-vocabulary adoption is not an AGF compatibility profile and is
+not equivalent to Rediflow's operational AGF 3.0 overlay. Before SEAG names any
+AGF profile, it must have a verified normative locator and retained source
+bytes, a pinned field mapping, explicit loss semantics, native validation on
+both sides, and retained round-trip fixtures. The first experiment, if a pilot
+later justifies it, is restricted to static concepts and immutable references;
+process, workflow, roles, gates, plans, coordination, and delegation remain out
+of scope.
+
 Version 1.0 does not claim enterprise readiness, production operation,
 complete ontology management, general AI safety, CmapTools desktop
 compatibility, complete RDF/OWL reasoning, or universal interoperability.
