@@ -136,8 +136,8 @@ toolchain-reproducibility-proof:
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME == "ci/toolchain-build-proof"'
   script:
-    - sha256sum -c toolchain-proof-a/SHA256SUMS
-    - sha256sum -c toolchain-proof-b/SHA256SUMS
+    - (cd toolchain-proof-a && sha256sum -c SHA256SUMS)
+    - (cd toolchain-proof-b && sha256sum -c SHA256SUMS)
     - cmp toolchain-proof-a/seag-ci-toolchain.oci.tar toolchain-proof-b/seag-ci-toolchain.oci.tar
     - cmp toolchain-proof-a/build-metadata.json toolchain-proof-b/build-metadata.json
     - cmp toolchain-proof-a/oci-members.txt toolchain-proof-b/oci-members.txt
