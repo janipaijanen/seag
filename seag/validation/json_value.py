@@ -6,6 +6,7 @@
 from __future__ import annotations
 
 import json
+import math
 
 
 def strict_json_loads(raw: str | bytes) -> object:
@@ -25,4 +26,15 @@ def strict_json_loads(raw: str | bytes) -> object:
     def reject_constant(value: str) -> object:
         raise ValueError(f"non-finite JSON number forbidden: {value}")
 
-    return json.loads(raw, object_pairs_hook=object_from_pairs, parse_constant=reject_constant)
+    def finite_float(value: str) -> float:
+        parsed = float(value)
+        if not math.isfinite(parsed):
+            raise ValueError(f"non-finite JSON number forbidden: {value}")
+        return parsed
+
+    return json.loads(
+        raw,
+        object_pairs_hook=object_from_pairs,
+        parse_constant=reject_constant,
+        parse_float=finite_float,
+    )

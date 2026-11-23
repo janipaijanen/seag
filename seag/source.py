@@ -22,13 +22,18 @@ def _read_confined(root: Path, relative: str) -> bytes:
         raise ValueError(f"unsafe fragment path: {relative!r}")
     directory_flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_CLOEXEC", 0)
     nofollow = getattr(os, "O_NOFOLLOW", 0)
+    nonblock = getattr(os, "O_NONBLOCK", 0)
     directory = os.open(root, directory_flags)
     try:
         for component in path.parts[:-1]:
             child = os.open(component, directory_flags | nofollow, dir_fd=directory)
             os.close(directory)
             directory = child
-        descriptor = os.open(path.parts[-1], os.O_RDONLY | nofollow | getattr(os, "O_CLOEXEC", 0), dir_fd=directory)
+        descriptor = os.open(
+            path.parts[-1],
+            os.O_RDONLY | nofollow | nonblock | getattr(os, "O_CLOEXEC", 0),
+            dir_fd=directory,
+        )
         try:
             if not stat.S_ISREG(os.fstat(descriptor).st_mode):
                 raise ValueError(f"fragment is not a regular file: {relative!r}")

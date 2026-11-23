@@ -6,7 +6,9 @@
 from __future__ import annotations
 
 import json
+import os
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
@@ -65,6 +67,29 @@ class CanonicalSourceTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "invalid SEAG bundle"):
             write(invalid, output)
         self.assertFalse(output.exists())
+
+    @unittest.skipUnless(hasattr(os, "mkfifo"), "named pipes are unavailable")
+    def test_fifo_fragment_is_rejected_without_blocking(self):
+        bundle = self.root / "fifo-bundle"
+        bundle.mkdir()
+        shutil.copyfile(MANIFEST, bundle / "manifest.json")
+        os.mkfifo(bundle / "fragment.json")
+        result = subprocess.run(
+            (
+                sys.executable,
+                "-m",
+                "seag.canonical",
+                str(bundle / "manifest.json"),
+                "--check",
+            ),
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+        self.assertEqual(2, result.returncode, result.stderr)
+        self.assertIn("invalid SEAG bundle", result.stderr)
 
     def test_cli_check_exit_codes(self):
         noncanonical = subprocess.run(
