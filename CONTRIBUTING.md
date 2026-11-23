@@ -40,8 +40,12 @@ personal liability or an indemnity.
 
 ### Historical transition and enforcement
 
-The DCO trailer requirement is mechanically enforced for every commit after
-`a2fee6e32b1bdcbcb78bb36791ce3910ae0d1d29`. The eleven commits from
+The DCO trailer requirement is mechanically enforced for every content-bearing
+commit after `a2fee6e32b1bdcbcb78bb36791ce3910ae0d1d29`. An unsigned,
+host-generated merge commit is accepted only when its tree is byte-for-byte
+identical to one of its already-checked parent trees. A merge that combines,
+resolves, or otherwise introduces a tree different from every parent still
+requires a sign-off. The eleven commits from
 `2693854aafd78854ffa8c9c9a0e398514e1ae88b` through that baseline were
 published without the required trailer. They are preserved to avoid rewriting
 public release history and are covered by the maintainer's explicit

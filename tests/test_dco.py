@@ -25,6 +25,9 @@ class DcoCheckTest(unittest.TestCase):
         run("git", "config", "user.name", "Example Contributor", cwd=self.repo)
         run("git", "config", "user.email", "example@example.com", cwd=self.repo)
         self.baseline = self.commit("baseline", signed=False)
+        self.main_branch = run(
+            "git", "branch", "--show-current", cwd=self.repo
+        ).stdout.strip()
 
     def tearDown(self):
         self.temporary.cleanup()
@@ -62,6 +65,37 @@ class DcoCheckTest(unittest.TestCase):
         result = self.check()
         self.assertEqual(1, result.returncode)
         self.assertIn(commit, result.stderr)
+
+    def test_accepts_unsigned_merge_that_reuses_certified_parent_tree(self):
+        run("git", "checkout", "-q", "-b", "feature", cwd=self.repo)
+        self.commit("certified feature", signed=True)
+        run("git", "checkout", "-q", self.main_branch, cwd=self.repo)
+        merge = run(
+            "git", "merge", "--no-ff", "-m", "host-generated merge", "feature",
+            cwd=self.repo,
+        )
+        self.assertEqual(0, merge.returncode, merge.stderr)
+        result = self.check()
+        self.assertEqual(0, result.returncode, result.stderr)
+
+    def test_rejects_unsigned_merge_whose_tree_matches_no_parent(self):
+        run("git", "checkout", "-q", "-b", "feature", cwd=self.repo)
+        self.commit("certified feature", signed=True)
+        run("git", "checkout", "-q", self.main_branch, cwd=self.repo)
+        marker = self.repo / "main.txt"
+        marker.write_text("main\n")
+        run("git", "add", "main.txt", cwd=self.repo)
+        commit = run("git", "commit", "-q", "--signoff", "-m", "certified main", cwd=self.repo)
+        self.assertEqual(0, commit.returncode, commit.stderr)
+        merge = run(
+            "git", "merge", "--no-ff", "-m", "content-combining merge", "feature",
+            cwd=self.repo,
+        )
+        self.assertEqual(0, merge.returncode, merge.stderr)
+        merge_commit = run("git", "rev-parse", "HEAD", cwd=self.repo).stdout.strip()
+        result = self.check()
+        self.assertEqual(1, result.returncode)
+        self.assertIn(merge_commit, result.stderr)
 
     def test_fails_closed_when_baseline_is_unavailable(self):
         result = run(

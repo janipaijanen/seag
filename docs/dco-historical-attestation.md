@@ -38,10 +38,13 @@ maintainer's certification of this statement and list.
 
 ## Prospective rule
 
-Every commit after `a2fee6e32b1bdcbcb78bb36791ce3910ae0d1d29`
-must contain at least one syntactically valid `Signed-off-by` trailer. CI and
-the publication gate fail closed when the baseline is unavailable, the target
-is not its descendant, or a later commit lacks the trailer.
+Every content-bearing commit after
+`a2fee6e32b1bdcbcb78bb36791ce3910ae0d1d29` must contain at least one
+syntactically valid `Signed-off-by` trailer. An unsigned merge is accepted only
+when its tree exactly equals one parent tree, proving that the merge commit
+itself adds no content beyond an already-checked history. CI and the publication
+gate fail closed when the baseline is unavailable, the target is not its
+descendant, or a later content-bearing commit lacks the trailer.
 
 This transition is specific to the exact commits above. It is not a general
 waiver and does not change the unmodified DCO 1.1 terms.
