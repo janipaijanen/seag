@@ -68,3 +68,19 @@ A candidate build must run before any registry login and with no credentials
 or CI variables forwarded into the build environment. Registry authentication,
 candidate publication and digest attestation are separate post-build
 operations and require their own reviewed protected pipeline.
+
+The candidate publisher is a separate manual job on protected `main`. An
+automatic admission job first validates the reproduced archive, its canonical
+checksum manifest, OCI member listing, Linux/amd64 descriptor, and manifest and
+config blob digests without registry credentials. The publisher receives the
+verified archive only after that admission, requires the operator to repeat
+the exact source commit in `TOOLCHAIN_PUBLISH_COMMIT`, and serializes all
+candidate publications. It uses a digest-pinned Skopeo 1.24.1 image, refuses
+to overwrite an existing `candidate-<commit>` destination, preserves the OCI
+manifest digest, and emits a credential-free receipt.
+
+The `seag-toolchain-candidate` GitLab environment must be protected before the
+manual job is ever run. A successful candidate publication is review evidence,
+not acceptance or adoption: an independent reviewer must inspect the registry
+manifest, config, layers, inventories and SBOM, and the accepted digest must be
+recorded durably before any SEAG job consumes it.

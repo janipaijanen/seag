@@ -55,7 +55,8 @@ toolchain-context-proof:
     name: python:3.14.8-alpine@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d750607710cc56da3bc72
   before_script: []
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup)$/'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup|publisher)$/'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
   script:
     - test "$(cat ci/toolchain/SOURCE_DATE_EPOCH)" = "1795432630"
     - python scripts/prepare-toolchain-context.py
@@ -76,7 +77,8 @@ toolchain-context-proof:
     - job: toolchain-context-proof
       artifacts: true
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup)$/'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup|publisher)$/'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
   script:
     - test -z "${DOCKER_AUTH_CONFIG:-}"
     - test ! -e "$HOME/.docker/config.json"
@@ -143,7 +145,8 @@ toolchain-reproducibility-proof:
     - job: toolchain-build-proof-b
       artifacts: true
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup)$/'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup|publisher)$/'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
   script:
     - (cd toolchain-proof-a && sha256sum -c SHA256SUMS)
     - (cd toolchain-proof-b && sha256sum -c SHA256SUMS)
@@ -160,6 +163,24 @@ toolchain-reproducibility-proof:
     paths:
       - toolchain-proof/
     expire_in: 7 days
+
+toolchain-publish-admission:
+  stage: authorize
+  image:
+    name: python:3.14.8-alpine@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d750607710cc56da3bc72
+  before_script: []
+  needs:
+    - job: toolchain-reproducibility-proof
+      artifacts: true
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
+  script:
+    - python scripts/check-toolchain-publish-admission.py --proof-dir toolchain-proof --output-dir toolchain-publish-admission
+  artifacts:
+    name: "seag-toolchain-publish-admission-${CI_COMMIT_SHA}"
+    paths:
+      - toolchain-publish-admission/
+    expire_in: never
 
 tag-authorization:
   stage: authorize
@@ -204,4 +225,49 @@ stable-publication-gate:
     name: "seag-${CI_COMMIT_TAG}-stable-release"
     paths:
       - release/
+
+toolchain-publish-candidate:
+  stage: publication
+  image:
+    name: quay.io/skopeo/stable@sha256:83679426be479f119a92fed78fb441f046ea07ea5e5a4b3a838f7b155be567fe
+    entrypoint: [""]
+  before_script: []
+  needs:
+    - job: toolchain-reproducibility-proof
+      artifacts: true
+    - job: toolchain-publish-admission
+      artifacts: true
+  resource_group: seag-toolchain-publisher
+  environment:
+    name: seag-toolchain-candidate
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
+      when: manual
+      allow_failure: true
+    - when: never
+  script:
+    - test -n "${CI_REGISTRY_USER:-}" -a -n "${CI_REGISTRY_PASSWORD:-}"
+    - test "${TOOLCHAIN_PUBLISH_COMMIT:-}" = "$CI_COMMIT_SHA"
+    - test "$(cat toolchain-publish-admission/source-commit.txt)" = "$CI_COMMIT_SHA"
+    - (cd toolchain-proof && sha256sum -c SHA256SUMS)
+    - destination="$(cat toolchain-publish-admission/destination.txt)"
+    - expected_digest="$(cat toolchain-publish-admission/manifest-digest.txt)"
+    - auth_dir="$(mktemp -d)"
+    - auth_file="$auth_dir/auth.json"
+    - trap 'rm -rf "$auth_dir"' EXIT
+    - printf '%s' "$CI_REGISTRY_PASSWORD" | skopeo login --authfile "$auth_file" --username "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
+    - if skopeo inspect --authfile "$auth_file" "docker://$destination" >/dev/null 2>&1; then echo "candidate destination already exists" >&2; exit 1; fi
+    - skopeo copy --preserve-digests --authfile "$auth_file" oci-archive:toolchain-proof/seag-ci-toolchain.oci.tar "docker://$destination"
+    - observed_digest="$(skopeo inspect --authfile "$auth_file" --format '{{.Digest}}' "docker://$destination")"
+    - test "$observed_digest" = "$expected_digest"
+    - mkdir toolchain-publication
+    - cp toolchain-publish-admission/admission.json toolchain-publication/admission.json
+    - printf '%s\n' "$destination" > toolchain-publication/destination.txt
+    - printf '%s\n' "$observed_digest" > toolchain-publication/registry-manifest-digest.txt
+    - printf '%s\n' "$CI_JOB_ID" > toolchain-publication/publisher-job-id.txt
+  artifacts:
+    name: "seag-toolchain-publication-${CI_COMMIT_SHA}"
+    paths:
+      - toolchain-publication/
+    expire_in: never
 
