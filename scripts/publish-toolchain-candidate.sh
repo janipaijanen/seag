@@ -54,10 +54,13 @@ readonly netrc_file="$auth_dir/netrc"
 readonly bearer_header="$auth_dir/bearer-header"
 
 # Discover the registry's authentication endpoint without sending a credential.
-challenge_status="$(curl --silent --show-error --max-time 30 --max-redirs 0 \
-  --request GET --header 'Accept: application/vnd.oci.image.manifest.v1+json' \
-  --dump-header "$response_headers" --output "$response_body" \
-  --write-out '%{http_code}' "$manifest_url")" || {
+challenge_status="$(
+  ulimit -f 128
+  exec curl --silent --show-error --max-time 30 --max-redirs 0 \
+    --request GET --header 'Accept: application/vnd.oci.image.manifest.v1+json' \
+    --dump-header "$response_headers" --output "$response_body" \
+    --write-out '%{http_code}' "$manifest_url"
+)" || {
     echo "candidate absence could not be established" >&2
     exit 1
   }
@@ -100,11 +103,14 @@ test "$realm_host" = "$CI_SERVER_HOST" || {
 printf 'machine %s login %s password %s\n' \
   "$realm_host" "$CI_REGISTRY_USER" "$CI_REGISTRY_PASSWORD" >"$netrc_file"
 chmod 0600 "$netrc_file"
-token_status="$(curl --silent --show-error --max-time 30 --max-redirs 0 \
-  --netrc-file "$netrc_file" --get \
-  --data-urlencode "service=$service" \
-  --data-urlencode "scope=repository:$repository:pull,push" \
-  --output "$token_body" --write-out '%{http_code}' "$realm")" || {
+token_status="$(
+  ulimit -f 128
+  exec curl --silent --show-error --max-time 30 --max-redirs 0 \
+    --netrc-file "$netrc_file" --get \
+    --data-urlencode "service=$service" \
+    --data-urlencode "scope=repository:$repository:pull,push" \
+    --output "$token_body" --write-out '%{http_code}' "$realm"
+)" || {
     echo "candidate absence could not be established" >&2
     exit 1
   }
@@ -127,10 +133,13 @@ chmod 0600 "$bearer_header"
 
 # Preserve the HTTP status and complete structured body. Only one exact
 # missing-resource code carried by HTTP 404 is definite absence.
-manifest_status="$(curl --silent --show-error --max-time 30 --max-redirs 0 \
-  --request GET --header 'Accept: application/vnd.oci.image.manifest.v1+json' \
-  --header "@$bearer_header" --dump-header "$response_headers" \
-  --output "$response_body" --write-out '%{http_code}' "$manifest_url")" || {
+manifest_status="$(
+  ulimit -f 128
+  exec curl --silent --show-error --max-time 30 --max-redirs 0 \
+    --request GET --header 'Accept: application/vnd.oci.image.manifest.v1+json' \
+    --header "@$bearer_header" --dump-header "$response_headers" \
+    --output "$response_body" --write-out '%{http_code}' "$manifest_url"
+)" || {
     echo "candidate absence could not be established" >&2
     exit 1
   }

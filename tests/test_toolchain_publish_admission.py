@@ -422,6 +422,7 @@ esac
             self.assertIn("inspect --raw", skopeo_calls[2])
             curl_calls = (root / "curl-arguments").read_text()
             self.assertIn("/v2/seag/ci-toolchain/manifests/candidate-test", curl_calls)
+            self.assertEqual(3, PUBLISHER.read_text().count("ulimit -f 128"))
             self.assertEqual(
                 environment["SKOPEO_MANIFEST"],
                 (root / "toolchain-publication/registry-manifest-digest.txt")
