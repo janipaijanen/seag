@@ -118,12 +118,48 @@ test "$token_status" = 200 -a "$(wc -c <"$token_body")" -le 65536 || {
   echo "candidate absence could not be established" >&2
   exit 1
 }
-token_fields="$(LC_ALL=C grep -oE '"(token|access_token)"[[:space:]]*:[[:space:]]*"[A-Za-z0-9._~-]+"' "$token_body" || true)"
-test "$(printf '%s\n' "$token_fields" | awk 'NF {count++} END {print count+0}')" -eq 1 || {
+token="$(python - "$token_body" <<'PY'
+import json
+import re
+import sys
+
+
+def unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate JSON member")
+        result[key] = value
+    return result
+
+
+with open(sys.argv[1], encoding="utf-8") as stream:
+    document = json.load(stream, object_pairs_hook=unique_object)
+if not isinstance(document, dict):
+    raise ValueError("token response is not an object")
+allowed = {"token", "access_token", "expires_in", "issued_at"}
+if not set(document) <= allowed:
+    raise ValueError("unexpected token-response member")
+present = [key for key in ("token", "access_token") if key in document]
+if len(present) != 1:
+    raise ValueError("token response is ambiguous")
+token = document[present[0]]
+if not isinstance(token, str) or not re.fullmatch(r"[A-Za-z0-9._~-]+", token):
+    raise ValueError("invalid token")
+if "expires_in" in document and (
+    isinstance(document["expires_in"], bool)
+    or not isinstance(document["expires_in"], int)
+    or document["expires_in"] < 0
+):
+    raise ValueError("invalid token lifetime")
+if "issued_at" in document and not isinstance(document["issued_at"], str):
+    raise ValueError("invalid token issue time")
+print(token)
+PY
+)" || {
   echo "candidate absence could not be established" >&2
   exit 1
 }
-token="$(printf '%s\n' "$token_fields" | sed 's/^[^:]*:[[:space:]]*"//; s/"$//')"
 test -n "$token" || {
   echo "candidate absence could not be established" >&2
   exit 1
@@ -151,33 +187,50 @@ test "$manifest_status" = 404 -a "$(wc -c <"$response_body")" -le 65536 || {
   echo "candidate absence could not be established" >&2
   exit 1
 }
-error_codes="$(LC_ALL=C grep -oE '"code"[[:space:]]*:[[:space:]]*"[A-Z_]+"' "$response_body" || true)"
-test "$(printf '%s\n' "$error_codes" | awk 'NF {count++} END {print count+0}')" -eq 1 || {
+python - "$response_body" <<'PY' || {
+import json
+import sys
+
+
+def unique_object(pairs):
+    result = {}
+    for key, value in pairs:
+        if key in result:
+            raise ValueError("duplicate JSON member")
+        result[key] = value
+    return result
+
+
+with open(sys.argv[1], encoding="utf-8") as stream:
+    document = json.load(stream, object_pairs_hook=unique_object)
+if not isinstance(document, dict) or set(document) != {"errors"}:
+    raise ValueError("invalid registry error document")
+errors = document["errors"]
+if not isinstance(errors, list) or len(errors) != 1:
+    raise ValueError("registry error is ambiguous")
+error = errors[0]
+if not isinstance(error, dict) or not set(error) <= {"code", "message", "detail"}:
+    raise ValueError("invalid registry error object")
+if error.get("code") not in {"MANIFEST_UNKNOWN", "NAME_UNKNOWN"}:
+    raise ValueError("resource absence was not established")
+if "message" in error and not isinstance(error["message"], str):
+    raise ValueError("invalid registry error message")
+
+
+def contains_nested_code(value):
+    if isinstance(value, dict):
+        return "code" in value or any(contains_nested_code(item) for item in value.values())
+    if isinstance(value, list):
+        return any(contains_nested_code(item) for item in value)
+    return False
+
+
+if "detail" in error and contains_nested_code(error["detail"]):
+    raise ValueError("contradictory nested error code")
+PY
   echo "candidate absence could not be established" >&2
   exit 1
 }
-compact_error="$(tr -d '\r\n\t ' <"$response_body")"
-case "$compact_error" in
-  '{"errors":[{"code":"MANIFEST_UNKNOWN",'*'}]}'|\
-  '{"errors":[{"code":"NAME_UNKNOWN",'*'}]}') ;;
-  *)
-    echo "candidate absence could not be established" >&2
-    exit 1
-    ;;
-esac
-case "$compact_error" in
-  *'},{'*)
-    echo "candidate absence could not be established" >&2
-    exit 1
-    ;;
-esac
-case "$error_codes" in
-  *'"MANIFEST_UNKNOWN"'|*'"NAME_UNKNOWN"') ;;
-  *)
-    echo "candidate absence could not be established" >&2
-    exit 1
-    ;;
-esac
 
 printf '%s' "$CI_REGISTRY_PASSWORD" | skopeo login \
   --authfile "$auth_file" \

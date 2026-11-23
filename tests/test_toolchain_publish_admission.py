@@ -354,6 +354,15 @@ case "$url" in
     if test "$SKOPEO_MODE" = auth; then
       printf '%s' '{"errors":[{"code":"DENIED"}]}' > "$output"
       printf 403
+    elif test "$SKOPEO_MODE" = token-malformed; then
+      printf '%s' '{"token":"header.payload.signature",THIS IS NOT JSON}' > "$output"
+      printf 200
+    elif test "$SKOPEO_MODE" = token-duplicate; then
+      printf '%s' '{"token":"header.payload.signature","token":"other"}' > "$output"
+      printf 200
+    elif test "$SKOPEO_MODE" = token-nested; then
+      printf '%s' '{"metadata":{"token":"header.payload.signature"}}' > "$output"
+      printf 200
     else
       printf '%s' '{"token":"header.payload.signature"}' > "$output"
       printf 200
@@ -375,6 +384,10 @@ case "$url" in
       mixed|multiline) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN"},{"code":"DENIED"}]}' > "$output"; printf 404 ;;
       other-resource) printf '%s' '{"errors":[{"code":"BLOB_UNKNOWN"}]}' > "$output"; printf 404 ;;
       malformed) printf '%s' 'not-json "code":"MANIFEST_UNKNOWN"' > "$output"; printf 404 ;;
+      malformed-prefix) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN",THIS IS NOT JSON}]}' > "$output"; printf 404 ;;
+      duplicate-code) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN","code":"NAME_UNKNOWN"}]}' > "$output"; printf 404 ;;
+      duplicate-errors) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN"}],"errors":[{"code":"MANIFEST_UNKNOWN"}]}' > "$output"; printf 404 ;;
+      nested-error) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN","detail":{"code":"DENIED"}}]}' > "$output"; printf 404 ;;
       server) printf '%s' '{"errors":[{"code":"UNKNOWN"}]}' > "$output"; printf 500 ;;
       rate) printf '%s' '{"errors":[{"code":"TOOMANYREQUESTS"}]}' > "$output"; printf 429 ;;
       network) exit 7 ;;
@@ -463,7 +476,16 @@ esac
             self.assertTrue((root / "copy-called").is_file())
 
     def test_publisher_rejects_mixed_multiline_and_other_resource_errors(self):
-        for mode in ("mixed", "multiline", "other-resource", "malformed"):
+        for mode in (
+            "mixed",
+            "multiline",
+            "other-resource",
+            "malformed",
+            "malformed-prefix",
+            "duplicate-code",
+            "duplicate-errors",
+            "nested-error",
+        ):
             with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 environment = self.publisher_fixture(root, mode)
@@ -472,6 +494,20 @@ esac
                 )
                 self.assertNotEqual(0, result.returncode)
                 self.assertIn("candidate absence could not be established", result.stderr)
+                self.assertFalse((root / "copy-called").exists())
+                self.assertFalse((root / "login-called").exists())
+
+    def test_publisher_rejects_malformed_ambiguous_and_nested_token_documents(self):
+        for mode in ("token-malformed", "token-duplicate", "token-nested"):
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                environment = self.publisher_fixture(root, mode)
+                result = subprocess.run(
+                    [str(PUBLISHER)], cwd=root, env=environment, capture_output=True, text=True
+                )
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn("candidate absence could not be established", result.stderr)
+                self.assertFalse((root / "login-called").exists())
                 self.assertFalse((root / "copy-called").exists())
 
     def test_publisher_never_sends_credentials_outside_ci_registry(self):

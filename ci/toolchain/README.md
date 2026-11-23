@@ -80,7 +80,8 @@ candidate publications. It uses a digest-pinned Skopeo 1.24.1 image and a
 copy, it queries the exact Registry v2 manifest resource with a bounded curl
 client, pins the authentication realm to this GitLab server, and preserves the
 HTTP status and complete structured error body. It accepts absence only for
-HTTP 404 carrying exactly one `MANIFEST_UNKNOWN` or `NAME_UNKNOWN` code;
+HTTP 404 carrying a well-formed, duplicate-free JSON error document with
+exactly one `MANIFEST_UNKNOWN` or `NAME_UNKNOWN` code;
 authorization, rate, server, compound-error, redirect and malformed responses
 fail closed. It refuses any destination outside `CI_REGISTRY` before sending a
 credential. It preserves the OCI manifest digest, hashes the raw post-copy
