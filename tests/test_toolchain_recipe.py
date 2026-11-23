@@ -159,6 +159,46 @@ class ToolchainRecipeTests(unittest.TestCase):
                 preparer.main()
             self.assertEqual([], list(downloads.iterdir()))
 
+    def test_preparer_rejects_short_stream(self):
+        artifact = {**self.manifest["artifacts"][0], "size": 2}
+        document = {**self.manifest, "artifacts": [artifact]}
+        response = io.BytesIO(b"x")
+        response.geturl = lambda: artifact["url"]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest = root / "inputs.json"
+            manifest.write_text(json.dumps(document), encoding="utf-8")
+            downloads = root / "downloads"
+            with (
+                mock.patch.object(preparer, "MANIFEST", manifest),
+                mock.patch.object(preparer, "OUTPUT", downloads),
+                mock.patch.object(
+                    preparer.urllib.request, "urlopen", return_value=response
+                ),
+                self.assertRaisesRegex(SystemExit, "wrong final size"),
+            ):
+                preparer.main()
+            self.assertEqual([], list(downloads.iterdir()))
+
+    def test_preparer_rejects_existing_regular_file_with_wrong_size(self):
+        artifact = self.manifest["artifacts"][0]
+        document = {**self.manifest, "artifacts": [artifact]}
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest = root / "inputs.json"
+            manifest.write_text(json.dumps(document), encoding="utf-8")
+            downloads = root / "downloads"
+            downloads.mkdir()
+            (downloads / artifact["filename"]).write_bytes(b"wrong")
+            with (
+                mock.patch.object(preparer, "MANIFEST", manifest),
+                mock.patch.object(preparer, "OUTPUT", downloads),
+                mock.patch.object(preparer.urllib.request, "urlopen") as opener,
+                self.assertRaisesRegex(SystemExit, "wrong size"),
+            ):
+                preparer.main()
+            opener.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()
