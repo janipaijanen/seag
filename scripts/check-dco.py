@@ -44,6 +44,27 @@ def has_sign_off(commit: str) -> bool:
     return any(SIGN_OFF.fullmatch(line) for line in parsed_trailers(commit_message(commit)))
 
 
+def is_content_neutral_merge(commit: str) -> bool:
+    """Return whether a merge reuses one parent's tree without changing it."""
+
+    result = git("show", "-s", "--format=%T %P", commit)
+    if result.returncode:
+        raise RuntimeError(result.stderr.strip() or f"cannot inspect commit {commit}")
+    values = result.stdout.split()
+    if len(values) < 3:
+        return False
+    tree, *parents = values
+    for parent in parents:
+        parent_result = git("show", "-s", "--format=%T", parent)
+        if parent_result.returncode:
+            raise RuntimeError(
+                parent_result.stderr.strip() or f"cannot inspect parent {parent}"
+            )
+        if parent_result.stdout.strip() == tree:
+            return True
+    return False
+
+
 def commits_after(baseline: str, revision: str) -> list[str]:
     for value, label in ((baseline, "baseline"), (revision, "revision")):
         result = git("rev-parse", "--verify", f"{value}^{{commit}}")
@@ -63,7 +84,11 @@ def commits_after(baseline: str, revision: str) -> list[str]:
 
 
 def check(baseline: str, revision: str) -> list[str]:
-    return [commit for commit in commits_after(baseline, revision) if not has_sign_off(commit)]
+    return [
+        commit
+        for commit in commits_after(baseline, revision)
+        if not has_sign_off(commit) and not is_content_neutral_merge(commit)
+    ]
 
 
 def main() -> int:
@@ -74,7 +99,17 @@ def main() -> int:
 
     try:
         commits = commits_after(args.baseline, args.revision)
-        failures = [commit for commit in commits if not has_sign_off(commit)]
+        signed = [commit for commit in commits if has_sign_off(commit)]
+        content_neutral_merges = [
+            commit
+            for commit in commits
+            if commit not in signed and is_content_neutral_merge(commit)
+        ]
+        failures = [
+            commit
+            for commit in commits
+            if commit not in signed and commit not in content_neutral_merges
+        ]
     except RuntimeError as error:
         print(f"DCO check: FAILED: {error}", file=sys.stderr)
         return 1
@@ -86,7 +121,11 @@ def main() -> int:
             print(f"{commit} {subject}", file=sys.stderr)
         return 1
 
-    print(f"DCO check: {len(commits)} post-transition commit(s) certified")
+    print(
+        f"DCO check: {len(commits)} post-transition commit(s) checked; "
+        f"{len(signed)} signed, "
+        f"{len(content_neutral_merges)} content-neutral merge(s) accepted"
+    )
     return 0
 
 

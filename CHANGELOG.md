@@ -30,6 +30,9 @@ gate or establish a supported compatibility baseline.
   exercises without placing Rediflow domain content in SEAG.
 - Moved adopter schedules and product-governance decisions out of the release
   content while retaining a reusable public evaluation protocol.
+- Allowed unsigned hosting-platform merge commits only when their tree exactly
+  reuses an already-checked parent tree; content-bearing merges still require
+  DCO sign-off.
 
 - Clarified the state-machine example with distinct `Logging` semantic and
   component identities, a `Configuration` concept, and explicit optional and
