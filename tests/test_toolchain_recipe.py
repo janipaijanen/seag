@@ -62,6 +62,22 @@ class ToolchainRecipeTests(unittest.TestCase):
         self.assertEqual("2.54.1-r0", versions["git"])
         self.assertEqual("0.12.9", versions["uv"])
 
+    def test_source_date_epoch_is_canonical_and_reviewed(self):
+        value = (TOOLCHAIN / "SOURCE_DATE_EPOCH").read_text(encoding="ascii")
+        self.assertEqual("1795432630\n", value)
+        self.assertEqual(1795432630, int(value))
+
+    def test_ci_proof_is_reproducible_and_non_publishing(self):
+        ci = (ROOT / ".gitlab-ci.yml").read_text(encoding="utf-8")
+        proof = ci.split("# Non-publishing proof", 1)[1].split("\ntag-authorization:", 1)[0]
+        self.assertIn('SOURCE_DATE_EPOCH="$(cat ci/toolchain/SOURCE_DATE_EPOCH)"', proof)
+        self.assertIn("rewrite-timestamp=true,compatibility-version=30", proof)
+        self.assertIn("toolchain-build-proof-a:", proof)
+        self.assertIn("toolchain-build-proof-b:", proof)
+        self.assertIn("cmp toolchain-proof-a/seag-ci-toolchain.oci.tar", proof)
+        self.assertNotIn("docker login", proof)
+        self.assertNotIn("push=true", proof)
+
     def test_recipe_installs_only_local_verified_payloads(self):
         recipe = (TOOLCHAIN / "Containerfile").read_text(encoding="utf-8")
         installer = (TOOLCHAIN / "install.py").read_text(encoding="utf-8")
