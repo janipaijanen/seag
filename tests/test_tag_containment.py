@@ -1,8 +1,10 @@
 # SPDX-FileCopyrightText: Copyright (C) 2026 Jani Päijänen
 # SPDX-License-Identifier: Apache-2.0
 
+import contextlib
 import importlib.util
 import subprocess
+import tempfile
 import unittest
 from pathlib import Path
 from unittest.mock import patch
@@ -98,6 +100,69 @@ class TagPolicyTests(unittest.TestCase):
         accepted, detail = self.verify()
         self.assertFalse(accepted)
         self.assertIn("not contained", detail)
+
+
+class RealGitTagPolicyTests(unittest.TestCase):
+    def git(self, repository: Path, *arguments: str) -> str:
+        completed = subprocess.run(
+            ("git", "-C", str(repository), *arguments),
+            check=True,
+            text=True,
+            stdout=subprocess.PIPE,
+            stderr=subprocess.PIPE,
+        )
+        return completed.stdout.strip()
+
+    def test_real_fetch_rev_parse_and_containment(self) -> None:
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            source = root / "source"
+            remote = root / "remote.git"
+            client = root / "client"
+            source.mkdir()
+            self.git(source, "init", "-b", "main")
+            self.git(source, "config", "user.name", "SEAG test")
+            self.git(source, "config", "user.email", "test@example.invalid")
+            self.git(source, "commit", "--allow-empty", "-m", "main")
+            main_commit = self.git(source, "rev-parse", "HEAD")
+            self.git(root, "clone", "--bare", str(source), str(remote))
+
+            client.mkdir()
+            self.git(client, "init", "-b", "side")
+            self.git(client, "config", "user.name", "SEAG test")
+            self.git(client, "config", "user.email", "test@example.invalid")
+            self.git(client, "commit", "--allow-empty", "-m", "unrelated")
+            unrelated = self.git(client, "rev-parse", "HEAD")
+            public_url = "https://gitlab.example/group/project.git"
+            self.git(client, "remote", "add", "origin", public_url)
+            self.git(
+                client,
+                "config",
+                f"url.{remote.as_uri()}.insteadOf",
+                public_url,
+            )
+            self.git(client, "config", "protocol.file.allow", "always")
+
+            with contextlib.chdir(client):
+                self.assertEqual(
+                    (True, main_commit),
+                    TAG_CONTAINMENT.verify(
+                        main_commit,
+                        "origin",
+                        "main",
+                        "gitlab.example",
+                        "group/project",
+                    ),
+                )
+                accepted, detail = TAG_CONTAINMENT.verify(
+                    unrelated,
+                    "origin",
+                    "main",
+                    "gitlab.example",
+                    "group/project",
+                )
+            self.assertFalse(accepted)
+            self.assertIn("not contained", detail)
 
 
 if __name__ == "__main__":

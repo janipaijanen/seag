@@ -56,7 +56,7 @@ def verify(
     if not server_host or not project_path:
         return False, "expected GitLab project identity is incomplete"
 
-    configured = git("remote", "get-url", remote, capture=True)
+    configured = git("config", "--get", f"remote.{remote}.url", capture=True)
     if configured.returncode:
         return False, "cannot resolve the configured policy remote"
     try:
