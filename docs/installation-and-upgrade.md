@@ -38,7 +38,7 @@ lock as a side effect of testing.
 ```sh
 uv sync --locked --only-group conformance
 uv lock --check
-python scripts/check-dependency-policy.py
+uv run --locked --no-sync python scripts/check-dependency-policy.py
 uv run --locked --no-sync python -m unittest discover -s tests -v
 ```
 
