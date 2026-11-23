@@ -6,6 +6,7 @@
 import copy
 import hashlib
 import json
+import os
 import subprocess
 import sys
 import tempfile
@@ -559,7 +560,35 @@ class SourceValidationTest(unittest.TestCase):
         (self.root / "manifest.json").write_text(json.dumps(self.manifest))
         errors = validate(self.root / "manifest.json")
         self.assertEqual(1, len(errors), errors)
-        self.assertIn("path escapes manifest directory", errors[0])
+        self.assertIn("cannot read fragment", errors[0])
+
+    def test_in_bundle_fragment_symlink_is_rejected(self):
+        target = self.root / "actual-fragment.json"
+        payload = (json.dumps(self.fragment, indent=2) + "\n").encode()
+        target.write_bytes(payload)
+        (self.root / "fragment.json").symlink_to(target.name)
+        self.manifest["fragments"][0]["sha256"] = hashlib.sha256(payload).hexdigest()
+        (self.root / "manifest.json").write_text(json.dumps(self.manifest))
+        errors = validate(self.root / "manifest.json")
+        self.assertEqual(1, len(errors), errors)
+        self.assertIn("cannot read fragment", errors[0])
+
+    @unittest.skipUnless(hasattr(os, "mkfifo"), "named pipes are unavailable")
+    def test_standalone_validator_rejects_fifo_without_blocking(self):
+        os.mkfifo(self.root / "fragment.json")
+        self.manifest["fragments"][0]["sha256"] = "0" * 64
+        manifest = self.root / "manifest.json"
+        manifest.write_text(json.dumps(self.manifest))
+        result = subprocess.run(
+            (sys.executable, "-m", "seag.validate", str(manifest)),
+            cwd=ROOT,
+            check=False,
+            capture_output=True,
+            text=True,
+            timeout=2,
+        )
+        self.assertEqual(1, result.returncode, result.stderr)
+        self.assertIn("not a regular file", result.stderr)
 
     def test_external_reference_endpoint_is_predicate_scoped(self):
         external = copy.deepcopy(self.fragment["records"][3])

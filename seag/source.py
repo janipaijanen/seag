@@ -7,42 +7,10 @@ from __future__ import annotations
 
 import hashlib
 import json
-import os
 from pathlib import Path
-import stat
 
 from .validate import validate
-from .validation import strict_json_loads
-
-
-def _read_confined(root: Path, relative: str) -> bytes:
-    """Read one regular file without following any path-component symlink."""
-    path = Path(relative)
-    if path.is_absolute() or not path.parts or ".." in path.parts:
-        raise ValueError(f"unsafe fragment path: {relative!r}")
-    directory_flags = os.O_RDONLY | getattr(os, "O_DIRECTORY", 0) | getattr(os, "O_CLOEXEC", 0)
-    nofollow = getattr(os, "O_NOFOLLOW", 0)
-    nonblock = getattr(os, "O_NONBLOCK", 0)
-    directory = os.open(root, directory_flags)
-    try:
-        for component in path.parts[:-1]:
-            child = os.open(component, directory_flags | nofollow, dir_fd=directory)
-            os.close(directory)
-            directory = child
-        descriptor = os.open(
-            path.parts[-1],
-            os.O_RDONLY | nofollow | nonblock | getattr(os, "O_CLOEXEC", 0),
-            dir_fd=directory,
-        )
-        try:
-            if not stat.S_ISREG(os.fstat(descriptor).st_mode):
-                raise ValueError(f"fragment is not a regular file: {relative!r}")
-            with os.fdopen(descriptor, "rb", closefd=False) as handle:
-                return handle.read()
-        finally:
-            os.close(descriptor)
-    finally:
-        os.close(directory)
+from .validation import read_confined_regular, strict_json_loads
 
 
 def load_snapshot(manifest_path: Path) -> tuple[dict, list[tuple[dict, dict, bytes]], str]:
@@ -59,7 +27,9 @@ def load_snapshot(manifest_path: Path) -> tuple[dict, list[tuple[dict, dict, byt
         for item in inventory:
             if isinstance(item, dict) and isinstance(item.get("path"), str):
                 try:
-                    fragment_raws[item["path"]] = _read_confined(manifest_path.parent, item["path"])
+                    fragment_raws[item["path"]] = read_confined_regular(
+                        manifest_path.parent, item["path"]
+                    )
                 except (OSError, ValueError):
                     # The validator reports the path as unreadable from this immutable snapshot.
                     pass

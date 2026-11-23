@@ -22,6 +22,7 @@ if __package__:
         iso_timestamp,
         language_tag,
         port_number,
+        read_confined_regular,
         strict_json_loads,
     )
 else:  # Preserve isolated direct-file execution used by the supported CLI tests.
@@ -34,6 +35,7 @@ else:  # Preserve isolated direct-file execution used by the supported CLI tests
         iso_timestamp,
         language_tag,
         port_number,
+        read_confined_regular,
         strict_json_loads,
     )
 
@@ -150,15 +152,11 @@ def validate(
         if not isinstance(name, str) or not name or Path(name).is_absolute() or ".." in Path(name).parts:
             errors.append(f"{where}.path: safe relative path required")
             continue
-        path = manifest_path.parent / name
-        if fragment_raws is None and not path.resolve().is_relative_to(manifest_path.parent.resolve()):
-            errors.append(f"{where}.path: path escapes manifest directory")
-            continue
         try:
             if fragment_raws is not None:
                 raw = fragment_raws[name]
             else:
-                raw = path.read_bytes()
+                raw = read_confined_regular(manifest_path.parent.resolve(), name)
             fragment = strict_json_loads(raw)
         except (KeyError, OSError, UnicodeError, json.JSONDecodeError, ValueError) as exc:
             errors.append(f"{where}.path: cannot read fragment: {exc}")
