@@ -58,6 +58,7 @@ toolchain-context-proof:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME == "ci/toolchain-build-proof"'
   script:
     - python scripts/prepare-toolchain-context.py
+    - chmod 0444 ci/toolchain/downloads/*
   artifacts:
     name: "seag-toolchain-inputs-${CI_COMMIT_SHA}"
     paths:
