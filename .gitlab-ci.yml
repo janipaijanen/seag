@@ -55,7 +55,7 @@ toolchain-context-proof:
     name: python:3.14.8-alpine@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d750607710cc56da3bc72
   before_script: []
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME == "ci/toolchain-build-proof"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup)$/'
   script:
     - test "$(cat ci/toolchain/SOURCE_DATE_EPOCH)" = "1795432630"
     - python scripts/prepare-toolchain-context.py
@@ -76,7 +76,7 @@ toolchain-context-proof:
     - job: toolchain-context-proof
       artifacts: true
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME == "ci/toolchain-build-proof"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup)$/'
   script:
     - test -z "${DOCKER_AUTH_CONFIG:-}"
     - test ! -e "$HOME/.docker/config.json"
@@ -85,6 +85,15 @@ toolchain-context-proof:
     - test "$PROOF_SLOT" = a -o "$PROOF_SLOT" = b
     - proof_dir="$CI_PROJECT_DIR/toolchain-proof-$PROOF_SLOT"
     - mkdir -p "$proof_dir"
+    - context_dir="$CI_PROJECT_DIR/toolchain-build-context"
+    - mkdir -p "$context_dir/ci/toolchain/downloads"
+    - test -f ci/toolchain/inputs.json -a ! -L ci/toolchain/inputs.json
+    - test -f ci/toolchain/install.py -a ! -L ci/toolchain/install.py
+    - cp ci/toolchain/inputs.json ci/toolchain/install.py "$context_dir/ci/toolchain/"
+    - for path in ci/toolchain/downloads/*; do test -f "$path" -a ! -L "$path"; cp "$path" "$context_dir/ci/toolchain/downloads/"; done
+    - chmod -R a-w "$context_dir"
+    - test -z "$(find "$context_dir" ! -type d ! -type f -print -quit)"
+    - test ! -e "$context_dir/.git"
     - >-
       env -i
       PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
@@ -97,7 +106,7 @@ toolchain-context-proof:
       SOURCE_DATE_EPOCH="$(cat ci/toolchain/SOURCE_DATE_EPOCH)"
       buildctl-daemonless.sh build
       --frontend dockerfile.v0
-      --local context="$CI_PROJECT_DIR"
+      --local context="$context_dir"
       --local dockerfile="$CI_PROJECT_DIR/ci/toolchain"
       --opt filename=Containerfile
       --opt platform=linux/amd64
@@ -134,7 +143,7 @@ toolchain-reproducibility-proof:
     - job: toolchain-build-proof-b
       artifacts: true
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME == "ci/toolchain-build-proof"'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup)$/'
   script:
     - (cd toolchain-proof-a && sha256sum -c SHA256SUMS)
     - (cd toolchain-proof-b && sha256sum -c SHA256SUMS)

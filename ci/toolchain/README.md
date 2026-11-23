@@ -28,18 +28,32 @@ response body is read. Exact size and SHA-256 checks remain mandatory even
 when the requested and final URLs are identical.
 
 The Containerfile declares no build arguments and accepts no secret mounts,
-tokens or source checkout. BuildKit receives only the committed canonical
-decimal in `SOURCE_DATE_EPOCH` through its documented special reproducibility
-argument. The value `1795432630` is the UTC commit time of main merge
+tokens or source checkout. CI constructs a separate read-only build context
+from an explicit allowlist: `inputs.json`, `install.py`, and the verified
+download closure. The checkout, `.git`, CI configuration, and every unrelated
+path are outside that context, so repository credentials cannot enter the
+BuildKit context. BuildKit receives only the committed canonical decimal in
+`SOURCE_DATE_EPOCH` through its documented special reproducibility argument.
+The value `1795432630` is the UTC commit time of main merge
 `3988791df27011a00616f56473457e6854a1ba28`, which closed the independently
 reviewed recipe follow-ups. It is not supplied by a CI variable or user. The
 OCI exporter pins compatibility version 30 and rewrites timestamps to that
 epoch.
 
-Two independent rootless build jobs must produce byte-identical OCI archives,
-metadata and descriptor listings. The comparison job retains one verified
-archive only after every comparison passes. This is a non-publishing proof,
-not acceptance of the artifact.
+Two independent rootless build jobs on the same GitLab runner class and pinned
+BuildKit version must produce byte-identical OCI archives, metadata and
+descriptor listings. This demonstrates reproducibility in that tested
+environment; it does not claim reproducibility across runner, kernel, or
+BuildKit changes. The comparison job retains one verified archive only after
+every comparison passes. This is a non-publishing proof, not acceptance of the
+artifact.
+
+Rootless BuildKit uses `--oci-worker-no-process-sandbox` because the shared
+runner cannot create the otherwise-required nested process sandbox. This is
+accepted only for this reviewed recipe: all executable inputs are pinned and
+verified before use, and every `RUN` is network-disabled. The flag must not be
+reused for untrusted source, user-supplied build instructions, or an input set
+that has not passed the same identity checks.
 
 The offline pip installation disables bytecode compilation because `.pyc`
 headers otherwise inherit artifact-extraction times. The timestamped apk
