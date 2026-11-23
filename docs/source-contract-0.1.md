@@ -50,6 +50,19 @@ term-adoption policy; a self-review disclosure cannot satisfy that requirement.
 A deprecated claim needs a replacement or rationale. A missing fact is
 recorded as `unresolved`, never filled by a validator default.
 
+`implementation_alignment` is deliberately separate from semantic status:
+
+- `unchecked` means no implementation comparison has been completed;
+- `matches` means the reviewed implementation corresponds to the record;
+- `diverges` means the reviewed implementation differs from the record or the
+  specified implementation is absent; and
+- `not_applicable` means the record makes no implementation-bearing claim, so
+  implementation comparison is not meaningful.
+
+`not_applicable` must not be used merely because an expected implementation is
+missing. That condition is `diverges` once reviewed, or `unchecked` before
+review.
+
 The authoritative preferred `label` of every concept is singular, without
 exception. This applies in the fragment's declared BCP 47 language. A plural
 source term is retained verbatim in provenance or as a future sourced alias,

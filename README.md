@@ -9,8 +9,9 @@ software work performed by people and LLM agents.
 > **Status: 0.2.0-alpha.1 evaluation candidate.** The immutable `v0.1.0` tag
 > remains the latest stable release. The alpha candidate adds canonical source
 > rendering and semantic review for controlled pilots; it is unsupported, may
-> change incompatibly, and has not passed the 0.2 adoption gate. Any untagged
-> checkout remains only a candidate. SEAG is a file-oriented framework, not a
+> change incompatibly, and has not passed the 0.2 adoption gate. The tagged
+> alpha is a prerelease candidate; an untagged checkout is development input,
+> not a published candidate. SEAG is a file-oriented framework, not a
 > hosted service or a claim that semantic content is true, actor identities are
 > authenticated, or every planned export exists.
 
@@ -263,9 +264,12 @@ See [standards and conformance](docs/conformance.md) and the machine-readable
 ## Releases
 
 `VERSION` is the authoritative package version. Release tags must match it
-exactly as `v<version>`, and the tagged commit must belong to `main`. CI bakes a
-reproducible `seag-<version>.tar.gz` candidate with a content manifest,
-SHA-256 checksum, and build-provenance record.
+exactly as `v<version>`, and the tagged commit must belong to `main`. CI builds
+and compares two normalized `seag-<version>.tar.gz` candidates and emits a
+content manifest, SHA-256 checksum, and build-provenance record. A provenance
+value of `reproducible: true` is the builder's verified comparison claim; an
+independent party must rebuild the artifact before claiming independent
+reproduction.
 
 Candidate artifacts are review inputs, not releases. Stable publication remains
 blocked until licensing, security, contribution, compatibility, and

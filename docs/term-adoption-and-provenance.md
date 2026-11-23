@@ -80,7 +80,8 @@ term and are not substitutes for the mapping relationship.
 
 ## Verifiable provenance record
 
-Each adopted, profiled, mapped, or rejected external term records:
+Each adopted, profiled, mapped, SEAG-defined, or deprecated external term
+records:
 
 - source organization and authoritative title;
 - stable identifier or namespace URI;
