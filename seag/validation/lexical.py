@@ -212,8 +212,9 @@ def absolute_iri(value: object) -> bool:
         port = parts.port
     except ValueError:
         return False
-    if parts.scheme.casefold() in {"http", "https"}:
-        if not (remainder.startswith("//") and parts.netloc and hostname):
+    has_authority = hierarchy.startswith("//")
+    if has_authority and parts.netloc:
+        if not hostname:
             return False
         if port is not None and not port_number(port):
             return False
@@ -221,5 +222,7 @@ def absolute_iri(value: object) -> bool:
             return False
         if "." in hostname and re.fullmatch(r"[0-9.]+", hostname) and not ipv4_address(hostname):
             return False
-        return True
+    if parts.scheme.casefold() in {"http", "https"}:
+        if not (remainder.startswith("//") and parts.netloc and hostname):
+            return False
     return parts.scheme.casefold() == scheme.casefold()

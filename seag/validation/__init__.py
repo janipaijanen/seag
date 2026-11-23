@@ -3,6 +3,7 @@
 
 """Shared strict validation primitives for every SEAG trust boundary."""
 
+from .filesystem import read_confined_regular
 from .json_value import strict_json_loads
 from .lexical import (
     absolute_iri,
@@ -22,5 +23,6 @@ __all__ = (
     "iso_timestamp",
     "language_tag",
     "port_number",
+    "read_confined_regular",
     "strict_json_loads",
 )

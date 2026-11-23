@@ -12,6 +12,10 @@ CI uses that release section as the future release-note source.
 - Clarified prerelease-candidate wording, the scope of the builder's
   reproducibility claim, the complete term-disposition vocabulary, and how
   implementation alignment records a specified but absent implementation.
+- Applied the strict host profile to every nonempty IRI authority: the host is
+  required and numeric IPv4 and IPv6 forms are validated for every scheme.
+  Also prevented named-pipe fragments from blocking snapshot reads and rejected
+  JSON exponents that overflow the runtime to infinity.
 - Adopted uv 0.12.9 for the contributor and conformance environment, with
   exact direct dependency pins, a hash-bearing lock, a fail-closed dependency
   policy gate, and no added shipped runtime dependencies.

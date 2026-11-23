@@ -57,6 +57,12 @@ class ValidationOracleTest(unittest.TestCase):
         encoded = json.dumps(value, ensure_ascii=True, allow_nan=False).encode("utf-8")
         self.assertEqual(value, strict_json_loads(encoded))
 
+    def test_strict_json_rejects_numbers_that_overflow_to_infinity(self):
+        for encoded in (b"1e999", b"-1e999", b'{"value": 1e999}'):
+            with self.subTest(encoded=encoded):
+                with self.assertRaisesRegex(ValueError, "non-finite JSON number"):
+                    strict_json_loads(encoded)
+
     def test_language_profile_is_explicitly_narrower_than_registry_validation(self):
         for tag in ("en", "en-GB", "fi", "zh-Hant-TW", "de-CH-1901", "i-klingon"):
             with self.subTest(tag=tag):
