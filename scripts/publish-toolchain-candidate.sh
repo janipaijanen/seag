@@ -1,10 +1,10 @@
-#!/usr/bin/env bash
+#!/bin/sh
 # SPDX-FileCopyrightText: Copyright (C) 2026 Jani Päijänen
 # SPDX-License-Identifier: Apache-2.0
 
 # Publish only the already admitted OCI archive. This script deliberately
 # distinguishes a definite registry absence from every other lookup failure.
-set -Eeuo pipefail
+set -eu
 
 readonly proof_dir=toolchain-proof
 readonly admission_dir=toolchain-publish-admission
