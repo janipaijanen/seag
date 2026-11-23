@@ -3,7 +3,7 @@
 
 # Canonical source rendering
 
-> **Status: 0.2.0-alpha.1 evaluation capability.** It is not part of the
+> **Status: 0.2 alpha evaluation capability.** It is not part of the
 > immutable 0.1.0 release, a supported compatibility baseline, or evidence
 > that the 0.2 exit gate has passed.
 

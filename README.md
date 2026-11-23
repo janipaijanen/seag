@@ -6,12 +6,13 @@
 A provenance-preserving semantic source and transformation framework for
 software work performed by people and LLM agents.
 
-> **Status: 0.2.0-alpha.1 evaluation candidate.** The immutable `v0.1.0` tag
-> remains the latest stable release. The alpha candidate adds canonical source
-> rendering and semantic review for controlled pilots; it is unsupported, may
-> change incompatibly, and has not passed the 0.2 adoption gate. The tagged
-> alpha is a prerelease candidate; an untagged checkout is development input,
-> not a published candidate. SEAG is a file-oriented framework, not a
+> **Status: 0.2.0-alpha.2 evaluation candidate.** The immutable `v0.1.0` tag
+> remains the latest stable release. This untagged successor candidate adds
+> canonical source rendering and semantic review for controlled pilots; it is
+> unsupported, may change incompatibly, and has not passed the 0.2 adoption
+> gate. The tagged alpha.1 is superseded for new evaluations; an untagged
+> checkout is development input, not a published candidate. SEAG is a
+> file-oriented framework, not a
 > hosted service or a claim that semantic content is true, actor identities are
 > authenticated, or every planned export exists.
 
@@ -20,7 +21,7 @@ software work performed by people and LLM agents.
 [Enterprise integration](docs/enterprise-integration.md) ·
 [Semantic diff](docs/semantic-diff.md) ·
 [Input validation](docs/input-validation.md) ·
-[Rediflow pilot](docs/pilots/rediflow-0.2.0-alpha.1.md) ·
+[Superseded alpha.1 Rediflow pilot plan](docs/pilots/rediflow-0.2.0-alpha.1.md) ·
 [Maturity](docs/maturity.md) ·
 [Conformance](docs/conformance.md) ·
 [Roadmap to 1.0](docs/roadmap-to-1.0.md) ·
@@ -248,7 +249,7 @@ See [standards and conformance](docs/conformance.md) and the machine-readable
 - [Enterprise integration and multi-user direction](docs/enterprise-integration.md)
 - [Canonical source rendering](docs/canonical-source.md)
 - [Semantic diff and bounded conflict detection](docs/semantic-diff.md)
-- [Rediflow 0.2 alpha evaluation plan](docs/pilots/rediflow-0.2.0-alpha.1.md)
+- [Superseded Rediflow alpha.1 evaluation plan](docs/pilots/rediflow-0.2.0-alpha.1.md)
 - [Glossary extraction](docs/glossary-extraction.md)
 - [CmapTools CXL export profile](docs/cxl-profile.md)
 - [PROV and SKOS mappings](docs/semantic-mappings.md)

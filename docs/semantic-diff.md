@@ -3,7 +3,7 @@
 
 # Semantic diff and bounded conflict detection
 
-> **Status: 0.2.0-alpha.1 evaluation capability.** It is not part of the
+> **Status: 0.2 alpha evaluation capability.** It is not part of the
 > immutable 0.1.0 contract, a supported compatibility baseline, or evidence
 > that the 0.2 roadmap exit gate has passed.
 
