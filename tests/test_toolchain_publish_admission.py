@@ -363,6 +363,9 @@ case "$url" in
     elif test "$SKOPEO_MODE" = token-nested; then
       printf '%s' '{"metadata":{"token":"header.payload.signature"}}' > "$output"
       printf 200
+    elif test "$SKOPEO_MODE" = token-nonfinite; then
+      printf '%s' '{"token":"header.payload.signature","expires_in":NaN}' > "$output"
+      printf 200
     else
       printf '%s' '{"token":"header.payload.signature"}' > "$output"
       printf 200
@@ -388,6 +391,9 @@ case "$url" in
       duplicate-code) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN","code":"NAME_UNKNOWN"}]}' > "$output"; printf 404 ;;
       duplicate-errors) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN"}],"errors":[{"code":"MANIFEST_UNKNOWN"}]}' > "$output"; printf 404 ;;
       nested-error) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN","detail":{"code":"DENIED"}}]}' > "$output"; printf 404 ;;
+      nonfinite-nan) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN","detail":NaN}]}' > "$output"; printf 404 ;;
+      nonfinite-infinity) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN","detail":{"value":Infinity}}]}' > "$output"; printf 404 ;;
+      nonfinite-negative-infinity) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN","detail":[-Infinity]}]}' > "$output"; printf 404 ;;
       server) printf '%s' '{"errors":[{"code":"UNKNOWN"}]}' > "$output"; printf 500 ;;
       rate) printf '%s' '{"errors":[{"code":"TOOMANYREQUESTS"}]}' > "$output"; printf 429 ;;
       network) exit 7 ;;
@@ -485,6 +491,9 @@ esac
             "duplicate-code",
             "duplicate-errors",
             "nested-error",
+            "nonfinite-nan",
+            "nonfinite-infinity",
+            "nonfinite-negative-infinity",
         ):
             with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
@@ -498,7 +507,7 @@ esac
                 self.assertFalse((root / "login-called").exists())
 
     def test_publisher_rejects_malformed_ambiguous_and_nested_token_documents(self):
-        for mode in ("token-malformed", "token-duplicate", "token-nested"):
+        for mode in ("token-malformed", "token-duplicate", "token-nested", "token-nonfinite"):
             with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 environment = self.publisher_fixture(root, mode)

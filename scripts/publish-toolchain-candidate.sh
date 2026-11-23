@@ -133,8 +133,16 @@ def unique_object(pairs):
     return result
 
 
+def reject_non_json_constant(value):
+    raise ValueError(f"invalid JSON constant: {value}")
+
+
 with open(sys.argv[1], encoding="utf-8") as stream:
-    document = json.load(stream, object_pairs_hook=unique_object)
+    document = json.load(
+        stream,
+        object_pairs_hook=unique_object,
+        parse_constant=reject_non_json_constant,
+    )
 if not isinstance(document, dict):
     raise ValueError("token response is not an object")
 allowed = {"token", "access_token", "expires_in", "issued_at"}
@@ -201,8 +209,16 @@ def unique_object(pairs):
     return result
 
 
+def reject_non_json_constant(value):
+    raise ValueError(f"invalid JSON constant: {value}")
+
+
 with open(sys.argv[1], encoding="utf-8") as stream:
-    document = json.load(stream, object_pairs_hook=unique_object)
+    document = json.load(
+        stream,
+        object_pairs_hook=unique_object,
+        parse_constant=reject_non_json_constant,
+    )
 if not isinstance(document, dict) or set(document) != {"errors"}:
     raise ValueError("invalid registry error document")
 errors = document["errors"]
