@@ -1,0 +1,25 @@
+<!--
+SPDX-FileCopyrightText: Copyright (C) 2026 Jani Päijänen
+SPDX-License-Identifier: Apache-2.0
+-->
+
+# SEAG CI toolchain candidate
+
+This directory defines a Linux/amd64 candidate, not a published or accepted CI
+image. `inputs.json` binds the base image and every added package to immutable
+identity. `prepare-toolchain-context.py` enforces each requested and final URL,
+exact byte size and SHA-256 before the build. `install.py` repeats size and hash
+verification inside the network-disabled build.
+
+The generated CycloneDX 1.6 document covers every installed APK, the CPython
+runtime and every installed Python distribution. Input artifacts carry their
+SHA-256 and distribution URL. Packages inherited from the pinned base carry
+their installed name, version, architecture and purl; the CPython component
+records the upstream source SHA-256 declared by the pinned base. The document
+is a component inventory and does not claim a dependency graph.
+
+The Containerfile accepts no build arguments, secret mounts, tokens or source
+checkout. A candidate build must run before any registry login and with no
+credentials or CI variables forwarded into the build environment. Registry
+authentication, candidate publication and digest attestation are separate
+post-build operations and require their own reviewed protected pipeline.
