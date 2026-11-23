@@ -45,6 +45,113 @@ validate:
     - uv run --locked --no-sync python -m unittest discover -s tests -v
     - git diff --check
 
+# Non-publishing proof for the reviewed CI toolchain recipe. The preparation
+# job fetches only the URL/size/SHA-256 closure declared in inputs.json. The
+# build job has no registry authentication, scrubs the CI environment before
+# starting rootless BuildKit, exports an OCI archive, and never pushes it.
+toolchain-context-proof:
+  stage: validate
+  image:
+    name: python:3.14.8-alpine@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d750607710cc56da3bc72
+  before_script: []
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME == "ci/toolchain-build-proof"'
+  script:
+    - test "$(cat ci/toolchain/SOURCE_DATE_EPOCH)" = "1795432630"
+    - python scripts/prepare-toolchain-context.py
+    - chmod 0444 ci/toolchain/downloads/*
+  artifacts:
+    name: "seag-toolchain-inputs-${CI_COMMIT_SHA}"
+    paths:
+      - ci/toolchain/downloads/
+    expire_in: 7 days
+
+.toolchain-build-proof:
+  stage: validate
+  image:
+    name: moby/buildkit@sha256:7d02292556e66feea6d2d89b7ec143503b57e4f59a4efc6b7ece8547e4d3e5be
+    entrypoint: [""]
+  before_script: []
+  needs:
+    - job: toolchain-context-proof
+      artifacts: true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME == "ci/toolchain-build-proof"'
+  script:
+    - test -z "${DOCKER_AUTH_CONFIG:-}"
+    - test ! -e "$HOME/.docker/config.json"
+    - for path in ci/toolchain/downloads/*; do wc -c "$path"; done
+    - sha256sum ci/toolchain/downloads/*
+    - test "$PROOF_SLOT" = a -o "$PROOF_SLOT" = b
+    - proof_dir="$CI_PROJECT_DIR/toolchain-proof-$PROOF_SLOT"
+    - mkdir -p "$proof_dir"
+    - >-
+      env -i
+      PATH=/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+      HOME=/home/user
+      USER=user
+      XDG_RUNTIME_DIR=/run/user/1000
+      TMPDIR=/home/user/.local/tmp
+      BUILDKIT_HOST=unix:///run/user/1000/buildkit/buildkitd.sock
+      BUILDKITD_FLAGS=--oci-worker-no-process-sandbox
+      SOURCE_DATE_EPOCH="$(cat ci/toolchain/SOURCE_DATE_EPOCH)"
+      buildctl-daemonless.sh build
+      --frontend dockerfile.v0
+      --local context="$CI_PROJECT_DIR"
+      --local dockerfile="$CI_PROJECT_DIR/ci/toolchain"
+      --opt filename=Containerfile
+      --opt platform=linux/amd64
+      --output type=oci,dest="$proof_dir/seag-ci-toolchain.oci.tar",rewrite-timestamp=true,compatibility-version=30
+      --metadata-file "$proof_dir/build-metadata.json"
+    - (cd "$proof_dir" && sha256sum seag-ci-toolchain.oci.tar | tee SHA256SUMS)
+    - tar -tf "$proof_dir/seag-ci-toolchain.oci.tar" > "$proof_dir/oci-members.txt"
+    - grep -Fx oci-layout "$proof_dir/oci-members.txt"
+    - grep -Fx index.json "$proof_dir/oci-members.txt"
+  artifacts:
+    name: "seag-toolchain-proof-${PROOF_SLOT}-${CI_COMMIT_SHA}"
+    paths:
+      - "toolchain-proof-${PROOF_SLOT}/"
+    expire_in: 7 days
+
+toolchain-build-proof-a:
+  extends: .toolchain-build-proof
+  variables:
+    PROOF_SLOT: "a"
+
+toolchain-build-proof-b:
+  extends: .toolchain-build-proof
+  variables:
+    PROOF_SLOT: "b"
+
+toolchain-reproducibility-proof:
+  stage: validate
+  image:
+    name: python:3.14.8-alpine@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d750607710cc56da3bc72
+  before_script: []
+  needs:
+    - job: toolchain-build-proof-a
+      artifacts: true
+    - job: toolchain-build-proof-b
+      artifacts: true
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME == "ci/toolchain-build-proof"'
+  script:
+    - (cd toolchain-proof-a && sha256sum -c SHA256SUMS)
+    - (cd toolchain-proof-b && sha256sum -c SHA256SUMS)
+    - cmp toolchain-proof-a/seag-ci-toolchain.oci.tar toolchain-proof-b/seag-ci-toolchain.oci.tar
+    - cmp toolchain-proof-a/build-metadata.json toolchain-proof-b/build-metadata.json
+    - cmp toolchain-proof-a/oci-members.txt toolchain-proof-b/oci-members.txt
+    - mkdir toolchain-proof
+    - cp toolchain-proof-a/seag-ci-toolchain.oci.tar toolchain-proof/
+    - cp toolchain-proof-a/build-metadata.json toolchain-proof/
+    - cp toolchain-proof-a/oci-members.txt toolchain-proof/
+    - cp toolchain-proof-a/SHA256SUMS toolchain-proof/
+  artifacts:
+    name: "seag-toolchain-reproducible-${CI_COMMIT_SHA}"
+    paths:
+      - toolchain-proof/
+    expire_in: 7 days
+
 tag-authorization:
   stage: authorize
   needs: [validate]

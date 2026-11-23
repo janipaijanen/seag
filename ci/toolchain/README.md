@@ -27,8 +27,27 @@ connected to and received headers from the redirect target, but before any
 response body is read. Exact size and SHA-256 checks remain mandatory even
 when the requested and final URLs are identical.
 
-The Containerfile accepts no build arguments, secret mounts, tokens or source
-checkout. A candidate build must run before any registry login and with no
-credentials or CI variables forwarded into the build environment. Registry
-authentication, candidate publication and digest attestation are separate
-post-build operations and require their own reviewed protected pipeline.
+The Containerfile declares no build arguments and accepts no secret mounts,
+tokens or source checkout. BuildKit receives only the committed canonical
+decimal in `SOURCE_DATE_EPOCH` through its documented special reproducibility
+argument. The value `1795432630` is the UTC commit time of main merge
+`3988791df27011a00616f56473457e6854a1ba28`, which closed the independently
+reviewed recipe follow-ups. It is not supplied by a CI variable or user. The
+OCI exporter pins compatibility version 30 and rewrites timestamps to that
+epoch.
+
+Two independent rootless build jobs must produce byte-identical OCI archives,
+metadata and descriptor listings. The comparison job retains one verified
+archive only after every comparison passes. This is a non-publishing proof,
+not acceptance of the artifact.
+
+The offline pip installation disables bytecode compilation because `.pyc`
+headers otherwise inherit artifact-extraction times. The timestamped apk
+transaction log is removed after the structured inventory and SBOM are
+written. Neither generated cache bytecode nor that wall-clock log is retained
+as toolchain evidence.
+
+A candidate build must run before any registry login and with no credentials
+or CI variables forwarded into the build environment. Registry authentication,
+candidate publication and digest attestation are separate post-build
+operations and require their own reviewed protected pipeline.

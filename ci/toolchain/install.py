@@ -36,8 +36,12 @@ def main() -> None:
         raise SystemExit("toolchain input set does not exactly match the manifest")
     for item in artifacts:
         path = DOWNLOADS / item["filename"]
-        if path.stat().st_size != item["size"]:
-            raise SystemExit(f"byte-size mismatch: {item['filename']}")
+        actual_size = path.stat().st_size
+        if actual_size != item["size"]:
+            raise SystemExit(
+                f"byte-size mismatch: {item['filename']}: "
+                f"expected {item['size']}, got {actual_size}"
+            )
         if digest(path) != item["sha256"]:
             raise SystemExit(f"SHA-256 mismatch: {item['filename']}")
 
@@ -57,7 +61,16 @@ def main() -> None:
         env={"PATH": "/usr/local/bin:/usr/local/sbin:/usr/sbin:/usr/bin:/sbin:/bin", "APK_NO_NETWORK": "1"},
     )
     subprocess.run(
-        ("python", "-m", "pip", "install", "--no-index", "--no-deps", str(wheel)),
+        (
+            "python",
+            "-m",
+            "pip",
+            "install",
+            "--no-index",
+            "--no-deps",
+            "--no-compile",
+            str(wheel),
+        ),
         check=True,
     )
 
@@ -179,6 +192,7 @@ def main() -> None:
     (ROOT / "sbom.cdx.json").write_text(
         json.dumps(sbom, indent=2, sort_keys=True) + "\n", encoding="utf-8"
     )
+    Path("/var/log/apk.log").unlink(missing_ok=True)
 
 
 if __name__ == "__main__":
