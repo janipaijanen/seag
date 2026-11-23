@@ -75,8 +75,35 @@ class ToolchainRecipeTests(unittest.TestCase):
         self.assertIn("toolchain-build-proof-a:", proof)
         self.assertIn("toolchain-build-proof-b:", proof)
         self.assertIn("cmp toolchain-proof-a/seag-ci-toolchain.oci.tar", proof)
+        self.assertIn('context_dir="$CI_PROJECT_DIR/toolchain-build-context"', proof)
+        self.assertIn('test ! -e "$context_dir/.git"', proof)
+        self.assertIn('--local context="$context_dir"', proof)
+        self.assertNotIn('--local context="$CI_PROJECT_DIR"', proof)
+        self.assertIn("--oci-worker-no-process-sandbox", proof)
         self.assertNotIn("docker login", proof)
         self.assertNotIn("push=true", proof)
+
+    def test_ci_context_is_an_explicit_non_symlink_allowlist(self):
+        ci = (ROOT / ".gitlab-ci.yml").read_text(encoding="utf-8")
+        proof = ci.split("# Non-publishing proof", 1)[1].split(
+            "\ntag-authorization:", 1
+        )[0]
+        self.assertIn(
+            'cp ci/toolchain/inputs.json ci/toolchain/install.py "$context_dir/ci/toolchain/"',
+            proof,
+        )
+        self.assertIn(
+            'for path in ci/toolchain/downloads/*; do test -f "$path" -a ! -L "$path" || exit 1;',
+            proof,
+        )
+        self.assertIn(
+            'cp "$path" "$context_dir/ci/toolchain/downloads/" || exit 1;', proof
+        )
+        self.assertIn('chmod -R a-w "$context_dir"', proof)
+        self.assertIn(
+            'find "$context_dir" ! -type d ! -type f -print -quit', proof
+        )
+        self.assertNotIn('cp -R "$CI_PROJECT_DIR"', proof)
 
     def test_recipe_installs_only_local_verified_payloads(self):
         recipe = (TOOLCHAIN / "Containerfile").read_text(encoding="utf-8")
