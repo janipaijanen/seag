@@ -264,9 +264,13 @@ case "$command" in
     elif test "$SKOPEO_MODE" = exists; then
       printf '{"Digest":"%s"}\\n' "$SKOPEO_MANIFEST"
     elif test "$SKOPEO_MODE" = missing; then
-      echo 'manifest unknown' >&2; exit 1
+      echo 'Error parsing image name "docker://registry.example/seag/ci-toolchain:candidate-a512b": reading manifest: manifest unknown' >&2; exit 1
     elif test "$SKOPEO_MODE" = auth; then
       echo 'unauthorized: authentication required' >&2; exit 1
+    elif test "$SKOPEO_MODE" = server; then
+      echo 'StatusCode: 500, internal server error' >&2; exit 1
+    elif test "$SKOPEO_MODE" = rate; then
+      echo 'StatusCode: 429, too many requests' >&2; exit 1
     else
       echo 'connection reset by peer' >&2; exit 1
     fi ;;
@@ -312,6 +316,8 @@ esac
             ("exists", "candidate destination already exists"),
             ("auth", "candidate absence could not be established"),
             ("network", "candidate absence could not be established"),
+            ("server", "candidate absence could not be established"),
+            ("rate", "candidate absence could not be established"),
         ):
             with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)

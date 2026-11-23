@@ -35,9 +35,8 @@ if skopeo inspect --authfile "$auth_file" "docker://$destination" \
   echo "candidate destination already exists" >&2
   exit 1
 fi
-if ! grep -Eiq 'manifest unknown|name unknown' "$inspect_error" || \
-  grep -Eiq 'unauthorized|denied|forbidden|timeout|connection|TLS|certificate|too many requests|(^|[^0-9])429([^0-9]|$)|(^|[^0-9])5[0-9][0-9]([^0-9]|$)' \
-    "$inspect_error"; then
+if test "$(wc -l <"$inspect_error")" -ne 1 || \
+  ! LC_ALL=C grep -Eiq '(manifest unknown|name unknown)"?$' "$inspect_error"; then
   echo "candidate absence could not be established" >&2
   exit 1
 fi
