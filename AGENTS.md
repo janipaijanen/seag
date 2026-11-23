@@ -42,12 +42,14 @@ Use Python 3.14.8 and uv 0.12.9 exactly. Run from the repository root:
 
 ```sh
 uv sync --locked --only-group conformance
-python scripts/check-dependency-policy.py
+uv run --locked --no-sync python scripts/check-dependency-policy.py
 uv lock --check
 uv run --locked --no-sync reuse lint
 uv run --locked --no-sync python scripts/check-spdx.py
 uv run --locked --no-sync python scripts/check-dco.py
 uv run --locked --no-sync python scripts/check-conformance.py
+uv run --locked --no-sync check-jsonschema --check-metaschema schema/*.schema.json
+uv run --locked --no-sync check-jsonschema --schemafile schema/source-0.1.schema.json fixtures/valid/manifest.json fixtures/valid/fragment.json fixtures/valid/variant.json
 uv run --locked --no-sync python -m unittest discover -s tests -v
 git diff --check
 ```
