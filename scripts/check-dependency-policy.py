@@ -20,6 +20,22 @@ EXACT_REQUIREMENT = re.compile(
 EXPECTED_PYTHON = "3.14.8"
 EXPECTED_UV = "==0.12.9"
 EXPECTED_EXCLUDE_NEWER = "2026-11-22T23:59:59Z"
+SUPPORTED_VERSION = re.compile(
+    r"(?P<base>(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*)\.(?:0|[1-9][0-9]*))"
+    r"(?:-(?P<stage>alpha|beta|rc)\.(?P<number>0|[1-9][0-9]*))?"
+)
+
+
+def pep440_version(version: str) -> str | None:
+    """Translate SEAG's supported SemVer release forms to project metadata."""
+    match = SUPPORTED_VERSION.fullmatch(version)
+    if match is None:
+        return None
+    stage = match.group("stage")
+    if stage is None:
+        return match.group("base")
+    marker = {"alpha": "a", "beta": "b", "rc": "rc"}[stage]
+    return f"{match.group('base')}{marker}{match.group('number')}"
 
 
 def check() -> list[str]:
@@ -32,6 +48,18 @@ def check() -> list[str]:
 
     if project.get("project", {}).get("dependencies") != []:
         errors.append("project.dependencies must remain an explicit empty list")
+
+    try:
+        release_version = (ROOT / "VERSION").read_text(encoding="ascii").strip()
+    except (OSError, UnicodeError) as error:
+        errors.append(f"cannot read VERSION: {error}")
+        metadata_version = None
+    else:
+        metadata_version = pep440_version(release_version)
+        if metadata_version is None:
+            errors.append("VERSION is outside the supported stable/alpha/beta/rc forms")
+        elif project.get("project", {}).get("version") != metadata_version:
+            errors.append("project.version does not match VERSION")
 
     groups = project.get("dependency-groups")
     if not isinstance(groups, dict) or set(groups) != {"conformance"}:
@@ -68,6 +96,14 @@ def check() -> list[str]:
     if not isinstance(packages, list) or not packages:
         errors.append("uv.lock contains no packages")
     else:
+        seag_packages = [
+            package for package in packages
+            if isinstance(package, dict) and package.get("name") == "seag"
+        ]
+        if len(seag_packages) != 1:
+            errors.append("uv.lock must contain exactly one seag package entry")
+        elif metadata_version is not None and seag_packages[0].get("version") != metadata_version:
+            errors.append("uv.lock seag version does not match VERSION")
         for package in packages:
             if not isinstance(package, dict):
                 errors.append("uv.lock contains a non-table package entry")

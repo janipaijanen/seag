@@ -48,13 +48,18 @@ are not required by the shipped commands and do not define SEAG semantics.
 Changing Python, uv, any direct pin, or any resolved artifact is a reviewed
 toolchain change and must update the lock and its evidence in the same commit.
 
-## 0.2.0-alpha.1 evaluation
+## 0.2.0-alpha.2 evaluation candidate
 
-The alpha is an unsupported pilot release, not an upgrade recommendation. A
-pilot must pin the annotated `v0.2.0-alpha.1` tag, verify the published archive
-checksum, and retain its exact source commit in the evidence log. Until that
-tag and checksum exist, use of the release branch is release-candidate testing,
-not use of the alpha release.
+Alpha.2 is an unsupported successor candidate, not an upgrade recommendation
+or approval to start a pilot. Until its annotated tag, checksum, and exact-head
+review evidence exist, use of the release branch is candidate testing, not use
+of an alpha.2 release. After publication, an evaluation must pin the annotated
+`v0.2.0-alpha.2` tag, verify the published archive checksum, and retain its
+exact source commit in the evidence log.
+
+The immutable alpha.1 release is superseded for new evaluations after review
+found input-boundary defects. Preserve alpha.1 artifacts and evidence for
+replay, but do not silently relabel or replace them with alpha.2 results.
 
 It retains the `0.1-draft.2` source contract and adds two experimental commands:
 
@@ -74,3 +79,20 @@ The alpha makes no compatibility promise for its canonical byte form,
 diagnostic codes, result schemas, or conflict boundary. Preserve the original
 source and pilot outputs so a later alpha can be compared or abandoned without
 data loss.
+
+### Candidate verification limits
+
+`scripts/build-release-bundle.py --verify` checks the archive's safe member
+paths and every source digest declared by its embedded manifest. It is a
+builder self-check, not independent attestation of an untrusted downloaded
+archive. Verify the separately published checksum first, inspect the provenance
+and manifest, and retain the exact artifact used by an evaluation.
+
+The alpha.2 CI environment pins the Python image, Git package version, uv
+version, direct conformance dependencies, and resolved Python artifacts to the
+extent recorded in the repository. It does not yet establish an absolute
+byte-pinned network bootstrap: the uv installer wheel hash and Alpine package
+repository metadata are not pinned by digest, and the tag-containment check
+fetches the then-current `origin/main`. These are known reproducibility and
+supply-chain limits, not evidence that an observed candidate archive differs
+between the two CI builds. The H6 byte-pinning gate remains open.

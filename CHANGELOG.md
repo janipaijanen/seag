@@ -9,13 +9,43 @@ CI uses that release section as the future release-note source.
 
 ## Unreleased
 
+## 0.2.0-alpha.2
+
+Unsupported successor evaluation release. It supersedes alpha.1 for new
+evaluations but remains outside the supported compatibility baseline and does
+not itself start or approve an adopter pilot.
+
 - Clarified prerelease-candidate wording, the scope of the builder's
   reproducibility claim, the complete term-disposition vocabulary, and how
   implementation alignment records a specified but absent implementation.
 - Applied the strict host profile to every nonempty IRI authority: the host is
   required and numeric IPv4 and IPv6 forms are validated for every scheme.
-  Also prevented named-pipe fragments from blocking snapshot reads and rejected
-  JSON exponents that overflow the runtime to infinity.
+  Also rejected JSON exponents that overflow the runtime to infinity.
+- Made fragment loading fail closed through one confined, nonblocking,
+  regular-file reader in standalone validation and transformations. Named
+  pipes and fragment symlinks are rejected, including symlinks whose targets
+  remain inside the bundle. The bundle-root path itself may be reached through
+  a symlink because the root is resolved before manifest confinement begins.
+- Synchronized Python project and lock metadata with the candidate version and
+  made CI reject future drift from the authoritative `VERSION` file.
+
+Known verification limits for this unsupported candidate are documented in
+the installation guide. In particular, the builder's archive check is an
+internal consistency check rather than independent untrusted-package
+attestation, and the CI bootstrap and tag-ancestry checks are not yet
+byte-pinned end to end.
+
+## 0.2.0-alpha.1
+
+Unsupported evaluation release for the Rediflow pilot and other controlled
+experiments. It retains the 0.1 source contract while adding experimental
+canonical and semantic-review tooling. It does not satisfy the 0.2 adoption
+gate or establish a supported compatibility baseline.
+
+The following three capabilities were present in the immutable alpha.1
+artifact but were mistakenly left under `Unreleased` in that artifact. Their
+placement here corrects the changelog attribution; it does not change alpha.1.
+
 - Adopted uv 0.12.9 for the contributor and conformance environment, with
   exact direct dependency pins, a hash-bearing lock, a fail-closed dependency
   policy gate, and no added shipped runtime dependencies.
@@ -24,13 +54,6 @@ CI uses that release section as the future release-note source.
   language tags, identifiers, network values, and bounded XML parsing.
 - Replaced the hand-parsed YAML standards register with strict UTF-8 JSON and
   a closed, machine-checked top-level contract.
-
-## 0.2.0-alpha.1
-
-Unsupported evaluation release for the Rediflow pilot and other controlled
-experiments. It retains the 0.1 source contract while adding experimental
-canonical and semantic-review tooling. It does not satisfy the 0.2 adoption
-gate or establish a supported compatibility baseline.
 
 - Added a Rediflow-owned, replayable pilot-evidence contract for immutable
   corpora, expectations, run results, tool identity, and version-lift migration
