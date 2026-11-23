@@ -3,11 +3,11 @@
 
 # Rediflow evaluation plan for SEAG 0.2.0-alpha.1
 
-> **Historical, superseded plan.** Alpha.1 was rejected before the Rediflow
-> pilot started after input-boundary defects were found during review. Preserve
-> this version-pinned plan and any alpha.1 candidate evidence for replay; a new
-> evaluation requires a separately reviewed successor tag and adopter-side
-> decision record.
+> **Historical, superseded plan.** Alpha.1 was superseded for new evaluations
+> before the Rediflow pilot started after input-boundary defects were found
+> during review. Preserve this version-pinned plan and any alpha.1 candidate
+> evidence for replay; a new evaluation requires a separately reviewed
+> successor tag and adopter-side decision record.
 
 ## Decision and boundary
 

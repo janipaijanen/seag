@@ -26,6 +26,14 @@ not itself start or approve an adopter pilot.
   pipes and fragment symlinks are rejected, including symlinks whose targets
   remain inside the bundle. The bundle-root path itself may be reached through
   a symlink because the root is resolved before manifest confinement begins.
+- Synchronized Python project and lock metadata with the candidate version and
+  made CI reject future drift from the authoritative `VERSION` file.
+
+Known verification limits for this unsupported candidate are documented in
+the installation guide. In particular, the builder's archive check is an
+internal consistency check rather than independent untrusted-package
+attestation, and the CI bootstrap and tag-ancestry checks are not yet
+byte-pinned end to end.
 
 ## 0.2.0-alpha.1
 

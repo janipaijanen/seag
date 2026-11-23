@@ -3,7 +3,7 @@
 
 [project]
 name = "seag"
-version = "0.2.0a1"
+version = "0.2.0a2"
 requires-python = ">=3.14,<3.15"
 dependencies = []
 
