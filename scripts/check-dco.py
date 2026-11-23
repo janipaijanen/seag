@@ -99,10 +99,16 @@ def main() -> int:
 
     try:
         commits = commits_after(args.baseline, args.revision)
+        signed = [commit for commit in commits if has_sign_off(commit)]
+        content_neutral_merges = [
+            commit
+            for commit in commits
+            if commit not in signed and is_content_neutral_merge(commit)
+        ]
         failures = [
             commit
             for commit in commits
-            if not has_sign_off(commit) and not is_content_neutral_merge(commit)
+            if commit not in signed and commit not in content_neutral_merges
         ]
     except RuntimeError as error:
         print(f"DCO check: FAILED: {error}", file=sys.stderr)
@@ -115,7 +121,11 @@ def main() -> int:
             print(f"{commit} {subject}", file=sys.stderr)
         return 1
 
-    print(f"DCO check: {len(commits)} post-transition commit(s) certified")
+    print(
+        f"DCO check: {len(commits)} post-transition commit(s) checked; "
+        f"{len(signed)} signed, "
+        f"{len(content_neutral_merges)} content-neutral merge(s) accepted"
+    )
     return 0
 
 

@@ -20,14 +20,17 @@ Only submit material that you have the legal right and authority to contribute.
 Obtain any required employer, client, co-author, or other rights-holder approval
 before submission.
 
-Every commit must certify the unmodified
+Every commit that contributes content must certify the unmodified
 [Developer Certificate of Origin 1.1](https://developercertificate.org/) with:
 
 ```text
 Signed-off-by: Legal Name <email@example.com>
 ```
 
-Create this trailer with `git commit --signoff`. The sign-off certifies the
+Create this trailer with `git commit --signoff`. A hosting-platform merge that
+reuses one already-checked parent tree byte-for-byte is not a new content
+contribution and follows the narrow mechanical exception documented below.
+The sign-off certifies the
 DCO statements, including your right to submit the work and your understanding
 that the contribution, sign-off, and associated personal information are public
 and retained. A sign-off is a provenance and authority certification; it is not

@@ -58,7 +58,11 @@ class DcoCheckTest(unittest.TestCase):
         self.commit("certified", signed=True)
         result = self.check()
         self.assertEqual(0, result.returncode, result.stderr)
-        self.assertIn("1 post-transition commit", result.stdout)
+        self.assertIn(
+            "1 post-transition commit(s) checked; 1 signed, "
+            "0 content-neutral merge(s) accepted",
+            result.stdout,
+        )
 
     def test_rejects_unsigned_commit_after_baseline(self):
         commit = self.commit("uncertified", signed=False)
@@ -77,6 +81,11 @@ class DcoCheckTest(unittest.TestCase):
         self.assertEqual(0, merge.returncode, merge.stderr)
         result = self.check()
         self.assertEqual(0, result.returncode, result.stderr)
+        self.assertIn(
+            "2 post-transition commit(s) checked; 1 signed, "
+            "1 content-neutral merge(s) accepted",
+            result.stdout,
+        )
 
     def test_rejects_unsigned_merge_whose_tree_matches_no_parent(self):
         run("git", "checkout", "-q", "-b", "feature", cwd=self.repo)
