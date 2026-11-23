@@ -9,6 +9,10 @@ CI uses that release section as the future release-note source.
 
 ## Unreleased
 
+- Separated fresh default-branch containment authorization from reproducible
+  tag-bundle construction, with exact GitLab remote identity checking,
+  fail-closed policy fetches, recorded observed commits, and negative tests.
+
 ## 0.2.0-alpha.2
 
 Unsupported successor evaluation release. It supersedes alpha.1 for new
