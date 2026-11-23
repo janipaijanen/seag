@@ -77,8 +77,11 @@ verified archive only after that admission, requires the operator to repeat
 the exact source commit in `TOOLCHAIN_PUBLISH_COMMIT`, and serializes all
 candidate publications. It uses a digest-pinned Skopeo 1.24.1 image and a
 `candidate-<commit>-<manifest-digest>` discovery tag, fails closed unless the
-registry lookup specifically reports the destination absent, preserves the OCI
-manifest digest, and emits a credential-free receipt. The lookup and copy are
+raw registry lookup reports that exact repository and tag absent in one
+recognized Skopeo diagnostic, refuses mixed authorization/network/server
+diagnostics, and refuses any destination outside `CI_REGISTRY` before login.
+It preserves the OCI manifest digest, hashes the raw post-copy manifest, and
+emits a credential-free receipt. The lookup and copy are
 not an atomic create-only registry operation: the candidate tag is never an
 authority or approval, and only the recorded manifest digest identifies bytes.
 Registry tag protection must restrict competing writers before the first run.

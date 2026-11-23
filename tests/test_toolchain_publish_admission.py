@@ -220,8 +220,16 @@ class ToolchainPublishAdmissionTests(unittest.TestCase):
         )[0]
         self.assertIn("toolchain-reproducibility-proof", admission_job)
         self.assertIn("- job: validate", admission_job)
+        self.assertIn("artifacts: false", admission_job)
+        self.assertIn("$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH", admission_job)
+        self.assertIn('$CI_COMMIT_REF_PROTECTED == "true"', admission_job)
         self.assertNotIn("CI_REGISTRY_PASSWORD", admission_job)
         self.assertIn("when: manual", publisher)
+        self.assertIn("- when: never", publisher)
+        self.assertIn("- job: toolchain-publish-admission", publisher)
+        self.assertIn("artifacts: true", publisher)
+        self.assertIn("$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH", publisher)
+        self.assertIn('$CI_COMMIT_REF_PROTECTED == "true"', publisher)
         self.assertIn("resource_group: seag-toolchain-publisher", publisher)
         self.assertIn("name: seag-toolchain-candidate", publisher)
         self.assertIn("scripts/publish-toolchain-candidate.sh", publisher)
@@ -242,7 +250,8 @@ class ToolchainPublishAdmissionTests(unittest.TestCase):
             f"{archive_sha}  seag-ci-toolchain.oci.tar\n", encoding="ascii"
         )
         commit = "a" * 40
-        manifest = "sha256:" + "b" * 64
+        raw_manifest = '{"schemaVersion":2,"mediaType":"test"}'
+        manifest = digest(raw_manifest.encode("utf-8"))
         destination = "registry.example/seag/ci-toolchain:candidate-test"
         (admission_dir / "source-commit.txt").write_text(commit + "\n")
         (admission_dir / "archive-sha256.txt").write_text(archive_sha + "\n")
@@ -255,16 +264,26 @@ class ToolchainPublishAdmissionTests(unittest.TestCase):
 set -eu
 command=$1
 shift
+printf '%s %s\n' "$command" "$*" >> "$SKOPEO_ARGS_MARKER"
 case "$command" in
   login) cat >/dev/null; : > "$SKOPEO_LOGIN_MARKER" ;;
   copy) : > "$SKOPEO_COPY_MARKER" ;;
   inspect)
     if test -e "$SKOPEO_COPY_MARKER"; then
-      printf '%s\\n' "$SKOPEO_MANIFEST"
+      printf '%s' "$SKOPEO_RAW_MANIFEST"
     elif test "$SKOPEO_MODE" = exists; then
-      printf '{"Digest":"%s"}\\n' "$SKOPEO_MANIFEST"
+      printf '%s' "$SKOPEO_RAW_MANIFEST"
     elif test "$SKOPEO_MODE" = missing; then
-      echo 'Error parsing image name "docker://registry.example/seag/ci-toolchain:candidate-a512b": reading manifest: manifest unknown' >&2; exit 1
+      echo 'time="2026-11-23T12:00:00Z" level=fatal msg="Error parsing image name \\"docker://registry.example/seag/ci-toolchain:candidate-test\\": reading manifest candidate-test in registry.example/seag/ci-toolchain: manifest unknown"' >&2; exit 1
+    elif test "$SKOPEO_MODE" = name-missing; then
+      echo 'Error parsing image name "docker://registry.example/seag/ci-toolchain:candidate-test": reading manifest candidate-test in registry.example/seag/ci-toolchain: name unknown: repository name not known to registry' >&2; exit 1
+    elif test "$SKOPEO_MODE" = mixed; then
+      echo 'Error parsing image name "docker://registry.example/seag/ci-toolchain:candidate-test": reading manifest: unauthorized: authentication required; manifest unknown' >&2; exit 1
+    elif test "$SKOPEO_MODE" = other-resource; then
+      echo 'Error parsing image name "docker://registry.example/seag/ci-toolchain:other": reading manifest: manifest unknown' >&2; exit 1
+    elif test "$SKOPEO_MODE" = multiline; then
+      echo 'warning: registry response was incomplete' >&2
+      echo 'Error parsing image name "docker://registry.example/seag/ci-toolchain:candidate-test": reading manifest: manifest unknown' >&2; exit 1
     elif test "$SKOPEO_MODE" = auth; then
       echo 'unauthorized: authentication required' >&2; exit 1
     elif test "$SKOPEO_MODE" = server; then
@@ -291,8 +310,10 @@ esac
             "TOOLCHAIN_PUBLISH_COMMIT": commit,
             "SKOPEO_MODE": mode,
             "SKOPEO_MANIFEST": manifest,
+            "SKOPEO_RAW_MANIFEST": raw_manifest,
             "SKOPEO_LOGIN_MARKER": str(root / "login-called"),
             "SKOPEO_COPY_MARKER": str(root / "copy-called"),
+            "SKOPEO_ARGS_MARKER": str(root / "skopeo-arguments"),
         }
 
     def test_publisher_copies_only_after_definite_absence(self):
@@ -304,6 +325,7 @@ esac
             )
             self.assertEqual(0, result.returncode, result.stderr)
             self.assertTrue((root / "copy-called").is_file())
+            self.assertIn("inspect --raw", (root / "skopeo-arguments").read_text())
             self.assertEqual(
                 environment["SKOPEO_MANIFEST"],
                 (root / "toolchain-publication/registry-manifest-digest.txt")
@@ -332,6 +354,43 @@ esac
                 self.assertNotEqual(0, result.returncode)
                 self.assertIn(diagnostic, result.stderr)
                 self.assertFalse((root / "copy-called").exists())
+
+    def test_publisher_accepts_real_name_unknown_for_exact_destination(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            environment = self.publisher_fixture(root, "name-missing")
+            result = subprocess.run(
+                [str(PUBLISHER)], cwd=root, env=environment, capture_output=True, text=True
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertTrue((root / "copy-called").is_file())
+
+    def test_publisher_rejects_mixed_multiline_and_other_resource_errors(self):
+        for mode in ("mixed", "multiline", "other-resource"):
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                environment = self.publisher_fixture(root, mode)
+                result = subprocess.run(
+                    [str(PUBLISHER)], cwd=root, env=environment, capture_output=True, text=True
+                )
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn("candidate absence could not be established", result.stderr)
+                self.assertFalse((root / "copy-called").exists())
+
+    def test_publisher_never_sends_credentials_outside_ci_registry(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            environment = self.publisher_fixture(root, "missing")
+            (root / "toolchain-publish-admission/destination.txt").write_text(
+                "evil.example/seag/ci-toolchain:candidate-test\n", encoding="utf-8"
+            )
+            result = subprocess.run(
+                [str(PUBLISHER)], cwd=root, env=environment, capture_output=True, text=True
+            )
+            self.assertNotEqual(0, result.returncode)
+            self.assertIn("outside CI_REGISTRY", result.stderr)
+            self.assertFalse((root / "login-called").exists())
+            self.assertFalse((root / "copy-called").exists())
 
 
 if __name__ == "__main__":
