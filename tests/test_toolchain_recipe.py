@@ -69,6 +69,7 @@ class ToolchainRecipeTests(unittest.TestCase):
         self.assertNotIn("https://", recipe)
         self.assertNotIn("ARG ", recipe)
         self.assertNotIn("--mount=type=secret", recipe)
+        self.assertIn("RUN --network=none", recipe)
         self.assertIn('"--no-network"', installer)
         self.assertIn('"query"', installer)
         self.assertIn('"installed"', installer)
