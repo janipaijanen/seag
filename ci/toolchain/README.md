@@ -68,3 +68,33 @@ A candidate build must run before any registry login and with no credentials
 or CI variables forwarded into the build environment. Registry authentication,
 candidate publication and digest attestation are separate post-build
 operations and require their own reviewed protected pipeline.
+
+The candidate publisher is a separate manual job on protected `main`. An
+automatic admission job first validates the reproduced archive, its canonical
+checksum manifest, OCI member listing, Linux/amd64 descriptor, and manifest and
+config blob digests without registry credentials. The publisher receives the
+verified archive only after that admission, requires the operator to repeat
+the exact source commit in `TOOLCHAIN_PUBLISH_COMMIT`, and serializes all
+candidate publications. It uses a digest-pinned Skopeo 1.24.1 image and a
+`candidate-<commit>-<manifest-digest>` discovery tag, fails closed unless the
+registry lookup specifically reports the destination absent, preserves the OCI
+manifest digest, and emits a credential-free receipt. The lookup and copy are
+not an atomic create-only registry operation: the candidate tag is never an
+authority or approval, and only the recorded manifest digest identifies bytes.
+Registry tag protection must restrict competing writers before the first run.
+
+The `seag-toolchain-candidate` GitLab environment must be protected before the
+manual job is ever run. A successful candidate publication is review evidence,
+not acceptance or adoption: an independent reviewer must inspect the registry
+manifest, config, layers, inventories and SBOM, and the accepted digest must be
+recorded durably before any SEAG job consumes it.
+
+`TOOLCHAIN_PUBLISH_COMMIT` is supplied only for the individual manual job; do
+not store it as a project, group or protected variable. Run the publisher while
+the seven-day proof artifacts remain available, or rerun the exact protected
+main pipeline. If copying succeeds but the post-copy digest check fails, stop:
+retain the failed job and registry identity as evidence, have a maintainer
+quarantine the discovery tag, and publish a corrected candidate under a new
+commit/digest identity. Never repair it by replacing the tag. The two complete
+BuildKit builds on each protected-main pipeline are an intentional runner-cost
+tradeoff for byte-reproducibility evidence.
