@@ -6,6 +6,7 @@
 
 import hashlib
 import json
+import os
 from pathlib import Path
 import platform
 import subprocess
@@ -35,6 +36,8 @@ def main() -> None:
         raise SystemExit("toolchain input set does not exactly match the manifest")
     for item in artifacts:
         path = DOWNLOADS / item["filename"]
+        if path.stat().st_size != item["size"]:
+            raise SystemExit(f"byte-size mismatch: {item['filename']}")
         if digest(path) != item["sha256"]:
             raise SystemExit(f"SHA-256 mismatch: {item['filename']}")
 
@@ -75,6 +78,11 @@ def main() -> None:
     )
     if not isinstance(apk_inventory, list) or not apk_inventory:
         raise SystemExit("installed APK inventory is empty")
+    python_distributions = json.loads(
+        subprocess.check_output(
+            ("python", "-m", "pip", "list", "--format=json"), text=True
+        )
+    )
     inventory = {
         "format": "seag-ci-toolchain-inventory-1",
         "architecture": platform.machine(),
@@ -82,6 +90,9 @@ def main() -> None:
         "git": subprocess.check_output(("git", "--version"), text=True).strip(),
         "uv": subprocess.check_output(("uv", "--version"), text=True).strip(),
         "apk": sorted(apk_inventory, key=lambda item: (item["name"], item["version"])),
+        "python_distributions": sorted(
+            python_distributions, key=lambda item: (item["name"], item["version"])
+        ),
         "inputs": artifacts,
     }
     (ROOT / "inventory.json").write_text(
@@ -118,23 +129,47 @@ def main() -> None:
                 {"type": "distribution", "url": source["url"]}
             ]
         components.append(component)
-    uv_input = next(item for item in artifacts if item["kind"] == "wheel")
     components.append(
         {
             "type": "application",
-            "name": "uv",
-            "version": uv_input["version"],
-            "purl": f"pkg:pypi/uv@{uv_input['version']}",
-            "hashes": [{"alg": "SHA-256", "content": uv_input["sha256"]}],
-            "externalReferences": [
-                {"type": "distribution", "url": uv_input["url"]}
-            ],
+            "name": "CPython",
+            "version": platform.python_version(),
             "properties": [
-                {"name": "seag:artifact-kind", "value": "wheel"},
-                {"name": "seag:installed", "value": "true"},
+                {"name": "seag:artifact-kind", "value": "runtime"},
+                {
+                    "name": "seag:upstream-source-sha256",
+                    "value": os.environ["PYTHON_SHA256"],
+                },
             ],
         }
     )
+    wheel_inputs = {
+        (item["name"].casefold(), item["version"]): item
+        for item in artifacts
+        if item["kind"] == "wheel"
+    }
+    for distribution in inventory["python_distributions"]:
+        component = {
+            "type": "application",
+            "name": distribution["name"],
+            "version": distribution["version"],
+            "purl": f"pkg:pypi/{distribution['name'].lower()}@{distribution['version']}",
+            "properties": [
+                {"name": "seag:artifact-kind", "value": "python-distribution"},
+                {"name": "seag:installed", "value": "true"},
+            ],
+        }
+        source = wheel_inputs.get(
+            (distribution["name"].casefold(), distribution["version"])
+        )
+        if source is not None:
+            component["hashes"] = [
+                {"alg": "SHA-256", "content": source["sha256"]}
+            ]
+            component["externalReferences"] = [
+                {"type": "distribution", "url": source["url"]}
+            ]
+        components.append(component)
     sbom = {
         "bomFormat": "CycloneDX",
         "specVersion": "1.6",

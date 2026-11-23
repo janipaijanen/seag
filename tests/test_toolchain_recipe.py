@@ -3,6 +3,7 @@
 
 import hashlib
 import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -48,6 +49,8 @@ class ToolchainRecipeTests(unittest.TestCase):
                 self.assertEqual(item["filename"], Path(item["filename"]).name)
                 self.assertEqual(64, len(item["sha256"]))
                 int(item["sha256"], 16)
+                self.assertIs(type(item["size"]), int)
+                self.assertGreater(item["size"], 0)
                 url = urllib.parse.urlsplit(item["url"])
                 self.assertEqual("https", url.scheme)
                 self.assertEqual(item["filename"], Path(url.path).name)
@@ -64,6 +67,8 @@ class ToolchainRecipeTests(unittest.TestCase):
         installer = (TOOLCHAIN / "install.py").read_text(encoding="utf-8")
         self.assertNotIn("http://", recipe)
         self.assertNotIn("https://", recipe)
+        self.assertNotIn("ARG ", recipe)
+        self.assertNotIn("--mount=type=secret", recipe)
         self.assertIn('"--no-network"', installer)
         self.assertIn('"query"', installer)
         self.assertIn('"installed"', installer)
@@ -111,6 +116,48 @@ class ToolchainRecipeTests(unittest.TestCase):
         source = PREPARER_PATH.read_text(encoding="utf-8")
         self.assertIn("os.O_EXCL", source)
         self.assertIn('getattr(os, "O_NOFOLLOW", 0)', source)
+
+    def test_preparer_rejects_redirect_outside_allowlist(self):
+        artifact = {**self.manifest["artifacts"][0], "size": 1}
+        document = {**self.manifest, "artifacts": [artifact]}
+        response = io.BytesIO(b"x")
+        response.geturl = lambda: f"https://example.invalid/{artifact['filename']}"
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest = root / "inputs.json"
+            manifest.write_text(json.dumps(document), encoding="utf-8")
+            downloads = root / "downloads"
+            with (
+                mock.patch.object(preparer, "MANIFEST", manifest),
+                mock.patch.object(preparer, "OUTPUT", downloads),
+                mock.patch.object(
+                    preparer.urllib.request, "urlopen", return_value=response
+                ),
+                self.assertRaisesRegex(SystemExit, "unapproved toolchain input URL"),
+            ):
+                preparer.main()
+            self.assertEqual([], list(downloads.iterdir()))
+
+    def test_preparer_stops_stream_above_exact_size(self):
+        artifact = {**self.manifest["artifacts"][0], "size": 1}
+        document = {**self.manifest, "artifacts": [artifact]}
+        response = io.BytesIO(b"xx")
+        response.geturl = lambda: artifact["url"]
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            manifest = root / "inputs.json"
+            manifest.write_text(json.dumps(document), encoding="utf-8")
+            downloads = root / "downloads"
+            with (
+                mock.patch.object(preparer, "MANIFEST", manifest),
+                mock.patch.object(preparer, "OUTPUT", downloads),
+                mock.patch.object(
+                    preparer.urllib.request, "urlopen", return_value=response
+                ),
+                self.assertRaisesRegex(SystemExit, "exceeds declared size"),
+            ):
+                preparer.main()
+            self.assertEqual([], list(downloads.iterdir()))
 
 
 if __name__ == "__main__":

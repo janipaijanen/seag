@@ -20,6 +20,21 @@ OUTPUT = ROOT / "ci" / "toolchain" / "downloads"
 ALLOWED_HOSTS = {"dl-cdn.alpinelinux.org", "files.pythonhosted.org"}
 
 
+def validate_url(url: object, filename: str) -> str:
+    if not isinstance(url, str):
+        raise SystemExit("toolchain input URL must be a string")
+    split_url = urllib.parse.urlsplit(url)
+    if (
+        split_url.scheme != "https"
+        or split_url.hostname not in ALLOWED_HOSTS
+        or Path(split_url.path).name != filename
+        or split_url.query
+        or split_url.fragment
+    ):
+        raise SystemExit(f"unapproved toolchain input URL: {url}")
+    return url
+
+
 def main() -> int:
     document = json.loads(MANIFEST.read_text(encoding="utf-8"))
     if set(document) != {"format", "platform", "base", "artifacts"}:
@@ -33,7 +48,15 @@ def main() -> int:
         raise SystemExit("toolchain input manifest has no artifacts")
     filenames: set[str] = set()
     for item in artifacts:
-        if set(item) != {"kind", "name", "version", "filename", "url", "sha256"}:
+        if set(item) != {
+            "kind",
+            "name",
+            "version",
+            "filename",
+            "url",
+            "size",
+            "sha256",
+        }:
             raise SystemExit("toolchain artifact has unknown or missing fields")
         if item["kind"] not in {"apk", "wheel"}:
             raise SystemExit("toolchain artifact kind is unsupported")
@@ -55,15 +78,9 @@ def main() -> int:
             or any(character not in "0123456789abcdef" for character in checksum)
         ):
             raise SystemExit(f"invalid SHA-256: {filename}")
-        split_url = urllib.parse.urlsplit(item.get("url", ""))
-        if (
-            split_url.scheme != "https"
-            or split_url.hostname not in ALLOWED_HOSTS
-            or Path(split_url.path).name != filename
-            or split_url.query
-            or split_url.fragment
-        ):
-            raise SystemExit(f"unapproved toolchain input URL: {item.get('url')}")
+        if not isinstance(item["size"], int) or isinstance(item["size"], bool) or item["size"] <= 0:
+            raise SystemExit(f"invalid byte size: {filename}")
+        validate_url(item["url"], filename)
     OUTPUT.mkdir(parents=True, exist_ok=True)
     output_status = OUTPUT.lstat()
     if OUTPUT.is_symlink() or not stat.S_ISDIR(output_status.st_mode):
@@ -79,6 +96,8 @@ def main() -> int:
             status = destination.lstat()
             if destination.is_symlink() or not stat.S_ISREG(status.st_mode):
                 raise SystemExit(f"toolchain input is not a regular file: {item['filename']}")
+            if status.st_size != item["size"]:
+                raise SystemExit(f"existing toolchain input has wrong size: {item['filename']}")
             if digest(destination) != item["sha256"]:
                 raise SystemExit(f"existing toolchain input has wrong SHA-256: {item['filename']}")
             print(f"verified {item['filename']} {item['sha256']}")
@@ -94,7 +113,12 @@ def main() -> int:
                 descriptor, "wb"
             ) as handle:
                 descriptor = -1
+                final_url = validate_url(response.geturl(), item["filename"])
+                received = 0
                 for block in iter(lambda: response.read(1024 * 1024), b""):
+                    received += len(block)
+                    if received > item["size"]:
+                        raise SystemExit(f"toolchain input exceeds declared size: {item['filename']}")
                     value.update(block)
                     handle.write(block)
         except BaseException:
@@ -102,11 +126,17 @@ def main() -> int:
                 os.close(descriptor)
             temporary.unlink(missing_ok=True)
             raise
+        if received != item["size"]:
+            temporary.unlink(missing_ok=True)
+            raise SystemExit(f"toolchain input has wrong final size: {item['filename']}")
         if value.hexdigest() != item["sha256"]:
             temporary.unlink(missing_ok=True)
             raise SystemExit(f"SHA-256 mismatch: {item['filename']}")
         os.replace(temporary, destination)
-        print(f"verified {item['filename']} {item['sha256']}")
+        print(
+            f"verified {item['filename']} size={received} "
+            f"sha256={item['sha256']} final_url={final_url}"
+        )
     return 0
 
 
