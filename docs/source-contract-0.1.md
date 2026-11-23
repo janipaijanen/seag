@@ -61,7 +61,10 @@ recorded as `unresolved`, never filled by a validator default.
 
 `not_applicable` must not be used merely because an expected implementation is
 missing. That condition is `diverges` once reviewed, or `unchecked` before
-review.
+review. This draft value does not distinguish an absent implementation from a
+present but differing implementation; consumers needing that distinction must
+retain it as review evidence until a future contract revision considers a
+separate value.
 
 The authoritative preferred `label` of every concept is singular, without
 exception. This applies in the fragment's declared BCP 47 language. A plural
