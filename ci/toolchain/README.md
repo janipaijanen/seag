@@ -41,6 +41,12 @@ metadata and descriptor listings. The comparison job retains one verified
 archive only after every comparison passes. This is a non-publishing proof,
 not acceptance of the artifact.
 
+The offline pip installation disables bytecode compilation because `.pyc`
+headers otherwise inherit artifact-extraction times. The timestamped apk
+transaction log is removed after the structured inventory and SBOM are
+written. Neither generated cache bytecode nor that wall-clock log is retained
+as toolchain evidence.
+
 A candidate build must run before any registry login and with no credentials
 or CI variables forwarded into the build environment. Registry authentication,
 candidate publication and digest attestation are separate post-build

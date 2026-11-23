@@ -91,6 +91,8 @@ class ToolchainRecipeTests(unittest.TestCase):
         self.assertIn('"installed"', installer)
         self.assertIn('"--no-index"', installer)
         self.assertIn('"--no-deps"', installer)
+        self.assertIn('"--no-compile"', installer)
+        self.assertIn('Path("/var/log/apk.log").unlink(missing_ok=True)', installer)
         self.assertIn('"CycloneDX"', installer)
 
     def test_downloaded_inputs_match_when_present(self):
