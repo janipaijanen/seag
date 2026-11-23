@@ -78,6 +78,8 @@ toolchain-build-proof:
   script:
     - test -z "${DOCKER_AUTH_CONFIG:-}"
     - test ! -e "$HOME/.docker/config.json"
+    - find ci/toolchain/downloads -maxdepth 1 -type f -printf '%f %s\n' | sort
+    - sha256sum ci/toolchain/downloads/*
     - mkdir -p toolchain-proof
     - >-
       env -i

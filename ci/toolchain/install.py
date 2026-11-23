@@ -36,8 +36,12 @@ def main() -> None:
         raise SystemExit("toolchain input set does not exactly match the manifest")
     for item in artifacts:
         path = DOWNLOADS / item["filename"]
-        if path.stat().st_size != item["size"]:
-            raise SystemExit(f"byte-size mismatch: {item['filename']}")
+        actual_size = path.stat().st_size
+        if actual_size != item["size"]:
+            raise SystemExit(
+                f"byte-size mismatch: {item['filename']}: "
+                f"expected {item['size']}, got {actual_size}"
+            )
         if digest(path) != item["sha256"]:
             raise SystemExit(f"SHA-256 mismatch: {item['filename']}")
 
