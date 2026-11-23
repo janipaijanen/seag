@@ -18,6 +18,15 @@ their installed name, version, architecture and purl; the CPython component
 records the upstream source SHA-256 declared by the pinned base. The document
 is a component inventory and does not claim a dependency graph.
 
+The pinned Python base must expose `PYTHON_SHA256`; absence fails the build
+closed before SBOM creation. That value is the base image's declaration of the
+upstream CPython source hash, not a hash of the installed interpreter binary.
+
+Redirect policy is checked against the final response URL after the client has
+connected to and received headers from the redirect target, but before any
+response body is read. Exact size and SHA-256 checks remain mandatory even
+when the requested and final URLs are identical.
+
 The Containerfile accepts no build arguments, secret mounts, tokens or source
 checkout. A candidate build must run before any registry login and with no
 credentials or CI variables forwarded into the build environment. Registry
