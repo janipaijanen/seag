@@ -235,6 +235,29 @@ class ToolchainPublishAdmissionTests(unittest.TestCase):
         self.assertIn("scripts/publish-toolchain-candidate.sh", publisher)
         self.assertNotIn("latest", publisher)
         self.assertNotIn("docker login", publisher)
+        rules_block = publisher.split("\n  rules:\n", 1)[1].split(
+            "\n  script:\n", 1
+        )[0]
+        self.assertEqual(
+            "    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && "
+            '$CI_COMMIT_REF_PROTECTED == "true"' + "'\n"
+            "      when: manual\n"
+            "      allow_failure: true\n"
+            "    - when: never",
+            rules_block,
+        )
+        self.assertNotIn("merge_request_event", publisher)
+        self.assertNotIn("CI_COMMIT_TAG", publisher)
+        needs_block = publisher.split("\n  needs:\n", 1)[1].split(
+            "\n  resource_group:", 1
+        )[0]
+        self.assertEqual(
+            "    - job: toolchain-reproducibility-proof\n"
+            "      artifacts: true\n"
+            "    - job: toolchain-publish-admission\n"
+            "      artifacts: true",
+            needs_block,
+        )
 
     def publisher_fixture(self, root: Path, mode: str) -> dict[str, str]:
         proof = root / "toolchain-proof"
