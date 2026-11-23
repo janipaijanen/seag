@@ -44,28 +44,7 @@ def git(*arguments: str, capture: bool = False) -> subprocess.CompletedProcess[s
     )
 
 
-def verify(
-    commit: str, remote: str, branch: str, server_host: str, project_path: str
-) -> tuple[bool, str]:
-    if not FULL_SHA.fullmatch(commit):
-        return False, "commit must be a full lowercase Git SHA"
-    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", remote):
-        return False, "policy remote has an invalid name"
-    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/-]*", branch) or ".." in branch:
-        return False, "default branch has an invalid name"
-    if not server_host or not project_path:
-        return False, "expected GitLab project identity is incomplete"
-
-    configured = git("config", "--get", f"remote.{remote}.url", capture=True)
-    if configured.returncode:
-        return False, "cannot resolve the configured policy remote"
-    try:
-        identity = remote_identity(configured.stdout.strip())
-    except ValueError as error:
-        return False, str(error)
-    if identity != (server_host.casefold(), project_path):
-        return False, "policy remote does not match the expected GitLab project"
-
+def fetch_and_verify(commit: str, remote: str, branch: str) -> tuple[bool, str]:
     fetched = git(
         "fetch",
         "--no-tags",
@@ -83,6 +62,31 @@ def verify(
     if ancestry.returncode:
         return False, f"tag commit is not contained in observed default branch {observed_sha}"
     return True, observed_sha
+
+
+def verify(
+    commit: str, remote: str, branch: str, server_host: str, project_path: str
+) -> tuple[bool, str]:
+    if not FULL_SHA.fullmatch(commit):
+        return False, "commit must be a full lowercase Git SHA"
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._-]*", remote):
+        return False, "policy remote has an invalid name"
+    if not re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/-]*", branch) or ".." in branch:
+        return False, "default branch has an invalid name"
+    if not server_host or not project_path:
+        return False, "expected GitLab project identity is incomplete"
+
+    configured = git("remote", "get-url", remote, capture=True)
+    if configured.returncode:
+        return False, "cannot resolve the configured policy remote"
+    try:
+        identity = remote_identity(configured.stdout.strip())
+    except ValueError as error:
+        return False, str(error)
+    if identity != (server_host.casefold(), project_path):
+        return False, "policy remote does not match the expected GitLab project"
+
+    return fetch_and_verify(commit, remote, branch)
 
 
 def main() -> int:

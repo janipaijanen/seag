@@ -76,7 +76,9 @@ class TagPolicyTests(unittest.TestCase):
         accepted, detail = self.verify()
         self.assertFalse(accepted)
         self.assertIn("does not match", detail)
-        git_mock.assert_called_once()
+        git_mock.assert_called_once_with(
+            "remote", "get-url", "origin", capture=True
+        )
 
     @patch.object(TAG_CONTAINMENT, "git")
     def test_fails_closed_when_fresh_policy_fetch_fails(self, git_mock) -> None:
@@ -133,33 +135,16 @@ class RealGitTagPolicyTests(unittest.TestCase):
             self.git(client, "config", "user.email", "test@example.invalid")
             self.git(client, "commit", "--allow-empty", "-m", "unrelated")
             unrelated = self.git(client, "rev-parse", "HEAD")
-            public_url = "https://gitlab.example/group/project.git"
-            self.git(client, "remote", "add", "origin", public_url)
-            self.git(
-                client,
-                "config",
-                f"url.{remote.as_uri()}.insteadOf",
-                public_url,
-            )
+            self.git(client, "remote", "add", "origin", str(remote))
             self.git(client, "config", "protocol.file.allow", "always")
 
             with contextlib.chdir(client):
                 self.assertEqual(
                     (True, main_commit),
-                    TAG_CONTAINMENT.verify(
-                        main_commit,
-                        "origin",
-                        "main",
-                        "gitlab.example",
-                        "group/project",
-                    ),
+                    TAG_CONTAINMENT.fetch_and_verify(main_commit, "origin", "main"),
                 )
-                accepted, detail = TAG_CONTAINMENT.verify(
-                    unrelated,
-                    "origin",
-                    "main",
-                    "gitlab.example",
-                    "group/project",
+                accepted, detail = TAG_CONTAINMENT.fetch_and_verify(
+                    unrelated, "origin", "main"
                 )
             self.assertFalse(accepted)
             self.assertIn("not contained", detail)
