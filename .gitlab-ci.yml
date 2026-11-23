@@ -246,28 +246,7 @@ toolchain-publish-candidate:
       allow_failure: true
     - when: never
   script:
-    - test -n "${CI_REGISTRY_USER:-}" -a -n "${CI_REGISTRY_PASSWORD:-}"
-    - test "${TOOLCHAIN_PUBLISH_COMMIT:-}" = "$CI_COMMIT_SHA"
-    - test "$(cat toolchain-publish-admission/source-commit.txt)" = "$CI_COMMIT_SHA"
-    - (cd toolchain-proof && sha256sum -c SHA256SUMS)
-    - test "$(sha256sum toolchain-proof/seag-ci-toolchain.oci.tar | cut -d' ' -f1)" = "$(cat toolchain-publish-admission/archive-sha256.txt)"
-    - destination="$(cat toolchain-publish-admission/destination.txt)"
-    - expected_digest="$(cat toolchain-publish-admission/manifest-digest.txt)"
-    - auth_dir="$(mktemp -d)"
-    - auth_file="$auth_dir/auth.json"
-    - trap 'rm -rf "$auth_dir"' EXIT
-    - printf '%s' "$CI_REGISTRY_PASSWORD" | skopeo login --authfile "$auth_file" --username "$CI_REGISTRY_USER" --password-stdin "$CI_REGISTRY"
-    - inspect_error="$auth_dir/inspect-error"
-    - if skopeo inspect --authfile "$auth_file" "docker://$destination" >/dev/null 2>"$inspect_error"; then echo "candidate destination already exists" >&2; exit 1; fi
-    - if ! grep -Eiq 'manifest unknown|name unknown' "$inspect_error" || grep -Eiq 'unauthorized|denied|forbidden|timeout|connection|TLS|certificate|too many requests|(^|[^0-9])429([^0-9]|$)|(^|[^0-9])5[0-9][0-9]([^0-9]|$)' "$inspect_error"; then echo "candidate absence could not be established" >&2; sed 's/[[:cntrl:]]//g' "$inspect_error" >&2; exit 1; fi
-    - skopeo copy --preserve-digests --authfile "$auth_file" oci-archive:toolchain-proof/seag-ci-toolchain.oci.tar "docker://$destination"
-    - observed_digest="$(skopeo inspect --authfile "$auth_file" --format '{{.Digest}}' "docker://$destination")"
-    - test "$observed_digest" = "$expected_digest"
-    - mkdir toolchain-publication
-    - cp toolchain-publish-admission/admission.json toolchain-publication/admission.json
-    - printf '%s\n' "$destination" > toolchain-publication/destination.txt
-    - printf '%s\n' "$observed_digest" > toolchain-publication/registry-manifest-digest.txt
-    - printf '%s\n' "$CI_JOB_ID" > toolchain-publication/publisher-job-id.txt
+    - scripts/publish-toolchain-candidate.sh
   artifacts:
     name: "seag-toolchain-publication-${CI_COMMIT_SHA}"
     paths:

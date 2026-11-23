@@ -9,10 +9,13 @@ from pathlib import Path
 import tarfile
 import tempfile
 import unittest
+import os
+import subprocess
 
 
 ROOT = Path(__file__).parents[1]
 SCRIPT = ROOT / "scripts" / "check-toolchain-publish-admission.py"
+PUBLISHER = ROOT / "scripts" / "publish-toolchain-candidate.sh"
 SPEC = importlib.util.spec_from_file_location("toolchain_publish_admission", SCRIPT)
 admission = importlib.util.module_from_spec(SPEC)
 assert SPEC.loader is not None
@@ -220,13 +223,108 @@ class ToolchainPublishAdmissionTests(unittest.TestCase):
         self.assertIn("when: manual", publisher)
         self.assertIn("resource_group: seag-toolchain-publisher", publisher)
         self.assertIn("name: seag-toolchain-candidate", publisher)
-        self.assertIn('test "${TOOLCHAIN_PUBLISH_COMMIT:-}" = "$CI_COMMIT_SHA"', publisher)
-        self.assertIn("--preserve-digests", publisher)
-        self.assertIn("candidate destination already exists", publisher)
-        self.assertIn("candidate absence could not be established", publisher)
-        self.assertIn("archive-sha256.txt", publisher)
+        self.assertIn("scripts/publish-toolchain-candidate.sh", publisher)
         self.assertNotIn("latest", publisher)
         self.assertNotIn("docker login", publisher)
+
+    def publisher_fixture(self, root: Path, mode: str) -> dict[str, str]:
+        proof = root / "toolchain-proof"
+        admission_dir = root / "toolchain-publish-admission"
+        bin_dir = root / "bin"
+        proof.mkdir()
+        admission_dir.mkdir()
+        bin_dir.mkdir()
+        archive = proof / "seag-ci-toolchain.oci.tar"
+        archive.write_bytes(b"exact archive")
+        archive_sha = hashlib.sha256(archive.read_bytes()).hexdigest()
+        (proof / "SHA256SUMS").write_text(
+            f"{archive_sha}  seag-ci-toolchain.oci.tar\n", encoding="ascii"
+        )
+        commit = "a" * 40
+        manifest = "sha256:" + "b" * 64
+        destination = "registry.example/seag/ci-toolchain:candidate-test"
+        (admission_dir / "source-commit.txt").write_text(commit + "\n")
+        (admission_dir / "archive-sha256.txt").write_text(archive_sha + "\n")
+        (admission_dir / "manifest-digest.txt").write_text(manifest + "\n")
+        (admission_dir / "destination.txt").write_text(destination + "\n")
+        (admission_dir / "admission.json").write_text("{}\n")
+        stub = bin_dir / "skopeo"
+        stub.write_text(
+            """#!/bin/sh
+set -eu
+command=$1
+shift
+case "$command" in
+  login) cat >/dev/null; : > "$SKOPEO_LOGIN_MARKER" ;;
+  copy) : > "$SKOPEO_COPY_MARKER" ;;
+  inspect)
+    if test -e "$SKOPEO_COPY_MARKER"; then
+      printf '%s\\n' "$SKOPEO_MANIFEST"
+    elif test "$SKOPEO_MODE" = exists; then
+      printf '{"Digest":"%s"}\\n' "$SKOPEO_MANIFEST"
+    elif test "$SKOPEO_MODE" = missing; then
+      echo 'manifest unknown' >&2; exit 1
+    elif test "$SKOPEO_MODE" = auth; then
+      echo 'unauthorized: authentication required' >&2; exit 1
+    else
+      echo 'connection reset by peer' >&2; exit 1
+    fi ;;
+  *) exit 64 ;;
+esac
+""",
+            encoding="utf-8",
+        )
+        stub.chmod(0o755)
+        return {
+            **os.environ,
+            "PATH": str(bin_dir) + os.pathsep + os.environ["PATH"],
+            "CI_COMMIT_SHA": commit,
+            "CI_JOB_ID": "123",
+            "CI_REGISTRY": "registry.example",
+            "CI_REGISTRY_USER": "publisher",
+            "CI_REGISTRY_PASSWORD": "secret",
+            "TOOLCHAIN_PUBLISH_COMMIT": commit,
+            "SKOPEO_MODE": mode,
+            "SKOPEO_MANIFEST": manifest,
+            "SKOPEO_LOGIN_MARKER": str(root / "login-called"),
+            "SKOPEO_COPY_MARKER": str(root / "copy-called"),
+        }
+
+    def test_publisher_copies_only_after_definite_absence(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            environment = self.publisher_fixture(root, "missing")
+            result = subprocess.run(
+                [str(PUBLISHER)], cwd=root, env=environment, capture_output=True, text=True
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertTrue((root / "copy-called").is_file())
+            self.assertEqual(
+                environment["SKOPEO_MANIFEST"],
+                (root / "toolchain-publication/registry-manifest-digest.txt")
+                .read_text()
+                .strip(),
+            )
+
+    def test_publisher_never_copies_on_exists_auth_or_network_result(self):
+        for mode, diagnostic in (
+            ("exists", "candidate destination already exists"),
+            ("auth", "candidate absence could not be established"),
+            ("network", "candidate absence could not be established"),
+        ):
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                environment = self.publisher_fixture(root, mode)
+                result = subprocess.run(
+                    [str(PUBLISHER)],
+                    cwd=root,
+                    env=environment,
+                    capture_output=True,
+                    text=True,
+                )
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn(diagnostic, result.stderr)
+                self.assertFalse((root / "copy-called").exists())
 
 
 if __name__ == "__main__":
