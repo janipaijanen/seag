@@ -67,7 +67,7 @@ def validated_environment(environment: dict[str, str]) -> dict[str, str]:
             raise ValueError(f"{name} must be decimal")
     return {
         "commit": commit,
-        "destination": f"{registry_image}/ci-toolchain:candidate-{commit}",
+        "registry_image": registry_image,
         "job_id": environment["CI_JOB_ID"],
         "pipeline_id": environment["CI_PIPELINE_ID"],
     }
@@ -138,11 +138,14 @@ def validate_proof(directory: Path) -> dict[str, str]:
         if sha256(manifest_data) != expected_manifest:
             raise ValueError("OCI manifest blob digest mismatch")
         manifest = strict_json(manifest_data)
-        if manifest.get("config", {}).get("digest") != expected_config:
+        config_descriptor = manifest.get("config", {})
+        if config_descriptor.get("digest") != expected_config:
             raise ValueError("OCI manifest and config metadata disagree")
         config_data = bytes_for(f"blobs/sha256/{expected_config.removeprefix('sha256:')}")
         if sha256(config_data) != expected_config:
             raise ValueError("OCI config blob digest mismatch")
+        if config_descriptor.get("size") != len(config_data):
+            raise ValueError("OCI config blob size mismatch")
         config = strict_json(config_data)
         if (
             not isinstance(config, dict)
@@ -151,9 +154,46 @@ def validate_proof(directory: Path) -> dict[str, str]:
         ):
             raise ValueError("OCI config is not Linux/amd64")
 
+        layers = manifest.get("layers")
+        if not isinstance(layers, list) or not layers:
+            raise ValueError("OCI manifest must contain at least one layer")
+        referenced_blobs = {
+            f"blobs/sha256/{expected_manifest.removeprefix('sha256:')}",
+            f"blobs/sha256/{expected_config.removeprefix('sha256:')}",
+        }
+        layer_digests: set[str] = set()
+        for position, layer in enumerate(layers):
+            if not isinstance(layer, dict):
+                raise ValueError(f"OCI layer {position} is not a descriptor")
+            layer_digest = layer.get("digest")
+            layer_size = layer.get("size")
+            if not DIGEST.fullmatch(layer_digest or ""):
+                raise ValueError(f"OCI layer {position} has an invalid digest")
+            if layer_digest in layer_digests:
+                raise ValueError("OCI manifest contains a duplicate layer digest")
+            if not isinstance(layer_size, int) or isinstance(layer_size, bool) or layer_size < 0:
+                raise ValueError(f"OCI layer {position} has an invalid size")
+            layer_name = f"blobs/sha256/{layer_digest.removeprefix('sha256:')}"
+            layer_data = bytes_for(layer_name)
+            if sha256(layer_data) != layer_digest:
+                raise ValueError(f"OCI layer {position} blob digest mismatch")
+            if len(layer_data) != layer_size:
+                raise ValueError(f"OCI layer {position} blob size mismatch")
+            layer_digests.add(layer_digest)
+            referenced_blobs.add(layer_name)
+
+        archive_blobs = {
+            member.name
+            for member in members
+            if member.isfile() and PurePosixPath(member.name).parts[:2] == ("blobs", "sha256")
+        }
+        if archive_blobs != referenced_blobs:
+            raise ValueError("OCI archive contains missing or unreferenced blobs")
+
     return {
         "archive_sha256": archive_sha256,
         "config_digest": expected_config,
+        "layer_count": str(len(layers)),
         "manifest_digest": expected_manifest,
     }
 
@@ -162,10 +202,14 @@ def write_admission(output: Path, environment: dict[str, str], proof: dict[str, 
     if output.exists() or output.is_symlink():
         raise ValueError("admission output must not already exist")
     output.mkdir(mode=0o755)
+    destination = (
+        f'{environment["registry_image"]}/ci-toolchain:'
+        f'candidate-{environment["commit"]}-{proof["manifest_digest"].removeprefix("sha256:")}'
+    )
     record = {
         "schema": "seag/toolchain-publication-admission/v1",
         "source_commit": environment["commit"],
-        "destination": environment["destination"],
+        "destination": destination,
         "pipeline_id": environment["pipeline_id"],
         "admission_job_id": environment["job_id"],
         **proof,
@@ -175,7 +219,8 @@ def write_admission(output: Path, environment: dict[str, str], proof: dict[str, 
         encoding="utf-8",
     )
     for name, value in (
-        ("destination.txt", environment["destination"]),
+        ("archive-sha256.txt", proof["archive_sha256"]),
+        ("destination.txt", destination),
         ("manifest-digest.txt", proof["manifest_digest"]),
         ("source-commit.txt", environment["commit"]),
     ):

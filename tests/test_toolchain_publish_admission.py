@@ -52,7 +52,13 @@ class ToolchainPublishAdmissionTests(unittest.TestCase):
                     "digest": config_digest,
                     "size": len(config_data),
                 },
-                "layers": [],
+                "layers": [
+                    {
+                        "mediaType": "application/vnd.oci.image.layer.v1.tar",
+                        "digest": digest(b"layer"),
+                        "size": len(b"layer"),
+                    }
+                ],
             },
             separators=(",", ":"),
         ).encode()
@@ -76,6 +82,7 @@ class ToolchainPublishAdmissionTests(unittest.TestCase):
             ("blobs/sha256", None),
             (f"blobs/sha256/{manifest_digest.removeprefix('sha256:')}", manifest_data),
             (f"blobs/sha256/{config_digest.removeprefix('sha256:')}", config_data),
+            (f"blobs/sha256/{digest(b'layer').removeprefix('sha256:')}", b"layer"),
             ("index.json", index_data),
             ("oci-layout", b'{"imageLayoutVersion":"1.0.0"}'),
         ]
@@ -118,8 +125,7 @@ class ToolchainPublishAdmissionTests(unittest.TestCase):
         environment = admission.validated_environment(self.environment())
         self.assertEqual("a" * 40, environment["commit"])
         self.assertEqual(
-            "registry.gitlab.com/janipaijanen/seag/ci-toolchain:candidate-" + "a" * 40,
-            environment["destination"],
+            "registry.gitlab.com/janipaijanen/seag", environment["registry_image"]
         )
         with tempfile.TemporaryDirectory() as directory:
             proof = admission.validate_proof(self.proof(Path(directory)))
@@ -127,8 +133,18 @@ class ToolchainPublishAdmissionTests(unittest.TestCase):
             output = Path(directory) / "admission"
             admission.write_admission(output, environment, proof)
             record = json.loads((output / "admission.json").read_text())
-            self.assertEqual(environment["destination"], record["destination"])
+            self.assertEqual(
+                "registry.gitlab.com/janipaijanen/seag/ci-toolchain:candidate-"
+                + "a" * 40
+                + "-"
+                + proof["manifest_digest"].removeprefix("sha256:"),
+                record["destination"],
+            )
             self.assertEqual(proof["manifest_digest"], record["manifest_digest"])
+            self.assertEqual(
+                proof["archive_sha256"],
+                (output / "archive-sha256.txt").read_text().strip(),
+            )
 
     def test_rejects_unprotected_non_default_or_unpinned_context(self):
         for key, value in (
@@ -170,6 +186,29 @@ class ToolchainPublishAdmissionTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, "must not already exist"):
                 admission.write_admission(output, {}, {})
 
+    def test_rejects_tampered_or_unreferenced_layer_blobs(self):
+        with tempfile.TemporaryDirectory() as directory:
+            proof = self.proof(Path(directory))
+            archive = proof / "seag-ci-toolchain.oci.tar"
+            with tarfile.open(archive, "a:") as output:
+                info = tarfile.TarInfo("blobs/sha256/" + "f" * 64)
+                info.size = 1
+                output.addfile(info, io.BytesIO(b"x"))
+            archive_hash = hashlib.sha256(archive.read_bytes()).hexdigest()
+            (proof / "SHA256SUMS").write_text(
+                f"{archive_hash}  seag-ci-toolchain.oci.tar\n", encoding="ascii"
+            )
+            with tarfile.open(archive, "r:") as source:
+                listing = [
+                    member.name + "/" if member.isdir() else member.name
+                    for member in source.getmembers()
+                ]
+            (proof / "oci-members.txt").write_text(
+                "\n".join(listing) + "\n", encoding="utf-8"
+            )
+            with self.assertRaisesRegex(ValueError, "unreferenced blobs"):
+                admission.validate_proof(proof)
+
     def test_ci_keeps_build_admission_and_publication_separate(self):
         ci = (ROOT / ".gitlab-ci.yml").read_text(encoding="utf-8")
         publisher = ci.split("\ntoolchain-publish-candidate:", 1)[1]
@@ -184,6 +223,8 @@ class ToolchainPublishAdmissionTests(unittest.TestCase):
         self.assertIn('test "${TOOLCHAIN_PUBLISH_COMMIT:-}" = "$CI_COMMIT_SHA"', publisher)
         self.assertIn("--preserve-digests", publisher)
         self.assertIn("candidate destination already exists", publisher)
+        self.assertIn("candidate absence could not be established", publisher)
+        self.assertIn("archive-sha256.txt", publisher)
         self.assertNotIn("latest", publisher)
         self.assertNotIn("docker login", publisher)
 
