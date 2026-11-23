@@ -299,6 +299,71 @@ esac
             encoding="utf-8",
         )
         stub.chmod(0o755)
+        curl_stub = bin_dir / "curl"
+        curl_stub.write_text(
+            """#!/bin/sh
+set -eu
+printf '%s\n' "$*" >> "$CURL_ARGS_MARKER"
+output=
+headers=
+bearer=false
+netrc=false
+url=
+while test "$#" -gt 0; do
+  case "$1" in
+    --output|--dump-header|--header|--netrc-file|--data-urlencode|--write-out|--max-time|--max-redirs|--request)
+      option=$1; value=$2; shift 2
+      test "$option" = --output && output=$value
+      test "$option" = --dump-header && headers=$value
+      test "$option" = --netrc-file && netrc=true
+      case "$option:$value" in --header:@*) bearer=true ;; esac
+      ;;
+    --silent|--show-error|--get) shift ;;
+    *) url=$1; shift ;;
+  esac
+done
+test -n "$output"
+: > "$output"
+test -z "$headers" || : > "$headers"
+case "$url" in
+  https://gitlab.example/jwt/auth)
+    test "$netrc" = true
+    if test "$SKOPEO_MODE" = auth; then
+      printf '%s' '{"errors":[{"code":"DENIED"}]}' > "$output"
+      printf 403
+    else
+      printf '%s' '{"token":"header.payload.signature"}' > "$output"
+      printf 200
+    fi
+    ;;
+  https://registry.example/v2/*)
+    if test "$bearer" = false; then
+      printf '%s\r\n' 'HTTP/1.1 401 Unauthorized' \
+        'WWW-Authenticate: Bearer realm="https://gitlab.example/jwt/auth",service="container_registry"' \
+        > "$headers"
+      printf '%s' '{"errors":[{"code":"UNAUTHORIZED"}]}' > "$output"
+      printf 401
+      exit 0
+    fi
+    case "$SKOPEO_MODE" in
+      exists) printf '%s' "$SKOPEO_RAW_MANIFEST" > "$output"; printf 200 ;;
+      missing) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN","message":"manifest unknown"}]}' > "$output"; printf 404 ;;
+      name-missing) printf '%s' '{"errors":[{"code":"NAME_UNKNOWN","message":"repository name not known"}]}' > "$output"; printf 404 ;;
+      mixed|multiline) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN"},{"code":"DENIED"}]}' > "$output"; printf 404 ;;
+      other-resource) printf '%s' '{"errors":[{"code":"BLOB_UNKNOWN"}]}' > "$output"; printf 404 ;;
+      malformed) printf '%s' 'not-json "code":"MANIFEST_UNKNOWN"' > "$output"; printf 404 ;;
+      server) printf '%s' '{"errors":[{"code":"UNKNOWN"}]}' > "$output"; printf 500 ;;
+      rate) printf '%s' '{"errors":[{"code":"TOOMANYREQUESTS"}]}' > "$output"; printf 429 ;;
+      network) exit 7 ;;
+      *) exit 64 ;;
+    esac
+    ;;
+  *) exit 65 ;;
+esac
+""",
+            encoding="utf-8",
+        )
+        curl_stub.chmod(0o755)
         return {
             **os.environ,
             "PATH": str(bin_dir) + os.pathsep + os.environ["PATH"],
@@ -307,6 +372,8 @@ esac
             "CI_REGISTRY": "registry.example",
             "CI_REGISTRY_USER": "publisher",
             "CI_REGISTRY_PASSWORD": "secret",
+            "CI_SERVER_URL": "https://gitlab.example",
+            "CI_SERVER_HOST": "gitlab.example",
             "TOOLCHAIN_PUBLISH_COMMIT": commit,
             "SKOPEO_MODE": mode,
             "SKOPEO_MANIFEST": manifest,
@@ -314,6 +381,7 @@ esac
             "SKOPEO_LOGIN_MARKER": str(root / "login-called"),
             "SKOPEO_COPY_MARKER": str(root / "copy-called"),
             "SKOPEO_ARGS_MARKER": str(root / "skopeo-arguments"),
+            "CURL_ARGS_MARKER": str(root / "curl-arguments"),
         }
 
     def test_publisher_copies_only_after_definite_absence(self):
@@ -325,7 +393,12 @@ esac
             )
             self.assertEqual(0, result.returncode, result.stderr)
             self.assertTrue((root / "copy-called").is_file())
-            self.assertIn("inspect --raw", (root / "skopeo-arguments").read_text())
+            skopeo_calls = (root / "skopeo-arguments").read_text().splitlines()
+            self.assertTrue(skopeo_calls[0].startswith("login "))
+            self.assertTrue(skopeo_calls[1].startswith("copy "))
+            self.assertIn("inspect --raw", skopeo_calls[2])
+            curl_calls = (root / "curl-arguments").read_text()
+            self.assertIn("/v2/seag/ci-toolchain/manifests/candidate-test", curl_calls)
             self.assertEqual(
                 environment["SKOPEO_MANIFEST"],
                 (root / "toolchain-publication/registry-manifest-digest.txt")
@@ -366,7 +439,7 @@ esac
             self.assertTrue((root / "copy-called").is_file())
 
     def test_publisher_rejects_mixed_multiline_and_other_resource_errors(self):
-        for mode in ("mixed", "multiline", "other-resource"):
+        for mode in ("mixed", "multiline", "other-resource", "malformed"):
             with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 environment = self.publisher_fixture(root, mode)
@@ -391,6 +464,7 @@ esac
             self.assertIn("outside CI_REGISTRY", result.stderr)
             self.assertFalse((root / "login-called").exists())
             self.assertFalse((root / "copy-called").exists())
+            self.assertFalse((root / "curl-arguments").exists())
 
 
 if __name__ == "__main__":

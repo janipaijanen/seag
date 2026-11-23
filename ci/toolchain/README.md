@@ -76,12 +76,15 @@ config blob digests without registry credentials. The publisher receives the
 verified archive only after that admission, requires the operator to repeat
 the exact source commit in `TOOLCHAIN_PUBLISH_COMMIT`, and serializes all
 candidate publications. It uses a digest-pinned Skopeo 1.24.1 image and a
-`candidate-<commit>-<manifest-digest>` discovery tag, fails closed unless the
-raw registry lookup reports that exact repository and tag absent in one
-recognized Skopeo diagnostic, refuses mixed authorization/network/server
-diagnostics, and refuses any destination outside `CI_REGISTRY` before login.
-It preserves the OCI manifest digest, hashes the raw post-copy manifest, and
-emits a credential-free receipt. The lookup and copy are
+`candidate-<commit>-<manifest-digest>` discovery tag. Before Skopeo login or
+copy, it queries the exact Registry v2 manifest resource with a bounded curl
+client, pins the authentication realm to this GitLab server, and preserves the
+HTTP status and complete structured error body. It accepts absence only for
+HTTP 404 carrying exactly one `MANIFEST_UNKNOWN` or `NAME_UNKNOWN` code;
+authorization, rate, server, compound-error, redirect and malformed responses
+fail closed. It refuses any destination outside `CI_REGISTRY` before sending a
+credential. It preserves the OCI manifest digest, hashes the raw post-copy
+manifest, and emits a credential-free receipt. The lookup and copy are
 not an atomic create-only registry operation: the candidate tag is never an
 authority or approval, and only the recorded manifest digest identifies bytes.
 Registry tag protection must restrict competing writers before the first run.
