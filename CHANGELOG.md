@@ -9,6 +9,9 @@ CI uses that release section as the future release-note source.
 
 ## Unreleased
 
+- Clarified prerelease-candidate wording, the scope of the builder's
+  reproducibility claim, the complete term-disposition vocabulary, and how
+  implementation alignment records a specified but absent implementation.
 - Adopted uv 0.12.9 for the contributor and conformance environment, with
   exact direct dependency pins, a hash-bearing lock, a fail-closed dependency
   policy gate, and no added shipped runtime dependencies.

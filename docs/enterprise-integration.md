@@ -78,6 +78,11 @@ adopted, profiled, mapped, SEAG-defined, and deprecated dispositions. An
 enterprise profile should reuse those distinctions rather than invent a second
 mapping vocabulary.
 
+Implementation alignment does not hide absence. A concept with no
+implementation-bearing claim uses `not_applicable`; a specified but absent
+implementation uses `diverges` after review, or `unchecked` while the
+comparison remains outstanding.
+
 ## Proposed integration lifecycle
 
 1. **Inventory sources and owners.** Locate glossaries, schemas, catalogs,
@@ -230,7 +235,7 @@ into SEAG.
 - complete OWL reasoning or automatic ontology merging;
 - a vendor connector marketplace;
 - LLM-authorized acceptance of enterprise changes; and
-- a universal enterprise ontology; and
+- a universal enterprise ontology;
 - multi-repository federation before single-repository semantics and one
   importer have adoption evidence.
 
