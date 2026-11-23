@@ -55,14 +55,16 @@ BUNDLE_RULES: dict[str, tuple[str, str, str, str]] = {
 }
 
 
-def implementation_digest() -> str:
+def implementation_digest(package: Path | None = None) -> str:
     """Identify the exact local code that defines comparison behavior."""
-    package = Path(__file__).resolve().parent
+    package = package or Path(__file__).resolve().parent
     inputs = [package / name for name in ("semantic_diff.py", "source.py", "transform.py", "validate.py")]
+    inputs.extend(sorted((package / "validation").glob("*.py")))
     inputs.append(package.parent / "VERSION")
     digest = hashlib.sha256()
-    for path in sorted(inputs, key=lambda item: item.name):
-        digest.update(path.name.encode("utf-8") + b"\0")
+    for path in sorted(inputs, key=lambda item: item.relative_to(package.parent).as_posix()):
+        relative_path = path.relative_to(package.parent).as_posix()
+        digest.update(relative_path.encode("utf-8") + b"\0")
         digest.update(path.read_bytes())
         digest.update(b"\0")
     return digest.hexdigest()

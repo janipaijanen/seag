@@ -3,9 +3,9 @@
 
 # Canonical source rendering
 
-> **Status: post-0.1 experimental capability.** It is implemented on `main`
-> but is not part of the immutable 0.1.0 release or evidence that the 0.2 exit
-> gate has passed.
+> **Status: 0.2.0-alpha.1 evaluation capability.** It is not part of the
+> immutable 0.1.0 release, a supported compatibility baseline, or evidence
+> that the 0.2 exit gate has passed.
 
 Canonical rendering removes byte-level formatting and ordering noise before
 review without changing declared semantic values. It operates on one validated,

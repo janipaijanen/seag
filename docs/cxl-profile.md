@@ -3,6 +3,12 @@
 
 # CmapTools CXL export profile 0.1
 
+The compatible-parser check accepts only the generated SEAG subset described
+here. It is not a general CXL importer. Unknown elements or attributes,
+duplicate identifiers, undeclared endpoints, non-SEAG connection shapes, DTDs,
+entities, processing instructions, comments, and CDATA fail validation under
+the [input-validation policy](input-validation.md).
+
 SEAG 0.1 emits the public IHMC CXL structure documented at
 <https://cmap.ihmc.us/xml/cxl.html>. The evidence pins the retrieved
 `cmap.xsd` bytes to SHA-256

@@ -47,9 +47,11 @@ metadata; the corresponding licence text remains authoritative.
 Run the repository check with:
 
 ```sh
-python3 scripts/check-spdx.py
+uv run --locked --no-sync reuse lint
+uv run --locked --no-sync python scripts/check-spdx.py
 ```
 
-The CI validation stage runs this check. Files without a nonempty declaration,
+The CI validation stage runs both the established REUSE checker and SEAG's
+allocation-specific check. Files without a nonempty declaration,
 files using an unapproved expression, missing licence texts, and root licence
 copies that differ from their canonical SPDX texts fail the pipeline.

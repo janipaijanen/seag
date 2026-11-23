@@ -12,6 +12,7 @@ from pathlib import Path
 import stat
 
 from .validate import validate
+from .validation import strict_json_loads
 
 
 def _read_confined(root: Path, relative: str) -> bytes:
@@ -44,8 +45,8 @@ def load_snapshot(manifest_path: Path) -> tuple[dict, list[tuple[dict, dict, byt
     manifest_path = manifest_path.resolve()
     try:
         raw = manifest_path.read_bytes()
-        manifest = json.loads(raw)
-    except (OSError, UnicodeError, json.JSONDecodeError) as error:
+        manifest = strict_json_loads(raw)
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError) as error:
         raise ValueError(f"invalid SEAG bundle: cannot read manifest: {error}") from error
     fragment_raws: dict[str, bytes] = {}
     inventory = manifest.get("fragments", []) if isinstance(manifest, dict) else []
@@ -62,7 +63,7 @@ def load_snapshot(manifest_path: Path) -> tuple[dict, list[tuple[dict, dict, byt
         raise ValueError("invalid SEAG bundle:\n" + "\n".join(errors))
     fragments: list[tuple[dict, dict, bytes]] = []
     for item in manifest["fragments"]:
-        fragment = json.loads(fragment_raws[item["path"]])
+        fragment = strict_json_loads(fragment_raws[item["path"]])
         fragments.append((item, fragment, fragment_raws[item["path"]]))
     return manifest, fragments, hashlib.sha256(raw).hexdigest()
 

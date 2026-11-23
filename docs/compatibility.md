@@ -10,7 +10,7 @@ SEAG distinguishes:
 - the package release in `VERSION`;
 - each source-contract and schema identifier;
 - each representation or integration profile version; and
-- external standard versions recorded in `standards.yaml`.
+- external standard versions recorded in `standards.json`.
 
 Compatibility on one surface does not imply compatibility on another. A tool
 must identify every surface it claims to support.
@@ -24,6 +24,12 @@ incompatibly before its corresponding stable version.
 
 No prerelease is a supported compatibility baseline unless its release notes
 say so explicitly.
+
+`0.2.0-alpha.1` deliberately does not establish such a baseline. It retains
+the `0.1-draft.2` input contract for evaluation, while its canonical bytes,
+semantic-diff and conflict schemas, diagnostic meanings, and conflict boundary
+may change in a later prerelease. Consumers must pin its exact tag, commit, and
+archive digest and preserve their original source.
 
 ## Source-contract behavior
 

@@ -12,7 +12,7 @@ import tempfile
 import unittest
 from pathlib import Path
 
-from seag.validate import validate, validate_variant
+from seag.validate import ipv4_address, ipv6_address, port_number, validate, validate_variant
 
 ROOT = Path(__file__).resolve().parents[1]
 VALID = ROOT / "fixtures" / "valid"
@@ -52,12 +52,67 @@ class SourceValidationTest(unittest.TestCase):
     def test_valid_fixture(self):
         self.assertEqual([], self.run_case())
 
+    def test_json_rejects_duplicate_members_and_non_finite_numbers(self):
+        self.assertEqual([], self.run_case())
+        manifest_path = self.root / "manifest.json"
+        original = manifest_path.read_text()
+        duplicate = original.replace(
+            '"title": "Invented neutral fixture"',
+            '"title": "Invented neutral fixture", "title": "Hidden replacement"',
+            1,
+        )
+        manifest_path.write_text(duplicate)
+        self.assertTrue(any("duplicate JSON object member" in error for error in validate(manifest_path)))
+        manifest_path.write_text(original.replace('"title": "Invented neutral fixture"', '"title": NaN', 1))
+        self.assertTrue(any("non-finite JSON number forbidden" in error for error in validate(manifest_path)))
+
+    def test_fragment_json_rejects_duplicate_members(self):
+        self.assertEqual([], self.run_case())
+        fragment_path = self.root / "fragment.json"
+        raw = fragment_path.read_text().replace(
+            '"revision": "draft-1"',
+            '"revision": "draft-1", "revision": "hidden"',
+            1,
+        ).encode()
+        fragment_path.write_bytes(raw)
+        manifest = json.loads((self.root / "manifest.json").read_text())
+        manifest["fragments"][0]["sha256"] = hashlib.sha256(raw).hexdigest()
+        (self.root / "manifest.json").write_text(json.dumps(manifest))
+        self.assertTrue(any("duplicate JSON object member" in error for error in validate(self.root / "manifest.json")))
+
+    def test_json_files_accept_utf8_only(self):
+        self.assertEqual([], self.run_case())
+        manifest_path = self.root / "manifest.json"
+        fragment_path = self.root / "fragment.json"
+        manifest_text = manifest_path.read_text()
+        fragment_text = fragment_path.read_text()
+        manifest_path.write_bytes(manifest_text.encode("utf-16"))
+        self.assertTrue(any("cannot read JSON" in error for error in validate(manifest_path)))
+
+        manifest_path.write_text(manifest_text)
+        fragment_raw = fragment_text.encode("utf-32")
+        fragment_path.write_bytes(fragment_raw)
+        manifest = json.loads(manifest_text)
+        manifest["fragments"][0]["sha256"] = hashlib.sha256(fragment_raw).hexdigest()
+        manifest_path.write_text(json.dumps(manifest))
+        self.assertTrue(any("cannot read fragment" in error for error in validate(manifest_path)))
+
+        variant_path = self.root / "variant.json"
+        variant = json.loads((VALID / "variant.json").read_text())
+        variant_path.write_bytes(json.dumps(variant).encode("utf-16"))
+        self.assertTrue(any("cannot read JSON" in error for error in validate_variant(variant_path)))
+
     def test_language_tags_require_supported_bcp47_shape(self):
-        self.manifest["default_language"] = "en_US"
-        self.assert_rejects("well-formed BCP 47")
-        self.manifest["default_language"] = "en"
-        self.fragment["language"] = "not a tag"
-        self.assert_rejects("well-formed BCP 47")
+        for tag in ("en_US", "not a tag", "en-a-foo-a-bar", "sl-rozaj-rozaj", "en-u-ca-gregory-u-nu-latn"):
+            with self.subTest(tag=tag):
+                self.manifest["default_language"] = tag
+                self.assert_only_error("well-formed BCP 47")
+
+    def test_supported_well_formed_bcp47_shapes(self):
+        for tag in ("en", "en-GB", "sr-Latn", "zh-Hant-TW", "de-CH-1901", "en-a-foo-b-bar", "x-seag", "i-klingon"):
+            with self.subTest(tag=tag):
+                self.manifest["default_language"] = tag
+                self.assertEqual([], self.run_case())
 
     def test_concept_requires_singular_number_declaration(self):
         record = self.fragment["records"][0]
@@ -97,6 +152,10 @@ class SourceValidationTest(unittest.TestCase):
     def test_hidden_format_character_rejected(self):
         self.fragment["records"][-1]["name"] = "pre\u200bcedes"
         self.assert_rejects("hidden format characters forbidden")
+
+    def test_required_human_text_rejects_forbidden_control_characters(self):
+        self.fragment["records"][0]["label"] = "Thing\u0000A"
+        self.assert_only_error("forbidden control characters")
 
     def test_vague_name_is_rejected(self):
         for name in ("relates to", "relates to the", "related to", "supports", "uses", "has many", "HAS_MANY"):
@@ -161,6 +220,7 @@ class SourceValidationTest(unittest.TestCase):
             ("omissions", ["layout", 1], "explicit string array"),
             ("unsupported_constructs", [None], "explicit string array"),
             ("generated_at", "sometime", "ISO timestamp with timezone"),
+            ("generated_at", "2026-11-22T12:34:56+02:60", "ISO timestamp with timezone"),
             ("source_manifest_sha256", "bad", "SHA-256 hex required"),
         ):
             with self.subTest(field=field):
@@ -385,12 +445,73 @@ class SourceValidationTest(unittest.TestCase):
 
     def test_invalid_iri_and_namespace_forms(self):
         rule = self.fragment["records"][3]
-        rule["iri"] = "relative"
-        self.assert_only_error("absolute external artifact IRI required")
+        for iri in (
+            "relative",
+            "https://example.invalid/%zz",
+            "https://example.invalid:bad/id",
+            "https://example.invalid:-1/id",
+            "https://example.invalid:65536/id",
+            "https://256.1.1.1/id",
+            "https://192.168.01.1/id",
+            "https://[invalid",
+            "https://[2001:db8:::1]/id",
+            "urn:thing[bad",
+            "https://user@@example.org/x",
+            "https://example.org/a[b]",
+            "https://example.org/#a#b",
+            "urn:neutral:\ufdd0",
+            "urn:neutral:\ufff0",
+            "urn:neutral:\ufffd",
+            "urn:neutral:\U000e0000",
+            "urn:neutral:\U000e0fff",
+            "urn:neutral:#\ue000",
+        ):
+            with self.subTest(iri=iri):
+                rule["iri"] = iri
+                self.assert_only_error("absolute external artifact IRI required")
         rule["iri"] = "urn:uuid:22222222-2222-4222-8222-222222222222"
         self.manifest["namespace"] = "https://example.invalid/terms"
         self.fragment["namespace"] = self.manifest["namespace"]
         self.assert_only_error("ending in # or / required")
+
+    def test_valid_absolute_iri_forms(self):
+        rule = self.fragment["records"][3]
+        for iri in (
+            "HTTPS://example.invalid/path",
+            "https://example.invalid:0/path",
+            "https://example.invalid:65535/path",
+            "https://192.168.1.1/path",
+            "https://[2001:db8::1]/path",
+            "https://例え.invalid/用語",
+            "tag:example.org,2026:term",
+            "did:example:123",
+            "urn:neutral:?\ue000",
+            "urn:neutral:\ufdf0",
+            "urn:neutral:\uffef",
+            "urn:neutral:\U000e1000",
+            "urn:neutral:\U000efffd",
+            "urn:neutral:?\U000f0000",
+            "urn:neutral:?\U0010fffd",
+        ):
+            with self.subTest(iri=iri):
+                rule["iri"] = iri
+                self.assertEqual([], self.run_case())
+
+    def test_typed_network_value_validators_do_not_coerce(self):
+        self.assertTrue(port_number(0))
+        self.assertTrue(port_number(65535))
+        for value in (-1, 65536, True, "443", 443.0):
+            with self.subTest(port=value):
+                self.assertFalse(port_number(value))
+        self.assertTrue(ipv4_address("192.0.2.1"))
+        for value in ("256.0.2.1", "192.0.02.1", "192.0.2", 3221225985):
+            with self.subTest(ipv4=value):
+                self.assertFalse(ipv4_address(value))
+        self.assertTrue(ipv6_address("2001:db8::1"))
+        self.assertTrue(ipv6_address("2001:0DB8:0:0:0:0:0:1"))
+        for value in ("2001:db8:::1", "fe80::1%eth0", "192.0.2.1", 1):
+            with self.subTest(ipv6=value):
+                self.assertFalse(ipv6_address(value))
 
     def test_unknown_record_kind_and_non_object_record(self):
         self.fragment["records"][0]["kind"] = "unknown"

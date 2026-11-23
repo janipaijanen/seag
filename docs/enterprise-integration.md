@@ -154,6 +154,35 @@ promote imported and AI-generated suggestions to confirmed status. Access
 classification in a file is metadata to propagate; it is not authorization
 enforcement.
 
+## Pilot-derived review requirements
+
+An adopting project may have concepts that exist only in decisions,
+specifications, or reviewed models. The absence of a code locator is therefore
+a valid, explicit condition rather than a validation failure. A source record
+still needs evidence and status; implementation absence must not be confused
+with missing provenance or with confirmation that implementation matches.
+
+Review and future federation profiles should preserve these distinctions:
+
+- every record exposes whether its meaning is unresolved, proposed, confirmed,
+  or deprecated independently of implementation alignment;
+- a homonym, synonym, or conflicting-meaning finding identifies both semantic
+  identities and both stable, versioned source locators rather than reporting
+  only a shared label;
+- a supersession finding identifies the before identity and revision, the after
+  identity and revision, and the decision or record that performs the
+  supersession;
+- locators prefer immutable version plus artifact identifier or anchored
+  section identity; a line number may be a navigation hint but cannot be the
+  durable locator because ordinary edits move it; and
+- lifecycle states remain named vocabulary. Transitions, guards, sequence, and
+  execution continue to belong to the referenced external state-machine or
+  workflow artifact.
+
+These are domain-neutral requirements derived from adopter feedback. They do
+not import the adopter's concept inventory, conflict examples, or decisions
+into SEAG.
+
 ## Priorities
 
 ### P0 — federation foundations

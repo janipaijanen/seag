@@ -9,8 +9,10 @@ import subprocess
 import sys
 
 
+# REUSE-IgnoreStart
 COPYRIGHT_PREFIX = "SPDX-FileCopyrightText:"
 LICENCE_PREFIX = "SPDX-License-Identifier: "
+# REUSE-IgnoreEnd
 ALLOWED_LICENCES = {"Apache-2.0", "CC-BY-4.0"}
 ROOT_LICENCE_COPIES = {
     Path("LICENSE"): Path("LICENSES/Apache-2.0.txt"),

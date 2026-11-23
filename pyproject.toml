@@ -1,0 +1,28 @@
+# SPDX-FileCopyrightText: Copyright (C) 2026 Jani Päijänen
+# SPDX-License-Identifier: Apache-2.0
+
+[project]
+name = "seag"
+version = "0.2.0a1"
+requires-python = ">=3.14,<3.15"
+dependencies = []
+
+[dependency-groups]
+conformance = [
+  "check-jsonschema==0.39.0",
+  "defusedxml==0.7.1",
+  "hypothesis==6.170.17",
+  "jsonschema[format-nongpl]==4.26.0",
+  "langcodes==3.5.1",
+  "reuse==6.3.0",
+  "rfc3986==2.0.0",
+]
+
+[tool.uv]
+default-groups = ["conformance"]
+exclude-newer = "2026-11-22T23:59:59Z"
+package = false
+required-version = "==0.12.9"
+
+[tool.uv.dependency-groups]
+conformance = { requires-python = ">=3.14,<3.15" }

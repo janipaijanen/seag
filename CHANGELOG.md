@@ -9,6 +9,28 @@ CI uses that release section as the future release-note source.
 
 ## Unreleased
 
+- Adopted uv 0.12.9 for the contributor and conformance environment, with
+  exact direct dependency pins, a hash-bearing lock, a fail-closed dependency
+  policy gate, and no added shipped runtime dependencies.
+- Centralized strict JSON and lexical field validation in `seag.validation`,
+  and added deterministic property and differential-oracle tests for schemas,
+  language tags, identifiers, network values, and bounded XML parsing.
+- Replaced the hand-parsed YAML standards register with strict UTF-8 JSON and
+  a closed, machine-checked top-level contract.
+
+## 0.2.0-alpha.1
+
+Unsupported evaluation release for the Rediflow pilot and other controlled
+experiments. It retains the 0.1 source contract while adding experimental
+canonical and semantic-review tooling. It does not satisfy the 0.2 adoption
+gate or establish a supported compatibility baseline.
+
+- Added a Rediflow-owned, replayable pilot-evidence contract for immutable
+  corpora, expectations, run results, tool identity, and version-lift migration
+  exercises without placing Rediflow domain content in SEAG.
+- Moved adopter schedules and product-governance decisions out of the release
+  content while retaining a reusable public evaluation protocol.
+
 - Clarified the state-machine example with distinct `Logging` semantic and
   component identities, a `Configuration` concept, and explicit optional and
   required target cardinalities separated from the relation phrases.
@@ -26,6 +48,17 @@ CI uses that release section as the future release-note source.
 - Added an experimental no-overwrite canonical source renderer and checker
   that sorts source deterministically, updates fragment digests, stages output,
   and validates the completed bundle without modifying the input.
+- Hardened absolute-IRI validation against malformed percent escapes,
+  authorities, ports, IPv6 literals, and Unicode values outside RFC 3987
+  `ucschar` and query-only `iprivate` ranges, and completed structural RFC
+  5646 language-tag checks for duplicate variants and extension singletons.
+  The documentation now distinguishes structural validation from
+  unimplemented IANA-registry membership validation.
+- Adopted the pinned Ponytail full discipline for SEAG development and added a
+  strict input-boundary policy. JSON now rejects duplicate members and
+  non-finite numbers, language CLI input is validated, reproducible timestamps
+  require canonical decimal input, unsafe control text is rejected, and CXL
+  verification accepts only the bounded SEAG graph profile.
 
 ## 0.1.0
 

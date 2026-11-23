@@ -12,14 +12,17 @@ import unicodedata
 
 from .source import load_bundle, package_version
 from .transform import timestamp, write_with_provenance
+from .validation import language_tag
 
 
 NAMED_KINDS = {"concept", "lifecycle_state", "rule_reference", "external_reference"}
 
 
 def extract(manifest_path: Path, language: str, generated_at: str) -> tuple[dict, dict]:
+    if not language_tag(language):
+        raise ValueError(f"requested language is not a well-formed BCP 47 tag: {language!r}")
     manifest, records, source_digest = load_bundle(manifest_path)
-    selected = [(fragment, record) for fragment, record in records if fragment["language"] == language and record["kind"] in NAMED_KINDS]
+    selected = [(fragment, record) for fragment, record in records if fragment["language"].casefold() == language.casefold() and record["kind"] in NAMED_KINDS]
     if not selected:
         raise ValueError(f"no named records for exact language {language!r}; fallback policy is none")
     namespace = manifest["namespace"]

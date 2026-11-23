@@ -22,6 +22,13 @@ tooling fixes. Pre-release identifiers may be used for deliberately published
 preview series, but ordinary branch artifacts do not acquire invented
 pre-release numbers.
 
+An `alpha` is an unsupported evaluation release intended to discover contract,
+usability, and interoperability defects. A `beta` requires a stable intended
+capability boundary but may still lack adoption or compatibility evidence. An
+`rc` freezes the intended release contract and accepts only release-blocking
+corrections. None of these labels substitutes for the evidence required by the
+corresponding stable release.
+
 After 1.0, SEAG applies Semantic Versioning normally:
 
 - major: incompatible normative source-contract or validator behavior;
@@ -40,11 +47,13 @@ not silently redefine the SEAG core version.
 4. Include only release metadata corrections needed for that release.
 5. Open and independently review a merge request into `main`.
 6. Verify conformance, SPDX coverage, reproducible bundle output, security
-   checks, compatibility evidence, and the publication gate on the exact head.
+   checks, compatibility evidence, and the applicable release gate on the exact
+   head.
 7. Merge the reviewed release MR.
 8. Create an annotated, protected tag `vX.Y.Z` on that merge commit.
 9. Push the tag; CI verifies that it matches `VERSION` and is contained in
-   `main`, opens the publication gate, and builds a reproducible stable bundle.
+   `main`. A stable tag opens the publication gate and builds a reproducible
+   stable bundle.
 10. Publish only the stable bundle from the tag's `stable-publication-gate`
     job. Its manifest and provenance must say `release_status: stable` and
     `publication_gate: asserted`; branch and pre-gate bundles remain candidates.
@@ -52,6 +61,17 @@ not silently redefine the SEAG core version.
 Direct version-release tags on unreviewed commits are forbidden. A tag that
 does not exactly match `VERSION`, is lightweight rather than annotated, or
 does not identify the requested release commit is rejected.
+
+### Deliberate preview publication
+
+A prerelease follows the same release-branch, exact-head review, signed commit,
+annotated tag, checksum, reproducibility, and immutability rules. Its tag
+pipeline builds a verified artifact with `release_status: candidate` and
+`publication_gate: not-asserted`; the stable-publication job must not run. The
+project may publish that artifact only as a clearly labelled unsupported
+preview with its intended audience, evaluation scope, known gaps, source
+commit, checksum, and feedback channel. It must never be presented through the
+stable download path or called a supported compatibility baseline.
 
 ## Immutability
 

@@ -6,7 +6,7 @@
 ## Purpose
 
 This document is the authoritative register policy for external standards used
-by SEAG. The machine-readable register is [`standards.yaml`](../standards.yaml).
+by SEAG. The machine-readable register is [`standards.json`](../standards.json).
 If the two disagree, this document governs until the inconsistency is corrected.
 
 SEAG uses the terms **MUST**, **MUST NOT**, **REQUIRED**, **SHOULD**, **SHOULD
@@ -55,6 +55,22 @@ form; implementations must not silently treat all three as interchangeable.
 When SEAG tooling generates UUIDs, it follows RFC 9562. A UUID is an identity
 mechanism, not evidence of ownership, authority, chronology, or uniqueness
 beyond the guarantees of the selected generation method.
+
+### Network values
+
+IPv4-looking URI or IRI authority hosts follow the dotted-decimal grammar in
+RFC 3986, including exactly four octets in the range `0..255`. IPv6 address
+literals follow RFC 4291 and use the bracketed authority form required by RFC
+3986. The current strict profile rejects ambiguous legacy shortened or
+leading-zero IPv4 spellings and IPv6 interface zone identifiers.
+
+An Internet transport port is an integer in `0..65535`, following the numeric
+space described by RFC 6335. Port zero is structurally within that space but
+reserved. Therefore a profile for an assigned, listening, or connectable
+service should narrow the field to `1..65535` and may additionally require
+IANA registration or an explicitly documented private/dynamic-port policy.
+The core validator claims numeric range validation only; it does not claim
+that a port is assigned, reachable, safe, or appropriate for a protocol.
 
 ### JSON and schemas
 
@@ -163,6 +179,47 @@ recognize a newer version without claiming support for it, but must reject an
 artifact whose required standard or capability it cannot satisfy. It must not
 silently downgrade, discard, or reinterpret required semantics.
 
+## CI standards-conformance gate
+
+Every pipeline runs `uv run --locked --no-sync python
+scripts/check-conformance.py`. The gate fails
+closed when a required registered standard is absent or changes conformance
+class, a pin is removed, a machine-verifiable behavioral probe fails, a
+required mapping correspondence disappears, or an unimplemented export is
+promoted from `not-yet-conformant` without updating the gate.
+
+The bounded behavioral probes cover strict UTF-8 JSON, the supported RFC 5646
+language-tag syntax profile, absolute URI/IRI fields, RFC 3339 timestamps,
+JSON Schema Draft 2020-12 declarations, the validated Unicode data versions
+and NFC operation, typed port and IP address boundaries used by URI/IRI
+authorities, and the pinned CXL compatible-parser round trip. The normal
+test suite provides broader positive, negative, and adversarial coverage. SPDX
+and DCO checks remain separate required commands in the same validation job so
+their failures are attributable.
+
+The gate does **not** certify an entire RFC, W3C Recommendation, external
+application, or standards organization test suite. W3C PROV and SKOS are
+reported as documented mappings, inactive conditional features are reported
+as not applicable, and pending serializers are reported as not claimed. In
+particular, the dependency-free language-tag validator checks well-formed
+syntax, not membership in the pinned IANA registry. Human semantic,
+interoperability, licensing, security, and release reviews remain required
+where their judgement cannot be reduced to a deterministic local check.
+
+CI uses pinned local evidence and does not fetch live standards or registries.
+That keeps builds reproducible and prevents an upstream change from silently
+changing the result. Updating a standard, registry snapshot, compatible tool,
+or evidence fixture is an explicit reviewed change to the register, its tests,
+and the applicable profile documentation.
+
+The conformance environment is managed with uv. Direct conformance dependencies
+are exact `name==version` pins in `pyproject.toml`; `uv.lock` pins resolved
+artifacts and SHA-256 hashes. CI requires uv 0.12.9, runs `uv lock --check`, and
+uses `uv sync --locked` followed by `uv run --locked --no-sync`. It never
+updates dependencies while evaluating a commit. Established libraries provide
+differential or adversarial evidence; they do not silently redefine SEAG's
+field contracts.
+
 ## Release-candidate bundles
 
 The CI release-candidate archive is reproducible from a Git commit and version
@@ -187,6 +244,9 @@ complete for that exact source commit.
 - RFC 8174, *Ambiguity of Uppercase vs Lowercase in RFC 2119 Key Words*
 - RFC 3986, *Uniform Resource Identifier (URI): Generic Syntax*
 - RFC 3987, *Internationalized Resource Identifiers (IRIs)*
+- RFC 4291, *IP Version 6 Addressing Architecture*
+- RFC 6335, *Internet Assigned Numbers Authority (IANA) Procedures for the
+  Management of the Service Name and Transport Protocol Port Number Registry*
 - RFC 5646, *Tags for Identifying Languages*
 - RFC 4647, *Matching of Language Tags*
 - RFC 6901, *JavaScript Object Notation (JSON) Pointer*

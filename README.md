@@ -6,18 +6,20 @@
 A provenance-preserving semantic source and transformation framework for
 software work performed by people and LLM agents.
 
-> **Status: 0.1.0 release scope.** The immutable `v0.1.0` tag and its published
-> checksums identify the stable release; any untagged checkout or branch bundle
-> is a candidate. The bounded scope covers the source contract, validator,
-> exact-language glossary extraction, reproducible bundles, and documented
-> lossy CXL profile. This is a file-oriented framework, not a hosted service or
-> claim that semantic content is true, actor identities are authenticated, or
-> every planned export exists.
+> **Status: 0.2.0-alpha.1 evaluation candidate.** The immutable `v0.1.0` tag
+> remains the latest stable release. The alpha candidate adds canonical source
+> rendering and semantic review for controlled pilots; it is unsupported, may
+> change incompatibly, and has not passed the 0.2 adoption gate. Any untagged
+> checkout remains only a candidate. SEAG is a file-oriented framework, not a
+> hosted service or a claim that semantic content is true, actor identities are
+> authenticated, or every planned export exists.
 
 [Source contract](docs/source-contract-0.1.md) ·
 [Concept maps and ontologies](docs/introduction-for-software-engineers.md) ·
 [Enterprise integration](docs/enterprise-integration.md) ·
 [Semantic diff](docs/semantic-diff.md) ·
+[Input validation](docs/input-validation.md) ·
+[Rediflow pilot](docs/pilots/rediflow-0.2.0-alpha.1.md) ·
 [Maturity](docs/maturity.md) ·
 [Conformance](docs/conformance.md) ·
 [Roadmap to 1.0](docs/roadmap-to-1.0.md) ·
@@ -89,14 +91,16 @@ are disclosed instead of being silently presented as equivalent semantics.
 - Reproducible release bundles with manifests, checksums, build
   provenance, SPDX enforcement, and fail-closed publication gating.
 
-The optional AGF, Ponytail, and Caveman profiles remain planned. CmapTools
-desktop import is not yet tested or claimed. See the
+SEAG adopts the pinned Ponytail full discipline for smallest-complete changes
+and strict trust-boundary validation; it does not bundle the agent skill or
+make Ponytail part of the semantic source contract. Optional AGF and Caveman
+profiles remain planned. CmapTools desktop import is not yet tested or claimed. See the
 [machine-readable maturity assessment](maturity.yaml) for exact levels,
 evidence, and limitations.
 
-### Experimental capability on `main`
+### 0.2 alpha evaluation capability
 
-Development after 0.1.0 includes deterministic canonical source rendering,
+The 0.2 alpha candidate includes deterministic canonical source rendering,
 two-way semantic diff, and bounded three-way conflict detection. Semantic
 review has stable draft diagnostic codes, machine-readable output, explicit CI
 failure policies, and retained tests, but has not passed the learner,
@@ -229,7 +233,7 @@ does not itself claim compatibility.
   profiles.
 
 See [standards and conformance](docs/conformance.md) and the machine-readable
-[`standards.yaml`](standards.yaml) register.
+[`standards.json`](standards.json) register.
 
 ## Documentation
 
@@ -243,6 +247,7 @@ See [standards and conformance](docs/conformance.md) and the machine-readable
 - [Enterprise integration and multi-user direction](docs/enterprise-integration.md)
 - [Canonical source rendering](docs/canonical-source.md)
 - [Semantic diff and bounded conflict detection](docs/semantic-diff.md)
+- [Rediflow 0.2 alpha evaluation plan](docs/pilots/rediflow-0.2.0-alpha.1.md)
 - [Glossary extraction](docs/glossary-extraction.md)
 - [CmapTools CXL export profile](docs/cxl-profile.md)
 - [PROV and SKOS mappings](docs/semantic-mappings.md)

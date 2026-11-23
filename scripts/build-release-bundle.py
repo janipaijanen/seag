@@ -19,6 +19,10 @@ import sys
 import tarfile
 import tempfile
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from seag.validation import strict_json_loads
+
 
 VERSION_RE = re.compile(
     r"(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)\.(0|[1-9][0-9]*)"
@@ -209,7 +213,7 @@ def verify_archive(archive: Path) -> None:
         extracted = tar.extractfile(manifest_members[0])
         if extracted is None:
             raise ValueError("release manifest is not a regular file")
-        manifest = json.load(extracted)
+        manifest = strict_json_loads(extracted.read())
         prefix = manifest_members[0].name.removesuffix("RELEASE-MANIFEST.json")
         by_name = {member.name: member for member in members}
         for expected in manifest["files"]:

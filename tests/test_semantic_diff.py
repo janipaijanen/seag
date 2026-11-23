@@ -9,12 +9,13 @@ import copy
 import hashlib
 import json
 from pathlib import Path
+import shutil
 import subprocess
 import sys
 import tempfile
 import unittest
 
-from seag.semantic_diff import compare, format_human, three_way
+from seag.semantic_diff import compare, format_human, implementation_digest, three_way
 from seag.transform import json_bytes
 
 
@@ -53,6 +54,21 @@ class SemanticDiffTest(unittest.TestCase):
         self.assertEqual(0, result["summary"]["total"])
         self.assertEqual([], result["changes"])
         self.assertNotIn(str(self.root), json.dumps(result))
+
+    def test_implementation_digest_covers_extracted_validation_modules(self):
+        copied_root = self.root / "implementation"
+        package = copied_root / "seag"
+        shutil.copytree(ROOT / "seag", package)
+        shutil.copy2(ROOT / "VERSION", copied_root / "VERSION")
+        baseline = implementation_digest(package)
+        validation_modules = sorted((package / "validation").glob("*.py"))
+        self.assertTrue(validation_modules)
+        for module in validation_modules:
+            with self.subTest(module=module.name):
+                original = module.read_bytes()
+                module.write_bytes(original + b"\n# digest regression probe\n")
+                self.assertNotEqual(baseline, implementation_digest(package))
+                module.write_bytes(original)
 
     def test_retained_before_after_fixture(self):
         result = compare(

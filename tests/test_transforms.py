@@ -33,6 +33,13 @@ class TransformTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "fallback policy is none"):
             extract(MANIFEST, "fi", WHEN)
 
+    def test_glossary_validates_language_and_compares_tags_case_insensitively(self):
+        glossary, provenance = extract(MANIFEST, "EN", WHEN)
+        self.assertEqual("EN", glossary["language"])
+        self.assertEqual("EN", provenance["requested_language"])
+        with self.assertRaisesRegex(ValueError, "well-formed BCP 47"):
+            extract(MANIFEST, "en-a-foo-a-bar", WHEN)
+
     def test_glossary_retains_confirmation_and_singular_declaration(self):
         fragment = json.loads((MANIFEST.parent / "fragment.json").read_text())
         record = fragment["records"][0]
@@ -95,6 +102,21 @@ class TransformTest(unittest.TestCase):
         with self.assertRaisesRegex(ValueError, "UTF-8 only"):
             parse_bytes(hostile)
 
+    def test_cxl_parser_rejects_content_outside_the_profile(self):
+        data, _sidecar, _expected = export(MANIFEST, WHEN)
+        cases = {
+            "unknown attribute": data.replace(b'<concept id=', b'<concept unexpected="x" id=', 1),
+            "invalid language": data.replace(b'<dc:language>en</dc:language>', b'<dc:language>en-a-foo-a-bar</dc:language>'),
+            "undeclared endpoint": data.replace(b'from-id="urn:', b'from-id="missing:', 1),
+            "comment": data.replace(b'<map>', b'<!-- hidden --><map>', 1),
+            "connection-list attribute": data.replace(b'<connection-list>', b'<connection-list unreviewed="true">', 1),
+            "connection-list text": data.replace(b'<connection-list>', b'<connection-list>unreviewed', 1),
+            "leading processing instruction": b'<?xml-stylesheet href="unreviewed"?>\n' + data,
+        }
+        for name, raw in cases.items():
+            with self.subTest(name=name), self.assertRaises(ValueError):
+                parse_bytes(raw)
+
     def test_failed_cxl_verification_does_not_write_outputs(self):
         with tempfile.TemporaryDirectory() as directory:
             output = Path(directory) / "invalid.cxl"
@@ -131,8 +153,13 @@ class TransformTest(unittest.TestCase):
     def test_generated_timestamp_requires_rfc3339(self):
         from seag.transform import timestamp
 
-        with self.assertRaisesRegex(ValueError, "RFC 3339"):
-            timestamp("2026-11-22T00:00:00")
+        for value in (
+            "2026-11-22T00:00:00",
+            "2026-11-22T12:34:56+02:60",
+            "2026-11-22T12:34:56+24:00",
+        ):
+            with self.subTest(value=value), self.assertRaisesRegex(ValueError, "RFC 3339"):
+                timestamp(value)
 
     def test_generated_timestamp_requires_reproducible_source(self):
         from unittest.mock import patch
@@ -141,6 +168,14 @@ class TransformTest(unittest.TestCase):
         with patch.dict("os.environ", {}, clear=True):
             with self.assertRaisesRegex(ValueError, "SOURCE_DATE_EPOCH"):
                 timestamp(None)
+
+    def test_source_date_epoch_requires_canonical_decimal(self):
+        from seag.transform import timestamp
+
+        for value in ("-1", "+1", "01", "1.0", " 1", "1 ", "NaN"):
+            with self.subTest(value=value), patch.dict("os.environ", {"SOURCE_DATE_EPOCH": value}, clear=True):
+                with self.assertRaisesRegex(ValueError, "canonical nonnegative decimal"):
+                    timestamp(None)
 
 
 if __name__ == "__main__":
