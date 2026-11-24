@@ -25,7 +25,7 @@ input files by SHA-256.
   in-project review is present with
   context `ai-agents-in-same-project`; external consumer or
   adopter attestation is absent.
-  In-project AI-agent review is not independent external attestation.
+  Non-author in-project review is not independent external attestation.
 - Stewardship: single-maintainer project in public review. There is no community
   programme, support commitment, review deadline, or production-readiness claim.
 
@@ -76,8 +76,8 @@ git diff --check
 
 The dossier `--check` command regenerates the outputs in memory and verifies
 the committed Markdown and manifest bytes against every locally bound input.
-The exact runtime pins are reproducibility inputs; the digest-pinned toolchain
-is the intended low-friction route once its publication gate is complete.
+The exact runtime pins are reproducibility inputs, not a compatibility
+tolerance range.
 
 Report the version, commit, files read, commands actually run, strengths,
 source-cited gaps, proposals, and anything not verified. Use the

@@ -48,14 +48,15 @@ BOUNDARY = (
     "semantic content is true, actor identities are authenticated, or every "
     "planned export exists."
 )
-STEWARDSHIP = (
-    "SEAG is currently maintained by Jani Päijänen as a single-maintainer "
-    "project in public review."
+STEWARDSHIP_PATTERN = re.compile(
+    r"SEAG is currently maintained by [^.\n]+ as a single-maintainer "
+    r"project in public review\."
 )
 SUPPORT_BOUNDARY = (
     "These procedures do not create a community programme, support commitment, "
     "review deadline, or production-readiness claim."
 )
+SECURITY_STEWARDSHIP = "SEAG is a single-maintainer project."
 MATURITY_NAMES = {
     1: "Planned",
     2: "Surface-defined",
@@ -253,8 +254,14 @@ def require_boundary(readme: str) -> None:
     normalized = " ".join(normalized.split())
     if BOUNDARY not in normalized:
         raise ValueError("README.md no longer contains the canonical evaluation boundary")
-    if STEWARDSHIP not in normalized or SUPPORT_BOUNDARY not in normalized:
+    if not STEWARDSHIP_PATTERN.search(normalized) or SUPPORT_BOUNDARY not in normalized:
         raise ValueError("README.md no longer contains the canonical stewardship boundary")
+
+
+def require_security_stewardship(security: str) -> None:
+    normalized = " ".join(security.split())
+    if SECURITY_STEWARDSHIP not in normalized:
+        raise ValueError("SECURITY.md no longer contains the stewardship boundary")
 
 
 def standard_version(entry: dict[str, object]) -> str:
@@ -348,6 +355,7 @@ def render(root: Path = ROOT) -> dict[Path, bytes]:
     cap_table = capability_table(capabilities)
     std_table = standards_table(standards)
     require_boundary((root / "README.md").read_text(encoding="utf-8"))
+    require_security_stewardship((root / "SECURITY.md").read_text(encoding="utf-8"))
     deployable = [item for item in capabilities if item["level"] == 5]
     deployable_statement = (
         f"Level 5 capabilities in this assessment: {', '.join(str(item['id']) for item in deployable)}."
@@ -382,7 +390,7 @@ input files by SHA-256.
   in-project review is {evidence_scope['nonauthor_in_project_review']} with
   context `{evidence_scope['nonauthor_review_context']}`; external consumer or
   adopter attestation is {evidence_scope['external_consumer_or_adopter_attestation']}.
-  In-project AI-agent review is not independent external attestation.
+  Non-author in-project review is not independent external attestation.
 - Stewardship: single-maintainer project in public review. There is no community
   programme, support commitment, review deadline, or production-readiness claim.
 
@@ -422,8 +430,8 @@ git diff --check
 
 The dossier `--check` command regenerates the outputs in memory and verifies
 the committed Markdown and manifest bytes against every locally bound input.
-The exact runtime pins are reproducibility inputs; the digest-pinned toolchain
-is the intended low-friction route once its publication gate is complete.
+The exact runtime pins are reproducibility inputs, not a compatibility
+tolerance range.
 
 Report the version, commit, files read, commands actually run, strengths,
 source-cited gaps, proposals, and anything not verified. Use the
@@ -470,7 +478,7 @@ potentially lossy.
 Adopters own their concepts, ontologies, product decisions, access controls,
 and review authority. SEAG does not judge ontology quality, model or execute
 workflow behaviour, or claim interoperability beyond an exact tested profile.
-Project-controlled evidence and non-author in-project AI-agent review do not
+Project-controlled evidence and non-author in-project review do not
 become independent external attestation merely because they are reproducible.
 
 ## Bounded reading tracks

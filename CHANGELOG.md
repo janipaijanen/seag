@@ -11,7 +11,8 @@ CI uses that release section as the future release-note source.
 
 - Made the AI dossier distinguish project-controlled evidence, non-author
   in-project review, and absent external consumer/adopter attestation; surfaced
-  the single-maintainer support boundary and clarified manifest verification.
+  the README and security-policy single-maintainer support boundary and
+  clarified manifest verification without promising an unpublished toolchain.
 - Hardened AI dossier generation against duplicate capability fields and
   identifiers, invalid evidence status, and malformed standards-table inputs.
 - Routed rootless BuildKit proof jobs to the dedicated `dind` runner after

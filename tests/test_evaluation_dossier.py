@@ -145,6 +145,8 @@ class EvaluationDossierTests(unittest.TestCase):
             evaluation_dossier.require_boundary("SEAG is something else.")
         with self.assertRaisesRegex(ValueError, "canonical stewardship boundary"):
             evaluation_dossier.require_boundary(evaluation_dossier.BOUNDARY)
+        with self.assertRaisesRegex(ValueError, "SECURITY.md"):
+            evaluation_dossier.require_security_stewardship("# Security\n")
 
     def test_standards_table_input_fails_closed(self):
         with self.assertRaisesRegex(ValueError, "must be an object"):
@@ -221,7 +223,7 @@ class EvaluationDossierTests(unittest.TestCase):
                 item for item in changed["sources"] if item["path"] == "README.md"
             )
             self.assertNotEqual(baseline_readme["sha256"], changed_readme["sha256"])
-            self.assertTrue(evaluation_dossier.check(changed_outputs))
+            self.assertIn("stale", "\n".join(evaluation_dossier.check(changed_outputs)))
 
 
 if __name__ == "__main__":
