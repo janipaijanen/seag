@@ -21,7 +21,7 @@ software work performed by people and LLM agents.
 [Enterprise integration](docs/enterprise-integration.md) ·
 [Semantic diff](docs/semantic-diff.md) ·
 [Input validation](docs/input-validation.md) ·
-[Superseded alpha.1 Rediflow pilot plan](docs/pilots/rediflow-0.2.0-alpha.1.md) ·
+[Superseded alpha.1 silver-birch pilot plan](docs/pilots/silver-birch-0.2.0-alpha.1.md) ·
 [Maturity](docs/maturity.md) ·
 [Conformance](docs/conformance.md) ·
 [Roadmap to 1.0](docs/roadmap-to-1.0.md) ·
@@ -43,7 +43,7 @@ their own ontologies and domain content. SEAG supplies the framework and tools
 for validating and transforming that content without taking ownership of it.
 
 SEAG originated from semantic and product-modelling needs discovered in the
-Rediflow project, but is developed and distributed independently. Rediflow
+silver-birch project, but is developed and distributed independently. silver-birch
 concepts, rules, and product decisions do not belong in SEAG.
 
 ## New to concept maps and ontologies?
@@ -249,7 +249,7 @@ See [standards and conformance](docs/conformance.md) and the machine-readable
 - [Enterprise integration and multi-user direction](docs/enterprise-integration.md)
 - [Canonical source rendering](docs/canonical-source.md)
 - [Semantic diff and bounded conflict detection](docs/semantic-diff.md)
-- [Superseded Rediflow alpha.1 evaluation plan](docs/pilots/rediflow-0.2.0-alpha.1.md)
+- [Superseded silver-birch alpha.1 evaluation plan](docs/pilots/silver-birch-0.2.0-alpha.1.md)
 - [Glossary extraction](docs/glossary-extraction.md)
 - [CmapTools CXL export profile](docs/cxl-profile.md)
 - [PROV and SKOS mappings](docs/semantic-mappings.md)

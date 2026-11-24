@@ -6,12 +6,12 @@
 Copyright (C) 2026 Jani Päijänen
 
 SEAG originated from tooling needs discovered during semantic and
-product-modelling work in Rediflow. Rediflow is the originating use case; SEAG
-does not include or publish Rediflow's ontology, concepts, rules, or product
-decisions and is not a Rediflow product component.
+product-modelling work in silver-birch. silver-birch is the originating use case; SEAG
+does not include or publish silver-birch's ontology, concepts, rules, or product
+decisions and is not a silver-birch product component.
 
 Names of interoperability targets belong to their respective owners. Mention
-of AGF, Ponytail, Caveman Mode, CmapTools, or Rediflow does not imply
+of AGF, Ponytail, Caveman Mode, CmapTools, or silver-birch does not imply
 endorsement. Compatibility exists only where a versioned SEAG profile states
 its tested scope and limitations; the CXL profile does not claim CmapTools
 desktop certification.

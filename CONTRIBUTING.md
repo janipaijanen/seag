@@ -108,7 +108,7 @@ Keep proposals focused and reviewable. A contribution should:
 - include tests and documentation appropriate to its risk;
 - preserve the SEAG framework/content boundary and use invented,
   domain-neutral fixtures;
-- contain no private Rediflow ontology or product content;
+- contain no private silver-birch ontology or product content;
 - preserve provenance, uncertainty, semantic loss, and source authority;
 - avoid process- or workflow-modelling behavior;
 - disclose incompatible contract or validator changes;

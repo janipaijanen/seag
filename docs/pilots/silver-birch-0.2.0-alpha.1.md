@@ -1,27 +1,27 @@
 <!-- SPDX-FileCopyrightText: Copyright (C) 2026 Jani Päijänen -->
 <!-- SPDX-License-Identifier: CC-BY-4.0 -->
 
-# Rediflow evaluation plan for SEAG 0.2.0-alpha.1
+# silver-birch evaluation plan for SEAG 0.2.0-alpha.1
 
 > **Historical, superseded plan.** Alpha.1 was superseded for new evaluations
-> before the Rediflow pilot started after input-boundary defects were found
+> before the silver-birch pilot started after input-boundary defects were found
 > during review. Preserve this version-pinned plan and any alpha.1 candidate
 > evidence for replay; a new evaluation requires a separately reviewed
 > successor tag and adopter-side decision record.
 
 ## Decision and boundary
 
-Rediflow is the first controlled adopter of the SEAG 0.2 semantic-review
+silver-birch is the first controlled adopter of the SEAG 0.2 semantic-review
 prototype. It supplies product evidence and defects; it does not govern SEAG or
-donate its ontology to SEAG. Rediflow concepts, source files, access controls,
-and business decisions remain in Rediflow-owned repositories. The SEAG
+donate its ontology to SEAG. silver-birch concepts, source files, access controls,
+and business decisions remain in silver-birch-owned repositories. The SEAG
 repository retains only invented fixtures or deliberately sanitized evidence
 that can be published under SEAG's contribution terms.
 
 This pilot evaluates a pinned `v0.2.0-alpha.1` release archive. Before the tag
 exists, release-branch runs test the candidate only. The evidence record must
 name the tag, full commit, archive SHA-256, Python and Git versions, operating
-system, commands, and Rediflow source revisions.
+system, commands, and silver-birch source revisions.
 
 ## Adopter-controlled schedule
 
@@ -52,7 +52,7 @@ approval workflow.
 
 ## Questions
 
-1. Can a Rediflow contributor author and review a bounded semantic source with
+1. Can a silver-birch contributor author and review a bounded semantic source with
    an ordinary text editor and no AI dependency?
 2. Does semantic diff expose consequential changes that ordinary Git diff or
    plain JSON review obscures?
@@ -60,12 +60,12 @@ approval workflow.
    meaning to the wrong structure, status, provenance, or confirmation?
 4. Does canonical rendering reduce review noise without changing declared
    meaning or damaging project-owned files?
-5. Which genuine Rediflow concepts or associations cannot be expressed without
+5. Which genuine silver-birch concepts or associations cannot be expressed without
    violating SEAG's domain-neutral and non-process boundaries?
 
 ## Cross-artifact participation
 
-This is a Rediflow product pilot, not an ontology-team-only exercise. Rediflow
+This is a silver-birch product pilot, not an ontology-team-only exercise. silver-birch
 must name one semantic owner, one durable-evidence owner, and participating
 contacts for the selected slice across specifications, plans, code, UI, API,
 database, documentation, and tests. One person may cover several areas when
@@ -91,22 +91,22 @@ value, and it references concrete artifacts for what they authoritatively own.
 Plans remain plans, code remains executable authority, schemas retain structural
 authority, and SEAG does not model their workflow or runtime behavior.
 
-Rediflow keeps a versioned cross-artifact trace in its evidence store linking
+silver-birch keeps a versioned cross-artifact trace in its evidence store linking
 each selected concept to relevant artifact revisions and review findings. That
 trace is pilot evidence, not a new mandatory SEAG core record type.
 
-## Rediflow repository placement
+## silver-birch repository placement
 
-The default system of record is the existing Rediflow product repository. This
+The default system of record is the existing silver-birch product repository. This
 keeps semantic source, product artifacts, tests, instructions, and evidence on
-one commit graph and requires no additional service credential. Rediflow should
+one commit graph and requires no additional service credential. silver-birch should
 use these paths:
 
 | Path | Contents | Primary steward |
 | --- | --- | --- |
-| `semantics/seag/` | Authoritative Rediflow-owned SEAG manifest and fragments | Semantic owner |
+| `semantics/seag/` | Authoritative silver-birch-owned SEAG manifest and fragments | Semantic owner |
 | `docs/testing/seag/` | Human instructions, pilot scope, interpretation guidance, and decision summaries | Evidence owner and documentation contact |
-| `scripts/seag/` | Thin Rediflow runner, checksum verification, replay, and report-index scripts | Build/test contact |
+| `scripts/seag/` | Thin silver-birch runner, checksum verification, replay, and report-index scripts | Build/test contact |
 | `test/fixtures/seag/corpus/` | Immutable sanitized or repository-authorized replay cases | Evidence owner |
 | `test/fixtures/seag/expectations/` | Versioned expected diagnostics, conflicts, and rationales | Semantic owner and test contact |
 | `test/evidence/seag/runs/` | Append-only baseline and SEAG run manifests, outputs, timings, and findings | Evidence owner |
@@ -114,8 +114,8 @@ use these paths:
 | `test/tools/seag/<version>/` | Exact SEAG release archive, checksum, and release provenance used for replay | Build/test contact |
 
 The authoritative SEAG Python implementation remains inside the pinned SEAG
-release archive under `test/tools/seag/<version>/`; Rediflow must not copy
-individual SEAG modules into its own source tree. Rediflow-specific Python
+release archive under `test/tools/seag/<version>/`; silver-birch must not copy
+individual SEAG modules into its own source tree. silver-birch-specific Python
 scripts live under `scripts/seag/` and remain thin orchestration: verify the
 archive checksum, create an isolated temporary extraction, invoke the pinned
 commands, capture outputs, and write a run manifest. Generated canonical source
@@ -124,21 +124,21 @@ to `semantics/seag/`.
 
 The initial corpus and JSON results are small enough for ordinary Git. Do not
 introduce Git LFS, a database, or a hosted evidence service without measured
-need. If some evidence is more restricted than the Rediflow product repository,
-place only that material in a dedicated Rediflow-controlled private evidence
+need. If some evidence is more restricted than the silver-birch product repository,
+place only that material in a dedicated silver-birch-controlled private evidence
 repository using the same logical layout. The product repository then retains
 an access-safe immutable locator, digest, classification, corpus version, and
 replay instructions. SEAG never receives that credential or restricted content.
 
-Pilot work uses ordinary Rediflow branches and merge requests. Suggested owner
+Pilot work uses ordinary silver-birch branches and merge requests. Suggested owner
 rules require semantic-owner review for `semantics/seag/` and expectations,
 evidence-owner review for corpus and runs, and build/test review for runners and
-pinned tools. These are Rediflow repository controls, not SEAG workflow fields.
+pinned tools. These are silver-birch repository controls, not SEAG workflow fields.
 
 ## Corpus selection
 
 The semantic owner selects a small but real vertical slice rather than exporting
-the complete Rediflow ontology. The provisional target is 25–75 singular
+the complete silver-birch ontology. The provisional target is 25–75 singular
 concepts, their static associations and cardinalities, at least two source
 fragments, and at least two genuine historical semantic-change events. Adjust
 the size before execution if confidentiality, review effort, or source shape
@@ -146,7 +146,7 @@ makes that range misleading; record the reason rather than changing it after
 results are known.
 
 Exclude executable workflow, state transitions, credentials, customer data,
-personal data, secrets, and content that cannot be retained in the Rediflow
+personal data, secrets, and content that cannot be retained in the silver-birch
 evidence environment. Reference authoritative external artifacts rather than
 copying them when the 0.1 source contract permits. SKOS import and semantic
 mapping records are not implemented in this alpha and must be logged as gaps,
@@ -157,7 +157,7 @@ not simulated with matching labels.
 Retain a baseline review of the same changes using Git diff and the project's
 current JSON or documentation checks. Then perform:
 
-1. validation of the original Rediflow-owned SEAG bundle;
+1. validation of the original silver-birch-owned SEAG bundle;
 2. canonical rendering into a new directory, followed by validation and a
    semantic diff proving zero declared semantic changes;
 3. two-way review of at least two real historical changes;
@@ -172,17 +172,17 @@ current JSON or documentation checks. Then perform:
 Use `--format json` and retain the exact outputs. Use `--fail-on breaking` for
 two-way CI experiments and the default fail-on-conflict policy for three-way
 experiments. The pilot may recommend different policy, but SEAG does not encode
-Rediflow's approval workflow or reviewer authority.
+silver-birch's approval workflow or reviewer authority.
 
-## Durable evidence on the Rediflow side
+## Durable evidence on the silver-birch side
 
-Rediflow MUST preserve the pilot corpus, expectations, executions, findings,
-and migration exercises in a Rediflow-controlled versioned repository or
+silver-birch MUST preserve the pilot corpus, expectations, executions, findings,
+and migration exercises in a silver-birch-controlled versioned repository or
 equivalently durable controlled evidence store. A SEAG issue, CI log, checksum,
 or summary report alone is insufficient because it cannot replay a later
 version lift. The retained evidence must contain the actual exercisable input
 bytes; restricted inputs may remain encrypted or access-controlled, but they
-must remain recoverable by authorized Rediflow maintainers.
+must remain recoverable by authorized silver-birch maintainers.
 
 A recommended logical layout is:
 
@@ -205,7 +205,7 @@ seag-evidence/
   index.json
 ```
 
-The physical path and storage technology belong to Rediflow. The logical
+The physical path and storage technology belong to silver-birch. The logical
 evidence MUST retain:
 
 - exact input manifest and fragment bytes for every two-way and three-way case;
@@ -227,7 +227,7 @@ Corpus and expectation versions are immutable. Corrections create a new corpus
 or expectation version with a recorded decision and predecessor; old cases and
 results are not rewritten. Runs are append-only and receive stable run IDs. A
 new SEAG version first replays an unchanged historical corpus and expectations.
-If the source contract requires migration, Rediflow preserves the old source,
+If the source contract requires migration, silver-birch preserves the old source,
 stores the migrated copy under `migrations/`, records the migration tool and
 loss assessment, and exercises both the old-version baseline and the new-version
 result. It must never relabel or overwrite old input to make a new tool pass.
@@ -235,19 +235,19 @@ result. It must never relabel or overwrite old input to make a new tool pass.
 All evidence inherits the most restrictive classification of its inputs. Public
 SEAG issues receive only separately reviewed sanitized reproducers. Expiring CI
 artifacts may be convenient run outputs but are not the system of record. The
-Rediflow evidence owner must verify backup, restoration, access continuity, and
+silver-birch evidence owner must verify backup, restoration, access continuity, and
 the ability to run the corpus before a pilot is called preserved.
 
 ## Feedback record
 
 Each finding records:
 
-- Rediflow source revision and sanitized scenario identifier;
+- silver-birch source revision and sanitized scenario identifier;
 - expected and actual outcome;
 - diagnostic or conflict code;
 - false-positive, false-negative, usability, performance, security,
   documentation, or source-contract classification;
-- whether the problem is SEAG-generic or Rediflow-specific;
+- whether the problem is SEAG-generic or silver-birch-specific;
 - human review time compared with the baseline;
 - workaround, if any, and whether it risks semantic loss; and
 - disclosure status: private, sanitizable, or publishable.
@@ -258,7 +258,7 @@ to reproduce the defect.
 
 ## Pilot exit decision
 
-Continue toward another 0.2 prerelease only if Rediflow demonstrates a material
+Continue toward another 0.2 prerelease only if silver-birch demonstrates a material
 review advantage over its baseline, no implemented conflict class produces a
 known silent false negative in the retained cases, canonical output remains
 semantically unchanged, and the remaining authoring burden is credible for
