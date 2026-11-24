@@ -373,9 +373,24 @@ case "$url" in
     ;;
   https://registry.example/v2/*)
     if test "$bearer" = false; then
-      printf '%s\r\n' 'HTTP/1.1 401 Unauthorized' \
-        'WWW-Authenticate: Bearer realm="https://gitlab.example/jwt/auth",service="container_registry"' \
-        > "$headers"
+      case "$SKOPEO_MODE" in
+        challenge-duplicate-header)
+          printf '%s\r\n' 'HTTP/1.1 401 Unauthorized' \
+            'WWW-Authenticate: Bearer realm="https://gitlab.example/jwt/auth",service="container_registry"' \
+            'WWW-Authenticate: Bearer realm="https://gitlab.example/jwt/auth",service="container_registry"' > "$headers" ;;
+        challenge-duplicate-param)
+          printf '%s\r\n' 'HTTP/1.1 401 Unauthorized' \
+            'WWW-Authenticate: Bearer realm="https://gitlab.example/jwt/auth",realm="https://gitlab.example/jwt/auth",service="container_registry"' > "$headers" ;;
+        challenge-extra-param)
+          printf '%s\r\n' 'HTTP/1.1 401 Unauthorized' \
+            'WWW-Authenticate: Bearer realm="https://gitlab.example/jwt/auth",service="container_registry",scope="repository:any:push"' > "$headers" ;;
+        challenge-malformed)
+          printf '%s\r\n' 'HTTP/1.1 401 Unauthorized' \
+            'WWW-Authenticate: Bearer realm="https://gitlab.example/jwt/auth",service' > "$headers" ;;
+        *)
+          printf '%s\r\n' 'HTTP/1.1 401 Unauthorized' \
+            'WWW-Authenticate: Bearer realm="https://gitlab.example/jwt/auth",service="container_registry"' > "$headers" ;;
+      esac
       printf '%s' '{"errors":[{"code":"UNAUTHORIZED"}]}' > "$output"
       printf 401
       exit 0
@@ -441,6 +456,8 @@ esac
             self.assertIn("inspect --raw", skopeo_calls[2])
             curl_calls = (root / "curl-arguments").read_text()
             self.assertIn("/v2/seag/ci-toolchain/manifests/candidate-test", curl_calls)
+            self.assertIn("scope=repository:seag/ci-toolchain:pull", curl_calls)
+            self.assertNotIn("pull,push", curl_calls)
             self.assertEqual(3, PUBLISHER.read_text().count("ulimit -f 128"))
             self.assertEqual(
                 environment["SKOPEO_MANIFEST"],
@@ -508,6 +525,24 @@ esac
 
     def test_publisher_rejects_malformed_ambiguous_and_nested_token_documents(self):
         for mode in ("token-malformed", "token-duplicate", "token-nested", "token-nonfinite"):
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                environment = self.publisher_fixture(root, mode)
+                result = subprocess.run(
+                    [str(PUBLISHER)], cwd=root, env=environment, capture_output=True, text=True
+                )
+                self.assertNotEqual(0, result.returncode)
+                self.assertIn("candidate absence could not be established", result.stderr)
+                self.assertFalse((root / "login-called").exists())
+                self.assertFalse((root / "copy-called").exists())
+
+    def test_publisher_rejects_ambiguous_or_malformed_authentication_challenge(self):
+        for mode in (
+            "challenge-duplicate-header",
+            "challenge-duplicate-param",
+            "challenge-extra-param",
+            "challenge-malformed",
+        ):
             with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
                 root = Path(directory)
                 environment = self.publisher_fixture(root, mode)

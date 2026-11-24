@@ -6,6 +6,10 @@
 # distinguishes a definite registry absence from every other lookup failure.
 set -eu
 
+# The pinned publisher image must supply the parser before any network or
+# credential operation. Fail closed if that runtime contract changes.
+command -v python >/dev/null
+
 readonly proof_dir=toolchain-proof
 readonly admission_dir=toolchain-publish-admission
 readonly publication_dir=toolchain-publication
@@ -72,18 +76,66 @@ test "$challenge_status" = 401 || {
   echo "candidate absence could not be established" >&2
   exit 1
 }
-challenge="$(tr -d '\r' <"$response_headers" | awk '
-  BEGIN { IGNORECASE=1 }
-  /^WWW-Authenticate:[[:space:]]*Bearer[[:space:]]/ {
-    sub(/^[^:]*:[[:space:]]*/, ""); print
-  }
-')"
-test "$(printf '%s\n' "$challenge" | awk 'NF {count++} END {print count+0}')" -eq 1 || {
+challenge_values="$(python - "$response_headers" <<'PY'
+import re
+import sys
+
+
+lines = open(sys.argv[1], "rb").read().splitlines()
+if any(line[:1] in {b" ", b"\t"} for line in lines):
+    raise ValueError("folded authentication header")
+values = []
+for line in lines:
+    name, separator, value = line.partition(b":")
+    if separator and name.lower() == b"www-authenticate":
+        values.append(value.strip().decode("ascii"))
+if len(values) != 1:
+    raise ValueError("authentication challenge is ambiguous")
+match = re.fullmatch(r"Bearer[ \t]+(.+)", values[0], re.IGNORECASE)
+if not match:
+    raise ValueError("unsupported authentication challenge")
+text = match.group(1)
+params = {}
+position = 0
+while position < len(text):
+    item = re.match(
+        r'[ \t]*([A-Za-z][A-Za-z0-9_-]*)[ \t]*=[ \t]*"([^"\\\x00-\x1f\x7f]*)"',
+        text[position:],
+    )
+    if not item:
+        raise ValueError("malformed authentication parameter")
+    key, value = item.groups()
+    key = key.lower()
+    if key in params:
+        raise ValueError("duplicate authentication parameter")
+    params[key] = value
+    position += item.end()
+    while position < len(text) and text[position] in " \t":
+        position += 1
+    if position == len(text):
+        break
+    if text[position] != ",":
+        raise ValueError("malformed authentication parameter separator")
+    position += 1
+    if not text[position:].strip():
+        raise ValueError("trailing authentication parameter separator")
+if set(params) != {"realm", "service"}:
+    raise ValueError("unexpected authentication parameter set")
+if not params["realm"] or not re.fullmatch(r"[A-Za-z0-9._:/-]+", params["service"]):
+    raise ValueError("invalid authentication parameter value")
+print(params["realm"])
+print(params["service"])
+PY
+)" || {
   echo "candidate absence could not be established" >&2
   exit 1
 }
-realm="$(printf '%s\n' "$challenge" | sed -n 's/.*realm="\([^"]*\)".*/\1/p')"
-service="$(printf '%s\n' "$challenge" | sed -n 's/.*service="\([^"]*\)".*/\1/p')"
+test "$(printf '%s\n' "$challenge_values" | wc -l)" -eq 2 || {
+  echo "candidate absence could not be established" >&2
+  exit 1
+}
+realm="$(printf '%s\n' "$challenge_values" | sed -n '1p')"
+service="$(printf '%s\n' "$challenge_values" | sed -n '2p')"
 test "$realm" = "${CI_SERVER_URL%/}/jwt/auth" -a -n "$service" || {
   echo "candidate absence could not be established" >&2
   exit 1
@@ -108,7 +160,7 @@ token_status="$(
   exec curl --silent --show-error --max-time 30 --max-redirs 0 \
     --netrc-file "$netrc_file" --get \
     --data-urlencode "service=$service" \
-    --data-urlencode "scope=repository:$repository:pull,push" \
+    --data-urlencode "scope=repository:$repository:pull" \
     --output "$token_body" --write-out '%{http_code}' "$realm"
 )" || {
     echo "candidate absence could not be established" >&2

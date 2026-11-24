@@ -84,7 +84,12 @@ HTTP 404 carrying a well-formed, duplicate-free JSON error document with
 exactly one `MANIFEST_UNKNOWN` or `NAME_UNKNOWN` code;
 authorization, rate, server, compound-error, redirect and malformed responses
 fail closed. It refuses any destination outside `CI_REGISTRY` before sending a
-credential. It preserves the OCI manifest digest, hashes the raw post-copy
+credential. The lookup requests a pull-only bearer token; the later Skopeo
+login obtains its own publication authority. The script requires `python`
+from the digest-pinned publisher image before any network operation and uses
+it for strict, duplicate-rejecting challenge and JSON parsing; a changed image
+without that runtime fails before credentials or registry access. It preserves
+the OCI manifest digest, hashes the raw post-copy
 manifest, and emits a credential-free receipt. The lookup and copy are
 not an atomic create-only registry operation: the candidate tag is never an
 authority or approval, and only the recorded manifest digest identifies bytes.
