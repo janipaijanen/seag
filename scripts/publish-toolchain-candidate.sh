@@ -109,11 +109,13 @@ for line in lines:
     name, separator, value = line.partition(b":")
     if not separator or not re.fullmatch(rb"[!#$%&'*+.^_`|~0-9A-Za-z-]+", name):
         raise ValueError("malformed authentication response header")
+    if any(byte < 0x20 and byte != 0x09 or byte == 0x7F for byte in value):
+        raise ValueError("prohibited authentication response control character")
     if name.lower() == b"www-authenticate":
-        values.append(value.strip().decode("ascii"))
+        values.append(value.strip(b" \t").decode("ascii"))
 if len(values) != 1:
     raise ValueError("authentication challenge is ambiguous")
-match = re.fullmatch(r"Bearer[ \t]+(.+)", values[0], re.IGNORECASE)
+match = re.fullmatch(r"Bearer +(.+)", values[0], re.IGNORECASE)
 if not match:
     raise ValueError("unsupported authentication challenge")
 text = match.group(1)

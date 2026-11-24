@@ -293,7 +293,11 @@ case "$command" in
   copy) : > "$SKOPEO_COPY_MARKER" ;;
   inspect)
     if test -e "$SKOPEO_COPY_MARKER"; then
-      printf '%s' "$SKOPEO_RAW_MANIFEST"
+      if test "$SKOPEO_MODE" = post-copy-mismatch; then
+        printf '%s' '{"schemaVersion":2,"mediaType":"unexpected"}'
+      else
+        printf '%s' "$SKOPEO_RAW_MANIFEST"
+      fi
     elif test "$SKOPEO_MODE" = exists; then
       printf '%s' "$SKOPEO_RAW_MANIFEST"
     elif test "$SKOPEO_MODE" = missing; then
@@ -402,6 +406,10 @@ case "$url" in
             'WWW-Authenticate: Bearer realm="https://gitlab.example/jwt/auth",service="container_registry"' '' \
             'HTTP/1.1 401 Unauthorized' \
             'Content-Type: application/json' > "$headers" ;;
+        challenge-tab-after-scheme)
+          printf 'HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Bearer\trealm="https://gitlab.example/jwt/auth",service="container_registry"\r\n' > "$headers" ;;
+        challenge-prohibited-control)
+          printf 'HTTP/1.1 401 Unauthorized\r\nWWW-Authenticate: Bearer realm="https://gitlab.example/jwt/auth",service="container_registry"\v\r\n' > "$headers" ;;
         challenge-malformed)
           printf '%s\r\n' 'HTTP/1.1 401 Unauthorized' \
             'WWW-Authenticate: Bearer realm="https://gitlab.example/jwt/auth",service' > "$headers" ;;
@@ -422,7 +430,7 @@ case "$url" in
             ;;
           *) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN"}]}' > "$output"; printf 404 ;;
         esac ;;
-      missing|challenge-exact-scope|challenge-prior-section) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN","message":"manifest unknown"}]}' > "$output"; printf 404 ;;
+      missing|challenge-exact-scope|challenge-prior-section|post-copy-mismatch) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN","message":"manifest unknown"}]}' > "$output"; printf 404 ;;
       name-missing) printf '%s' '{"errors":[{"code":"NAME_UNKNOWN","message":"repository name not known"}]}' > "$output"; printf 404 ;;
       mixed|multiline) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN"},{"code":"DENIED"}]}' > "$output"; printf 404 ;;
       other-resource) printf '%s' '{"errors":[{"code":"BLOB_UNKNOWN"}]}' > "$output"; printf 404 ;;
@@ -576,6 +584,8 @@ esac
             "challenge-extra-param",
             "challenge-unknown-param",
             "challenge-final-missing",
+            "challenge-tab-after-scheme",
+            "challenge-prohibited-control",
             "challenge-malformed",
         ):
             with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
@@ -602,6 +612,17 @@ esac
                 curl_calls = (root / "curl-arguments").read_text()
                 self.assertIn("scope=repository:seag/ci-toolchain:pull", curl_calls)
                 self.assertNotIn("pull,push", curl_calls)
+
+    def test_publisher_post_copy_digest_mismatch_leaves_no_receipt(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            environment = self.publisher_fixture(root, "post-copy-mismatch")
+            result = subprocess.run(
+                [str(PUBLISHER)], cwd=root, env=environment, capture_output=True, text=True
+            )
+            self.assertNotEqual(0, result.returncode)
+            self.assertTrue((root / "copy-called").is_file())
+            self.assertFalse((root / "toolchain-publication").exists())
 
     def test_publisher_never_sends_credentials_outside_ci_registry(self):
         with tempfile.TemporaryDirectory() as directory:

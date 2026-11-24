@@ -88,7 +88,9 @@ response sections cannot supply them. It accepts absence only for HTTP 404
 carrying a well-formed, duplicate-free JSON error document with exactly one
 `MANIFEST_UNKNOWN` or `NAME_UNKNOWN` code;
 authorization, rate, server, compound-error, redirect and malformed responses
-fail closed. It refuses any destination outside `CI_REGISTRY` before sending a
+fail closed. The Bearer scheme requires the HTTP field grammar's space
+separator; prohibited control characters are rejected rather than trimmed. It
+refuses any destination outside `CI_REGISTRY` before sending a
 credential. The lookup requests a pull-only bearer token; the later Skopeo
 login obtains its own publication authority. The script requires `python`
 from the digest-pinned publisher image before any network operation and uses
