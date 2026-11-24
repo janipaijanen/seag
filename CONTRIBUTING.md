@@ -132,6 +132,7 @@ uv lock --check
 uv run --locked --no-sync reuse lint
 uv run --locked --no-sync python scripts/check-spdx.py
 uv run --locked --no-sync python scripts/check-dco.py
+uv run --locked --no-sync python scripts/generate-evaluation-dossier.py --check
 uv run --locked --no-sync python scripts/check-conformance.py
 uv run --locked --no-sync check-jsonschema --check-metaschema schema/*.schema.json
 uv run --locked --no-sync check-jsonschema --schemafile schema/source-0.1.schema.json fixtures/valid/manifest.json fixtures/valid/fragment.json fixtures/valid/variant.json

@@ -151,7 +151,7 @@ As of the stable 0.1 candidate assessment:
 | Semantic validator | 4 Validated | Dependency-free implementation with positive and negative tests on the integration head; not released |
 | Ontology-to-glossary extraction | 4 Validated | Deterministic exact-language extraction retains record provenance and digest-bound extraction evidence; no stable release |
 | CmapTools CXL exchange | 4 Validated | Deterministic export and compatible-parser graph round trip; CmapTools desktop import remains untested and unclaimed |
-| Ponytail contributor discipline | 3 Implemented | Pinned full discipline, contribution rule, input-boundary policy, and negative tests; independent exact-head validation pending |
+| Ponytail contributor discipline | 3 Instantiated | Pinned full discipline, contribution rule, input-boundary policy, and negative tests; independent exact-head validation pending |
 | AGF and Caveman profiles | 1 Planned | Interoperability targets only |
 
 The current assessment basis is the implementation commit recorded in
