@@ -81,8 +81,32 @@ class EvaluationDossierTests(unittest.TestCase):
 """
         with self.assertRaisesRegex(ValueError, "inconsistent maturity"):
             evaluation_dossier.parse_capabilities(inconsistent)
+        duplicate_id = inconsistent + inconsistent.removeprefix("capabilities:\n")
+        with self.assertRaisesRegex(ValueError, "duplicate maturity capability id"):
+            evaluation_dossier.parse_capabilities(duplicate_id)
+        duplicate_level = inconsistent.replace(
+            "    name: Implemented", "    level: 3\n    name: Implemented"
+        )
+        with self.assertRaisesRegex(ValueError, "repeats field level"):
+            evaluation_dossier.parse_capabilities(duplicate_level)
+        nonnumeric_level = inconsistent.replace("level: 3", "level: three")
+        with self.assertRaisesRegex(ValueError, "integer 1..5"):
+            evaluation_dossier.parse_capabilities(nonnumeric_level)
+        with self.assertRaisesRegex(ValueError, "exactly one evidence_status block"):
+            evaluation_dossier.parse_evidence_status("schema: probe\n")
         with self.assertRaisesRegex(ValueError, "canonical evaluation boundary"):
             evaluation_dossier.require_boundary("SEAG is something else.")
+
+    def test_standards_table_input_fails_closed(self):
+        with self.assertRaisesRegex(ValueError, "must be an object"):
+            evaluation_dossier.validate_standards(["not-an-object"])
+        with self.assertRaisesRegex(ValueError, "id must be a nonempty string"):
+            evaluation_dossier.validate_standards([{"class": "core", "version": "1"}])
+        duplicate = {"id": "probe", "class": "core", "version": "1"}
+        with self.assertRaisesRegex(ValueError, "duplicate standard id"):
+            evaluation_dossier.validate_standards([duplicate, duplicate.copy()])
+        with self.assertRaisesRegex(ValueError, "nonempty version pin"):
+            evaluation_dossier.validate_standards([{"id": "probe", "class": "core"}])
 
     def test_reading_aid_discloses_no_deployable_capability_and_no_pilot_state(self):
         outputs = evaluation_dossier.render()

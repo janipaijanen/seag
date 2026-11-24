@@ -94,14 +94,16 @@ def markdown_cell(value: object) -> str:
 
 
 def parse_capabilities(text: str) -> list[dict[str, object]]:
-    """Parse the deliberately small, closed capabilities block without PyYAML."""
+    """Parse the closed block without adding PyYAML to the runtime dependency set."""
     lines = text.splitlines()
     try:
         start = lines.index("capabilities:") + 1
     except ValueError as error:
         raise ValueError("maturity.yaml has no capabilities block") from error
     capabilities: list[dict[str, object]] = []
+    identifiers: set[str] = set()
     current: dict[str, object] | None = None
+    current_fields: set[str] = set()
     list_name: str | None = None
     for line in lines[start:]:
         if line and not line.startswith(" "):
@@ -110,7 +112,12 @@ def parse_capabilities(text: str) -> list[dict[str, object]]:
         if match:
             if current is not None:
                 capabilities.append(current)
-            current = {"id": match.group(1), "evidence": [], "limitations": []}
+            identifier = match.group(1)
+            if identifier in identifiers:
+                raise ValueError(f"duplicate maturity capability id: {identifier}")
+            identifiers.add(identifier)
+            current = {"id": identifier, "evidence": [], "limitations": []}
+            current_fields = set()
             list_name = None
             continue
         if current is None:
@@ -118,12 +125,24 @@ def parse_capabilities(text: str) -> list[dict[str, object]]:
         scalar = re.fullmatch(r"    (level|name): (.+)", line)
         if scalar:
             key, value = scalar.groups()
-            current[key] = int(value) if key == "level" else value
+            if key in current_fields:
+                raise ValueError(f"capability {current['id']} repeats field {key}")
+            current_fields.add(key)
+            if key == "level":
+                if not re.fullmatch(r"[1-5]", value):
+                    raise ValueError(f"capability {current['id']} level must be an integer 1..5")
+                current[key] = int(value)
+            else:
+                current[key] = value
             list_name = None
             continue
         heading = re.fullmatch(r"    (evidence|limitations):", line)
         if heading:
-            list_name = heading.group(1)
+            key = heading.group(1)
+            if key in current_fields:
+                raise ValueError(f"capability {current['id']} repeats field {key}")
+            current_fields.add(key)
+            list_name = key
             continue
         item = re.fullmatch(r"      - (.+)", line)
         if item and list_name:
@@ -150,6 +169,8 @@ def parse_capabilities(text: str) -> list[dict[str, object]]:
 
 
 def parse_evidence_status(text: str) -> dict[str, str]:
+    if sum(line == "evidence_status:" for line in text.splitlines()) != 1:
+        raise ValueError("maturity.yaml must contain exactly one evidence_status block")
     match = re.search(
         r"(?m)^evidence_status:\n"
         r"  problem_framing: ([a-z-]+)\n"
@@ -158,10 +179,14 @@ def parse_evidence_status(text: str) -> dict[str, str]:
     )
     if not match:
         raise ValueError("maturity.yaml has no supported evidence_status block")
-    return {
+    result = {
         "problem_framing": match.group(1),
         "independent_project_benefit": match.group(2),
     }
+    allowed = {"empirically-validated", "empirically-informed", "theoretical"}
+    if any(value not in allowed for value in result.values()):
+        raise ValueError("maturity.yaml evidence_status contains an unknown value")
+    return result
 
 
 def require_boundary(readme: str) -> None:
@@ -178,6 +203,39 @@ def standard_version(entry: dict[str, object]) -> str:
     if isinstance(versions, list):
         return ", ".join(str(value) for value in versions)
     return str(entry.get("version", "unversioned"))
+
+
+def validate_standards(value: object) -> list[dict[str, object]]:
+    if not isinstance(value, list):
+        raise ValueError("standards.json standards must be an array")
+    result: list[dict[str, object]] = []
+    identifiers: set[str] = set()
+    for index, entry in enumerate(value):
+        if not isinstance(entry, dict):
+            raise ValueError(f"standards.json standards/{index} must be an object")
+        identifier = entry.get("id")
+        standard_class = entry.get("class")
+        if not isinstance(identifier, str) or not identifier:
+            raise ValueError(f"standards.json standards/{index}/id must be a nonempty string")
+        if identifier in identifiers:
+            raise ValueError(f"standards.json contains duplicate standard id {identifier}")
+        identifiers.add(identifier)
+        if not isinstance(standard_class, str) or not standard_class:
+            raise ValueError(f"standard {identifier} class must be a nonempty string")
+        claim = entry.get("claim")
+        if claim is not None and (not isinstance(claim, str) or not claim):
+            raise ValueError(f"standard {identifier} claim must be a nonempty string")
+        version = entry.get("version")
+        versions = entry.get("versions")
+        if not (
+            isinstance(version, str) and version
+            or isinstance(versions, list)
+            and versions
+            and all(isinstance(item, str) and item for item in versions)
+        ):
+            raise ValueError(f"standard {identifier} must have a nonempty version pin")
+        result.append(entry)
+    return result
 
 
 def capability_table(capabilities: list[dict[str, object]]) -> str:
@@ -215,9 +273,12 @@ def render(root: Path = ROOT) -> dict[Path, bytes]:
     capabilities = parse_capabilities(maturity)
     evidence_status = parse_evidence_status(maturity)
     register = strict_json((root / "standards.json").read_bytes(), "standards.json")
-    if not isinstance(register, dict) or not isinstance(register.get("standards"), list):
+    if not isinstance(register, dict):
         raise ValueError("standards.json does not have the expected register shape")
-    standards = register["standards"]
+    for field in ("seag_standards_register", "status"):
+        if not isinstance(register.get(field), str) or not register[field]:
+            raise ValueError(f"standards.json {field} must be a nonempty string")
+    standards = validate_standards(register.get("standards"))
     schema = strict_json(
         (root / "schema/source-0.1.schema.json").read_bytes(),
         "schema/source-0.1.schema.json",

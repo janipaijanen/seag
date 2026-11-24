@@ -9,6 +9,8 @@ CI uses that release section as the future release-note source.
 
 ## Unreleased
 
+- Hardened AI dossier generation against duplicate capability fields and
+  identifiers, invalid evidence status, and malformed standards-table inputs.
 - Routed rootless BuildKit proof jobs to the dedicated `dind` runner after
   ordinary Docker executors rejected the required subordinate UID/GID mapping.
 - Added deterministic compact and full AI evaluation aids, a digest-bound
