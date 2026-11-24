@@ -234,7 +234,7 @@ class ToolchainPublishAdmissionTests(unittest.TestCase):
         self.assertIn("name: seag-toolchain-candidate", publisher)
         self.assertIn("scripts/publish-toolchain-candidate.sh", publisher)
         self.assertIn("scripts/check-toolchain-publisher-runtime.sh", publisher)
-        self.assertIn("$TOOLCHAIN_PUBLISHER_IMAGE", publisher)
+        self.assertIn("extends: .toolchain-publisher-runtime", publisher)
         self.assertNotIn("latest", publisher)
         self.assertNotIn("docker login", publisher)
         rules_block = publisher.split("\n  rules:\n", 1)[1].split(
@@ -269,12 +269,16 @@ class ToolchainPublishAdmissionTests(unittest.TestCase):
             "quay.io/containers/aio@sha256:"
             "24796f148f8f78dc842ccd1a58552aa79dbf537cb248f604168089b7f1d91be3"
         )
-        self.assertIn(f'TOOLCHAIN_PUBLISHER_IMAGE: "{digest}"', ci)
+        self.assertNotIn("TOOLCHAIN_PUBLISHER_IMAGE", ci)
+        runtime = ci.split("\n.toolchain-publisher-runtime:", 1)[1].split(
+            "\ntoolchain-publisher-runtime-contract:", 1
+        )[0]
+        self.assertIn(f"name: {digest}", runtime)
         contract = ci.split("\ntoolchain-publisher-runtime-contract:", 1)[1].split(
             "\ntag-authorization:", 1
         )[0]
-        self.assertIn("name: $TOOLCHAIN_PUBLISHER_IMAGE", contract)
-        self.assertIn('test "$CI_JOB_IMAGE" = "$TOOLCHAIN_PUBLISHER_IMAGE"', contract)
+        self.assertIn("extends: .toolchain-publisher-runtime", contract)
+        self.assertIn(f'test "$CI_JOB_IMAGE" = "{digest}"', contract)
         self.assertIn(
             "scripts/check-toolchain-publisher-runtime.sh "
             "toolchain-publisher-runtime",

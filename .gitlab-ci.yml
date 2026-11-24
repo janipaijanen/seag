@@ -22,10 +22,6 @@ variables:
   GIT_DEPTH: "0"
   UV_VERSION: "0.12.9"
   UV_NO_PROGRESS: "1"
-  # Official Containers all-in-one image, selected by immutable manifest
-  # digest. Unlike the Skopeo-only image, this runtime contains both the
-  # publisher and the strict Python response parser.
-  TOOLCHAIN_PUBLISHER_IMAGE: "quay.io/containers/aio@sha256:24796f148f8f78dc842ccd1a58552aa79dbf537cb248f604168089b7f1d91be3"
 
 default:
   # CPython 3.14.8 / Alpine 3.24 multi-architecture OCI index, pinned by digest.
@@ -188,17 +184,23 @@ toolchain-publish-admission:
       - toolchain-publish-admission/
     expire_in: never
 
-toolchain-publisher-runtime-contract:
-  stage: validate
+.toolchain-publisher-runtime:
+  # Official Containers all-in-one image, selected by immutable manifest
+  # digest. Keep this as a literal job property: a CI/CD variable has higher
+  # precedence than a YAML variable and could otherwise replace the runtime.
   image:
-    name: $TOOLCHAIN_PUBLISHER_IMAGE
+    name: quay.io/containers/aio@sha256:24796f148f8f78dc842ccd1a58552aa79dbf537cb248f604168089b7f1d91be3
     entrypoint: [""]
   before_script: []
+
+toolchain-publisher-runtime-contract:
+  extends: .toolchain-publisher-runtime
+  stage: validate
   rules:
     - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(publisher|publisher-runtime)$/'
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
   script:
-    - test "$CI_JOB_IMAGE" = "$TOOLCHAIN_PUBLISHER_IMAGE"
+    - test "$CI_JOB_IMAGE" = "quay.io/containers/aio@sha256:24796f148f8f78dc842ccd1a58552aa79dbf537cb248f604168089b7f1d91be3"
     - scripts/check-toolchain-publisher-runtime.sh toolchain-publisher-runtime
   artifacts:
     name: "seag-toolchain-publisher-runtime-${CI_COMMIT_SHA}"
@@ -251,11 +253,8 @@ stable-publication-gate:
       - release/
 
 toolchain-publish-candidate:
+  extends: .toolchain-publisher-runtime
   stage: publication
-  image:
-    name: $TOOLCHAIN_PUBLISHER_IMAGE
-    entrypoint: [""]
-  before_script: []
   needs:
     - job: toolchain-reproducibility-proof
       artifacts: true
