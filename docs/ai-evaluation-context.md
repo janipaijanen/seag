@@ -28,6 +28,11 @@ input files by SHA-256.
   Non-author in-project review alone is not independent external attestation.
 - Stewardship: single-maintainer project in public review. There is no community
   programme, support commitment, review deadline, or production-readiness claim.
+- Development transparency: SEAG is developed with AI assistance, while the
+  human maintainer remains responsible for accepted changes and project claims.
+  The tested local validation and transformation path does not require an AI
+  service. See `DISCLAIMER.md` for cost, resource, environmental, and
+  external-service limits.
 
 ## Reading aid
 

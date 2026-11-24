@@ -30,6 +30,7 @@ potentially lossy.
 | Non-author in-project review | present; `ai-agents-in-same-project` |
 | External consumer/adopter attestation | absent |
 | Stewardship | Single-maintainer; public review; no support commitment or review SLA |
+| Development | AI-assisted; accepted changes remain under human-maintainer responsibility |
 | Evaluation status | Alpha aid; not a release or certification |
 
 SEAG is a file-oriented framework, not a hosted service or a claim that semantic content is true, actor identities are authenticated, or every planned export exists.
@@ -39,6 +40,9 @@ and review authority. SEAG does not judge ontology quality, model or execute
 workflow behaviour, or claim interoperability beyond an exact tested profile.
 Project-controlled evidence and non-author in-project review alone do not
 become independent external attestation merely because they are reproducible.
+SEAG is developed with AI assistance, but the tested local validation and
+transformation path does not require an AI service. See `DISCLAIMER.md` for the
+resource, cost, environmental, and external-service boundaries.
 
 ## Bounded reading tracks
 
@@ -169,7 +173,8 @@ external sources.
 ## Security, licensing, and responsibility
 
 Read `SECURITY.md` before publishing a vulnerability. Read `docs/licensing.md`
-and per-file SPDX declarations before redistributing content. A DCO sign-off is
+and `DISCLAIMER.md` before using external AI or substantial computing resources.
+Read per-file SPDX declarations before redistributing content. A DCO sign-off is
 provenance and rights certification, not copyright assignment. Generated
 semantic views inherit relevant source licensing, access, privacy, and
 classification restrictions; a public SEAG tool does not make adopter content

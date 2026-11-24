@@ -28,7 +28,8 @@ software work performed by people and LLM agents.
 [Roadmap to 1.0](docs/roadmap-to-1.0.md) ·
 [Release policy](docs/release-policy.md) ·
 [Compatibility](docs/compatibility.md) ·
-[Licensing](docs/licensing.md)
+[Licensing](docs/licensing.md) ·
+[AI and resource-use disclaimer](DISCLAIMER.md)
 
 ## Why SEAG
 
@@ -264,6 +265,7 @@ See [standards and conformance](docs/conformance.md) and the machine-readable
 - [Standards and conformance](docs/conformance.md)
 - [Release and version policy](docs/release-policy.md)
 - [Licensing and SPDX declarations](docs/licensing.md)
+- [AI assistance and resource-use disclaimer](DISCLAIMER.md)
 
 ## Releases
 
@@ -293,6 +295,23 @@ SEAG is currently maintained by Jani Päijänen as a single-maintainer project i
 public review. See [Contributing](CONTRIBUTING.md) and
 [Security](SECURITY.md). These procedures do not create a community programme,
 support commitment, review deadline, or production-readiness claim.
+
+## Development transparency
+
+SEAG is developed with AI assistance. AI systems have assisted with research,
+planning, drafting, code, tests, and review. The human maintainer decides what
+is accepted and remains responsible for project decisions and published claims.
+Content-bearing contributions remain subject to human review and DCO sign-off.
+AI involvement is not itself evidence of correctness, rights, provenance,
+independent review, or external attestation.
+
+SEAG's tested local validation and transformation path does not require an AI
+service. Optional AI, CI, virtual-machine, container, and hosted-service use can
+consume paid tokens or credits, computing and storage resources, network
+bandwidth, and electricity, with workload- and provider-dependent environmental
+effects. See the
+[AI assistance and resource-use disclaimer](DISCLAIMER.md) before connecting
+external services or running substantial workloads.
 
 ## Licensing
 

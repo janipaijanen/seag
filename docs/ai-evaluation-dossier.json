@@ -25,8 +25,13 @@
     },
     {
       "path": "README.md",
-      "sha256": "1d52974b87bf69c7083b34bffd560a8f06fb8b9c116fff39c7a4780217a96e15",
-      "size": 14422
+      "sha256": "5f0f6f536213230602ca04918a75f6bbc0441160273da226d8e6b1a6d49830a2",
+      "size": 15458
+    },
+    {
+      "path": "DISCLAIMER.md",
+      "sha256": "662d7aaeb21a0b336c85c9c34502fd2c8e6ae6aa1b370cf371d865a0a71ca6a5",
+      "size": 4264
     },
     {
       "path": "AGENTS.md",
@@ -55,8 +60,8 @@
     },
     {
       "path": "scripts/generate-evaluation-dossier.py",
-      "sha256": "53e3ef16bdecfc030e4fcd1af0fbd6e8a2c83f20d0a21296ef7fa7b9ae78d4b2",
-      "size": 30009
+      "sha256": "76ed3f4b3b697ee54e4eb82fff5b4cac7a06d234d5ac293958f929dd25e2af0c",
+      "size": 31566
     },
     {
       "path": "schema/source-0.1.schema.json",
@@ -127,22 +132,22 @@
   "outputs": [
     {
       "path": "docs/ai-evaluation-context.md",
-      "sha256": "9bfa9089ce30c61ab9e9b7e10347ac0f5264577682ff34625200ced1ed603753",
-      "size": 5283
+      "sha256": "cda400e0a9d384dda070a3722ee7baa5538dd5797a60e3796eb994a6afffca5b",
+      "size": 5613
     },
     {
       "path": "docs/ai-evaluation-dossier.md",
-      "sha256": "73b2471a3bab1f587ae07b1fb23e7c8bc16dde7e841326b2ce439279137f28a8",
-      "size": 10873
+      "sha256": "0160322387c365d420c2c785ffbfb6ae04499b23864099d86a4e84e5b8436e23",
+      "size": 11266
     }
   ],
   "compact_context_budget": {
     "encoding": "UTF-8",
     "maximum_bytes": 8000,
-    "actual_bytes": 5283,
+    "actual_bytes": 5613,
     "word_definition": "non-whitespace runs counted by Python regular expression \\S+",
     "maximum_words": 1100,
-    "actual_words": 586
+    "actual_words": 629
   },
   "verification_commands": [
     "python3 scripts/generate-evaluation-dossier.py --check",
