@@ -55,8 +55,8 @@
     },
     {
       "path": "scripts/generate-evaluation-dossier.py",
-      "sha256": "35a40ad13af7280b436719644f2d32c6dcdf5f49e9675c1ebb846fce5384c28b",
-      "size": 29662
+      "sha256": "63eb7e5b174a53da248ed5bc6ec62d782c1df8c1385deec622a7be8faf03c05b",
+      "size": 29997
     },
     {
       "path": "schema/source-0.1.schema.json",
@@ -127,22 +127,22 @@
   "outputs": [
     {
       "path": "docs/ai-evaluation-context.md",
-      "sha256": "a80f604b7874ca9a5c9de11f96548a9e0e590df2dee5d0adbea3e8e6274fc02a",
-      "size": 5340
+      "sha256": "716053901450e25c728d4a109fa8b4b33b309c0b5868ca8dce6502b736c1da2f",
+      "size": 5277
     },
     {
       "path": "docs/ai-evaluation-dossier.md",
-      "sha256": "64d4152148956dd8b5ae6a3b889ce42ef84b4b430d3a6b40e0c38fd459569953",
-      "size": 10876
+      "sha256": "8dec68b7437e545f2250c97838e191596f009126ee9c4e5887ed4a115f99b572",
+      "size": 10867
     }
   ],
   "compact_context_budget": {
     "encoding": "UTF-8",
     "maximum_bytes": 8000,
-    "actual_bytes": 5340,
+    "actual_bytes": 5277,
     "word_definition": "non-whitespace runs counted by Python regular expression \\S+",
     "maximum_words": 1100,
-    "actual_words": 594
+    "actual_words": 585
   },
   "verification_commands": [
     "python3 scripts/generate-evaluation-dossier.py --check",
