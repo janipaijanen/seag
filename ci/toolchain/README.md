@@ -82,7 +82,9 @@ client that declares support for GitLab's Docker and OCI single-image and
 image-index representations, pins the authentication realm to this GitLab
 server, accepts an optional challenge scope only when it exactly names the
 locally derived repository and pull permission, and preserves the HTTP status
-and complete structured error body. It accepts absence only for HTTP 404
+and complete structured error body. Authentication parameters are selected
+only from the final 401 response header section; proxy or informational
+response sections cannot supply them. It accepts absence only for HTTP 404
 carrying a well-formed, duplicate-free JSON error document with exactly one
 `MANIFEST_UNKNOWN` or `NAME_UNKNOWN` code;
 authorization, rate, server, compound-error, redirect and malformed responses

@@ -82,13 +82,34 @@ import re
 import sys
 
 
-lines = open(sys.argv[1], "rb").read().splitlines()
+raw_headers = open(sys.argv[1], "rb").read()
+if b"\r" in raw_headers.replace(b"\r\n", b""):
+    raise ValueError("invalid authentication response line ending")
+sections = [
+    section.rstrip(b"\n").split(b"\n")
+    for section in raw_headers.replace(b"\r\n", b"\n").split(b"\n\n")
+    if section
+]
+if not sections:
+    raise ValueError("authentication response has no header section")
+for section in sections:
+    if not re.fullmatch(
+        rb"HTTP/[0-9]+(?:\.[0-9]+)?[ \t]+[0-9]{3}(?:[ \t]+[^\x00-\x1f\x7f]*)?",
+        section[0],
+    ):
+        raise ValueError("invalid authentication response status line")
+final_section = sections[-1]
+if not re.match(rb"HTTP/[0-9]+(?:\.[0-9]+)?[ \t]+401(?:[ \t]|$)", final_section[0]):
+    raise ValueError("final authentication response is not 401")
+lines = final_section[1:]
 if any(line[:1] in {b" ", b"\t"} for line in lines):
     raise ValueError("folded authentication header")
 values = []
 for line in lines:
     name, separator, value = line.partition(b":")
-    if separator and name.lower() == b"www-authenticate":
+    if not separator or not re.fullmatch(rb"[!#$%&'*+.^_`|~0-9A-Za-z-]+", name):
+        raise ValueError("malformed authentication response header")
+    if name.lower() == b"www-authenticate":
         values.append(value.strip().decode("ascii"))
 if len(values) != 1:
     raise ValueError("authentication challenge is ambiguous")

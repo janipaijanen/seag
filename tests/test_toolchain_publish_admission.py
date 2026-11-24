@@ -392,6 +392,16 @@ case "$url" in
         challenge-unknown-param)
           printf '%s\r\n' 'HTTP/1.1 401 Unauthorized' \
             'WWW-Authenticate: Bearer realm="https://gitlab.example/jwt/auth",service="container_registry",audience="other"' > "$headers" ;;
+        challenge-prior-section)
+          printf '%s\r\n' 'HTTP/1.1 407 Proxy Authentication Required' \
+            'WWW-Authenticate: Bearer realm="https://proxy.example/auth",service="proxy"' '' \
+            'HTTP/1.1 401 Unauthorized' \
+            'WWW-Authenticate: Bearer realm="https://gitlab.example/jwt/auth",service="container_registry",scope="repository:seag/ci-toolchain:pull"' > "$headers" ;;
+        challenge-final-missing)
+          printf '%s\r\n' 'HTTP/1.1 401 Unauthorized' \
+            'WWW-Authenticate: Bearer realm="https://gitlab.example/jwt/auth",service="container_registry"' '' \
+            'HTTP/1.1 401 Unauthorized' \
+            'Content-Type: application/json' > "$headers" ;;
         challenge-malformed)
           printf '%s\r\n' 'HTTP/1.1 401 Unauthorized' \
             'WWW-Authenticate: Bearer realm="https://gitlab.example/jwt/auth",service' > "$headers" ;;
@@ -412,7 +422,7 @@ case "$url" in
             ;;
           *) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN"}]}' > "$output"; printf 404 ;;
         esac ;;
-      missing|challenge-exact-scope) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN","message":"manifest unknown"}]}' > "$output"; printf 404 ;;
+      missing|challenge-exact-scope|challenge-prior-section) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN","message":"manifest unknown"}]}' > "$output"; printf 404 ;;
       name-missing) printf '%s' '{"errors":[{"code":"NAME_UNKNOWN","message":"repository name not known"}]}' > "$output"; printf 404 ;;
       mixed|multiline) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN"},{"code":"DENIED"}]}' > "$output"; printf 404 ;;
       other-resource) printf '%s' '{"errors":[{"code":"BLOB_UNKNOWN"}]}' > "$output"; printf 404 ;;
@@ -565,6 +575,7 @@ esac
             "challenge-duplicate-param",
             "challenge-extra-param",
             "challenge-unknown-param",
+            "challenge-final-missing",
             "challenge-malformed",
         ):
             with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
@@ -579,17 +590,18 @@ esac
                 self.assertFalse((root / "copy-called").exists())
 
     def test_publisher_accepts_exact_read_only_authentication_scope(self):
-        with tempfile.TemporaryDirectory() as directory:
-            root = Path(directory)
-            environment = self.publisher_fixture(root, "challenge-exact-scope")
-            result = subprocess.run(
-                [str(PUBLISHER)], cwd=root, env=environment, capture_output=True, text=True
-            )
-            self.assertEqual(0, result.returncode, result.stderr)
-            self.assertTrue((root / "copy-called").is_file())
-            curl_calls = (root / "curl-arguments").read_text()
-            self.assertIn("scope=repository:seag/ci-toolchain:pull", curl_calls)
-            self.assertNotIn("pull,push", curl_calls)
+        for mode in ("challenge-exact-scope", "challenge-prior-section"):
+            with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                environment = self.publisher_fixture(root, mode)
+                result = subprocess.run(
+                    [str(PUBLISHER)], cwd=root, env=environment, capture_output=True, text=True
+                )
+                self.assertEqual(0, result.returncode, result.stderr)
+                self.assertTrue((root / "copy-called").is_file())
+                curl_calls = (root / "curl-arguments").read_text()
+                self.assertIn("scope=repository:seag/ci-toolchain:pull", curl_calls)
+                self.assertNotIn("pull,push", curl_calls)
 
     def test_publisher_never_sends_credentials_outside_ci_registry(self):
         with tempfile.TemporaryDirectory() as directory:
