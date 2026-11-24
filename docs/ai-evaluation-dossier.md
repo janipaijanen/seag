@@ -26,6 +26,10 @@ potentially lossy.
 | Version file | `0.2.0-alpha.2` |
 | Source schema | `https://gitlab.com/janipaijanen/seag/-/raw/v0.1.0/schema/source-0.1.schema.json` |
 | Standards register | `0.1` / `pinned-for-0.1` |
+| Evidence control | project controlled |
+| Non-author in-project review | present; `ai-agents-in-same-project` |
+| External consumer/adopter attestation | absent |
+| Stewardship | Single-maintainer; public review; no support commitment or review SLA |
 | Evaluation status | Alpha aid; not a release or certification |
 
 SEAG is a file-oriented framework, not a hosted service or a claim that semantic content is true, actor identities are authenticated, or every planned export exists.
@@ -33,6 +37,8 @@ SEAG is a file-oriented framework, not a hosted service or a claim that semantic
 Adopters own their concepts, ontologies, product decisions, access controls,
 and review authority. SEAG does not judge ontology quality, model or execute
 workflow behaviour, or claim interoperability beyond an exact tested profile.
+Project-controlled evidence and non-author in-project AI-agent review do not
+become independent external attestation merely because they are reproducible.
 
 ## Bounded reading tracks
 

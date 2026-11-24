@@ -33,6 +33,16 @@ class EvaluationDossierTests(unittest.TestCase):
             [path.as_posix() for path in evaluation_dossier.SOURCE_PATHS],
         )
         self.assertEqual(len(manifest["outputs"]), 2)
+        self.assertEqual(
+            manifest["evaluation_evidence_scope"]["control"], "project-controlled"
+        )
+        self.assertEqual(
+            manifest["evaluation_evidence_scope"][
+                "external_consumer_or_adopter_attestation"
+            ],
+            "absent",
+        )
+        self.assertEqual(manifest["stewardship"]["maintainer_model"], "single-maintainer")
         budget = manifest["compact_context_budget"]
         self.assertLessEqual(budget["actual_bytes"], budget["maximum_bytes"])
         self.assertLessEqual(budget["actual_words"], budget["maximum_words"])
@@ -112,8 +122,29 @@ class EvaluationDossierTests(unittest.TestCase):
             )
         with self.assertRaisesRegex(ValueError, "exactly one evidence_status block"):
             evaluation_dossier.parse_evidence_status(evidence_status * 2)
+        evidence_scope = """evaluation_evidence_scope:
+  control: project-controlled
+  nonauthor_in_project_review: present
+  nonauthor_review_context: ai-agents-in-same-project
+  external_consumer_or_adopter_attestation: absent
+"""
+        with self.assertRaisesRegex(ValueError, "exactly one evaluation_evidence_scope"):
+            evaluation_dossier.parse_evaluation_evidence_scope("schema: probe\n")
+        with self.assertRaisesRegex(ValueError, "control is unknown"):
+            evaluation_dossier.parse_evaluation_evidence_scope(
+                evidence_scope.replace("project-controlled", "unclassified")
+            )
+        with self.assertRaisesRegex(ValueError, "presence and context are inconsistent"):
+            evaluation_dossier.parse_evaluation_evidence_scope(
+                evidence_scope.replace(
+                    "nonauthor_in_project_review: present",
+                    "nonauthor_in_project_review: absent",
+                )
+            )
         with self.assertRaisesRegex(ValueError, "canonical evaluation boundary"):
             evaluation_dossier.require_boundary("SEAG is something else.")
+        with self.assertRaisesRegex(ValueError, "canonical stewardship boundary"):
+            evaluation_dossier.require_boundary(evaluation_dossier.BOUNDARY)
 
     def test_standards_table_input_fails_closed(self):
         with self.assertRaisesRegex(ValueError, "must be an object"):
@@ -164,7 +195,33 @@ class EvaluationDossierTests(unittest.TestCase):
         for path in (evaluation_dossier.CONTEXT, evaluation_dossier.DOSSIER):
             text = outputs[path].decode("utf-8")
             self.assertIn("No capability is Level 5 Deployable", text)
+            self.assertIn("project controlled", text)
+            self.assertIn("single-maintainer", text.lower())
             self.assertNotIn("pilot is in progress", text)
+
+    def test_check_binds_changed_source_into_the_manifest(self):
+        baseline = json.loads(evaluation_dossier.render()[evaluation_dossier.MANIFEST])
+        with tempfile.TemporaryDirectory() as temporary:
+            root = Path(temporary)
+            for source in evaluation_dossier.SOURCE_PATHS:
+                target = root / source
+                target.parent.mkdir(parents=True, exist_ok=True)
+                shutil.copyfile(ROOT / source, target)
+            readme = root / "README.md"
+            readme.write_text(
+                readme.read_text(encoding="utf-8") + "\n<!-- evaluation probe -->\n",
+                encoding="utf-8",
+            )
+            changed_outputs = evaluation_dossier.render(root)
+            changed = json.loads(changed_outputs[evaluation_dossier.MANIFEST])
+            baseline_readme = next(
+                item for item in baseline["sources"] if item["path"] == "README.md"
+            )
+            changed_readme = next(
+                item for item in changed["sources"] if item["path"] == "README.md"
+            )
+            self.assertNotEqual(baseline_readme["sha256"], changed_readme["sha256"])
+            self.assertTrue(evaluation_dossier.check(changed_outputs))
 
 
 if __name__ == "__main__":
