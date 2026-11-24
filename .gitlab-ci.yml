@@ -55,7 +55,7 @@ toolchain-context-proof:
     name: python:3.14.8-alpine@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d750607710cc56da3bc72
   before_script: []
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup|publisher)$/'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup|publisher|publisher-runtime)$/'
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
   script:
     - test "$(cat ci/toolchain/SOURCE_DATE_EPOCH)" = "1795432630"
@@ -77,7 +77,7 @@ toolchain-context-proof:
     - job: toolchain-context-proof
       artifacts: true
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup|publisher)$/'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup|publisher|publisher-runtime)$/'
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
   script:
     - test -z "${DOCKER_AUTH_CONFIG:-}"
@@ -145,7 +145,7 @@ toolchain-reproducibility-proof:
     - job: toolchain-build-proof-b
       artifacts: true
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup|publisher)$/'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup|publisher|publisher-runtime)$/'
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
   script:
     - (cd toolchain-proof-a && sha256sum -c SHA256SUMS)
@@ -183,6 +183,30 @@ toolchain-publish-admission:
     paths:
       - toolchain-publish-admission/
     expire_in: never
+
+.toolchain-publisher-runtime:
+  # Official Containers all-in-one image, selected by immutable manifest
+  # digest. Keep this as a literal job property: a CI/CD variable has higher
+  # precedence than a YAML variable and could otherwise replace the runtime.
+  image:
+    name: quay.io/containers/aio@sha256:24796f148f8f78dc842ccd1a58552aa79dbf537cb248f604168089b7f1d91be3
+    entrypoint: [""]
+  before_script: []
+
+toolchain-publisher-runtime-contract:
+  extends: .toolchain-publisher-runtime
+  stage: validate
+  rules:
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(publisher|publisher-runtime)$/'
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
+  script:
+    - test "$CI_JOB_IMAGE" = "quay.io/containers/aio@sha256:24796f148f8f78dc842ccd1a58552aa79dbf537cb248f604168089b7f1d91be3"
+    - scripts/check-toolchain-publisher-runtime.sh toolchain-publisher-runtime
+  artifacts:
+    name: "seag-toolchain-publisher-runtime-${CI_COMMIT_SHA}"
+    paths:
+      - toolchain-publisher-runtime/
+    expire_in: 7 days
 
 tag-authorization:
   stage: authorize
@@ -229,15 +253,14 @@ stable-publication-gate:
       - release/
 
 toolchain-publish-candidate:
+  extends: .toolchain-publisher-runtime
   stage: publication
-  image:
-    name: quay.io/skopeo/stable@sha256:83679426be479f119a92fed78fb441f046ea07ea5e5a4b3a838f7b155be567fe
-    entrypoint: [""]
-  before_script: []
   needs:
     - job: toolchain-reproducibility-proof
       artifacts: true
     - job: toolchain-publish-admission
+      artifacts: true
+    - job: toolchain-publisher-runtime-contract
       artifacts: true
   resource_group: seag-toolchain-publisher
   environment:
@@ -248,6 +271,9 @@ toolchain-publish-candidate:
       allow_failure: true
     - when: never
   script:
+    - scripts/check-toolchain-publisher-runtime.sh
+    - (cd toolchain-publisher-runtime && sha256sum -c SHA256SUMS)
+    - test "$(cat toolchain-publisher-runtime/image.txt)" = "$CI_JOB_IMAGE"
     - scripts/publish-toolchain-candidate.sh
   artifacts:
     name: "seag-toolchain-publication-${CI_COMMIT_SHA}"

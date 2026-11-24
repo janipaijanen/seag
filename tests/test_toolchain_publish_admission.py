@@ -233,6 +233,8 @@ class ToolchainPublishAdmissionTests(unittest.TestCase):
         self.assertIn("resource_group: seag-toolchain-publisher", publisher)
         self.assertIn("name: seag-toolchain-candidate", publisher)
         self.assertIn("scripts/publish-toolchain-candidate.sh", publisher)
+        self.assertIn("scripts/check-toolchain-publisher-runtime.sh", publisher)
+        self.assertIn("extends: .toolchain-publisher-runtime", publisher)
         self.assertNotIn("latest", publisher)
         self.assertNotIn("docker login", publisher)
         rules_block = publisher.split("\n  rules:\n", 1)[1].split(
@@ -255,9 +257,39 @@ class ToolchainPublishAdmissionTests(unittest.TestCase):
             "    - job: toolchain-reproducibility-proof\n"
             "      artifacts: true\n"
             "    - job: toolchain-publish-admission\n"
+            "      artifacts: true\n"
+            "    - job: toolchain-publisher-runtime-contract\n"
             "      artifacts: true",
             needs_block,
         )
+
+    def test_ci_executes_and_retains_real_publisher_runtime_contract(self):
+        ci = (ROOT / ".gitlab-ci.yml").read_text(encoding="utf-8")
+        readme = (ROOT / "ci/toolchain/README.md").read_text(encoding="utf-8")
+        digest = (
+            "quay.io/containers/aio@sha256:"
+            "24796f148f8f78dc842ccd1a58552aa79dbf537cb248f604168089b7f1d91be3"
+        )
+        self.assertNotIn("TOOLCHAIN_PUBLISHER_IMAGE", ci)
+        self.assertIn("Python 3.15.2", readme)
+        self.assertIn("Skopeo 1.25.1", readme)
+        self.assertNotIn("Skopeo 1.24.1", readme)
+        runtime = ci.split("\n.toolchain-publisher-runtime:", 1)[1].split(
+            "\ntoolchain-publisher-runtime-contract:", 1
+        )[0]
+        self.assertIn(f"name: {digest}", runtime)
+        contract = ci.split("\ntoolchain-publisher-runtime-contract:", 1)[1].split(
+            "\ntag-authorization:", 1
+        )[0]
+        self.assertIn("extends: .toolchain-publisher-runtime", contract)
+        self.assertIn(f'test "$CI_JOB_IMAGE" = "{digest}"', contract)
+        self.assertIn(
+            "scripts/check-toolchain-publisher-runtime.sh "
+            "toolchain-publisher-runtime",
+            contract,
+        )
+        self.assertIn("toolchain-publisher-runtime/", contract)
+        self.assertNotIn("when: manual", contract)
 
     def publisher_fixture(self, root: Path, mode: str) -> dict[str, str]:
         proof = root / "toolchain-proof"

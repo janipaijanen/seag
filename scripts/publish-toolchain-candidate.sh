@@ -6,9 +6,11 @@
 # distinguishes a definite registry absence from every other lookup failure.
 set -eu
 
-# The pinned publisher image must supply the parser before any network or
-# credential operation. Fail closed if that runtime contract changes.
-command -v python >/dev/null
+# The real pinned-image contract job supplies retained evidence, while this
+# second check fails closed in the credential-bearing job itself.
+script_dir=$(CDPATH= cd -- "$(dirname -- "$0")" && pwd)
+readonly script_dir
+"$script_dir/check-toolchain-publisher-runtime.sh"
 
 readonly proof_dir=toolchain-proof
 readonly admission_dir=toolchain-publish-admission
