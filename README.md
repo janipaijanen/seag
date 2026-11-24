@@ -3,8 +3,8 @@
 
 # SEAG — Semantic Engineering for Agentic Development
 
-A provenance-preserving semantic source and transformation framework for
-software work performed by people and LLM agents.
+SEAG is designed to be a dependable, offline-capable, Git-native semantic
+source and review layer for humans and agents.
 
 > **Status: 0.2.0-alpha.2 evaluation candidate.** The immutable `v0.1.0` tag
 > remains the latest stable release. This untagged successor candidate adds

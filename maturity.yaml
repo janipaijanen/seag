@@ -2,13 +2,17 @@
 # SPDX-License-Identifier: CC-BY-4.0
 
 schema: seag/maturity-assessment/v1
-assessment_date: 2026-11-22
+assessment_date: 2026-11-25
 assessment_basis:
   repository: https://gitlab.com/janipaijanen/seag
-  implementation_commit: 08d98fa7cd65daa3d458c3fda54d6ceebdb836eb
-  stable_candidate_ref: release/0.1.0-prep
+  implementation_commit: 1cfa93e6b34685ef21076acca8c248e2ec635d61
+  stable_release_ref: v0.1.0
+  stable_tag_pipeline: 3098472492
   review_record: docs/reviews/source-contract-integration-0.1.md
-  pending_release_review: docs/reviews/0.1.0-release.json
+  release_review: docs/reviews/0.1.0-release.json
+  alpha_evaluation_ref: v0.2.0-alpha.2
+  alpha_evaluation_commit: 1613b1781ee2f17dcc36c72e36a2a93afa6770b3
+  alpha_tag_pipeline: 3101373112
 
 adopted_vocabulary:
   framework: AGF26
@@ -93,6 +97,28 @@ capabilities:
       - test:test_transforms.TransformTest.test_cxl_round_trip_preserves_bounded_graph
       - fixture:fixtures/expected/concept-map.cxl
       - gitlab-pipeline:3098412613
+  canonical-source-rendering:
+    level: 3
+    name: Instantiated
+    limitations:
+      - Experimental 0.2 alpha contract; not a supported compatibility baseline
+      - Canonical bytes identify a new exact source snapshot even when semantics do not change
+    evidence:
+      - document:docs/canonical-source.md
+      - test:test_canonical.CanonicalSourceTest.test_written_copy_validates_and_has_no_semantic_change
+      - test:test_canonical.CanonicalSourceTest.test_two_outputs_are_byte_identical
+      - gitlab-pipeline:3101373112
+  semantic-diff-and-conflict-detection:
+    level: 3
+    name: Instantiated
+    limitations:
+      - Experimental 0.2 alpha result contract; not a supported compatibility baseline
+      - Does not decide correctness or semantic equivalence and has no corpus or output size limits
+    evidence:
+      - document:docs/semantic-diff.md
+      - test:test_semantic_diff.SemanticDiffTest.test_change_taxonomy_and_order_are_stable
+      - test:test_semantic_diff.SemanticDiffTest.test_three_way_detects_divergent_leaf_change
+      - gitlab-pipeline:3101373112
   ponytail-contributor-discipline:
     level: 3
     name: Instantiated
