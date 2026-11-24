@@ -4,6 +4,7 @@
 import importlib.util
 import json
 from pathlib import Path
+import shutil
 import tempfile
 import unittest
 
@@ -92,8 +93,25 @@ class EvaluationDossierTests(unittest.TestCase):
         nonnumeric_level = inconsistent.replace("level: 3", "level: three")
         with self.assertRaisesRegex(ValueError, "integer 1..5"):
             evaluation_dossier.parse_capabilities(nonnumeric_level)
+        duplicate_evidence = inconsistent.replace(
+            "      - test:probe", "      - test:probe\n    evidence:"
+        )
+        with self.assertRaisesRegex(ValueError, "repeats field evidence"):
+            evaluation_dossier.parse_capabilities(duplicate_evidence)
         with self.assertRaisesRegex(ValueError, "exactly one evidence_status block"):
             evaluation_dossier.parse_evidence_status("schema: probe\n")
+        evidence_status = """evidence_status:
+  problem_framing: theoretical
+  independent_project_benefit: theoretical
+"""
+        with self.assertRaisesRegex(ValueError, "unknown value"):
+            evaluation_dossier.parse_evidence_status(
+                evidence_status.replace(
+                    "problem_framing: theoretical", "problem_framing: unsupported"
+                )
+            )
+        with self.assertRaisesRegex(ValueError, "exactly one evidence_status block"):
+            evaluation_dossier.parse_evidence_status(evidence_status * 2)
         with self.assertRaisesRegex(ValueError, "canonical evaluation boundary"):
             evaluation_dossier.require_boundary("SEAG is something else.")
 
@@ -105,8 +123,41 @@ class EvaluationDossierTests(unittest.TestCase):
         duplicate = {"id": "probe", "class": "core", "version": "1"}
         with self.assertRaisesRegex(ValueError, "duplicate standard id"):
             evaluation_dossier.validate_standards([duplicate, duplicate.copy()])
+        with self.assertRaisesRegex(ValueError, "class must be a nonempty string"):
+            evaluation_dossier.validate_standards([{"id": "probe", "version": "1"}])
+        with self.assertRaisesRegex(ValueError, "claim must be a nonempty string"):
+            evaluation_dossier.validate_standards(
+                [{"id": "probe", "class": "core", "version": "1", "claim": 1}]
+            )
         with self.assertRaisesRegex(ValueError, "nonempty version pin"):
             evaluation_dossier.validate_standards([{"id": "probe", "class": "core"}])
+        with self.assertRaisesRegex(ValueError, "nonempty version pin"):
+            evaluation_dossier.validate_standards(
+                [{"id": "probe", "class": "core", "versions": ["1", ""]}]
+            )
+        self.assertEqual(
+            evaluation_dossier.validate_standards(
+                [{"id": "probe", "class": "core", "versions": ["1", "2"]}]
+            )[0]["versions"],
+            ["1", "2"],
+        )
+
+    def test_standards_register_fields_fail_closed(self):
+        for field in ("seag_standards_register", "status"):
+            with self.subTest(field=field), tempfile.TemporaryDirectory() as temporary:
+                root = Path(temporary)
+                for source in evaluation_dossier.SOURCE_PATHS:
+                    target = root / source
+                    target.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copyfile(ROOT / source, target)
+                register_path = root / "standards.json"
+                register = json.loads(register_path.read_text(encoding="utf-8"))
+                register[field] = ""
+                register_path.write_text(json.dumps(register), encoding="utf-8")
+                with self.assertRaisesRegex(
+                    ValueError, f"standards.json {field} must be a nonempty string"
+                ):
+                    evaluation_dossier.render(root)
 
     def test_reading_aid_discloses_no_deployable_capability_and_no_pilot_state(self):
         outputs = evaluation_dossier.render()
