@@ -49,7 +49,7 @@ BOUNDARY = (
     "planned export exists."
 )
 STEWARDSHIP_PATTERN = re.compile(
-    r"SEAG is currently maintained by [^.\n]+ as a single-maintainer "
+    r"SEAG is currently maintained by [^\n]+? as a single-maintainer "
     r"project in public review\."
 )
 SUPPORT_BOUNDARY = (
@@ -390,7 +390,7 @@ input files by SHA-256.
   in-project review is {evidence_scope['nonauthor_in_project_review']} with
   context `{evidence_scope['nonauthor_review_context']}`; external consumer or
   adopter attestation is {evidence_scope['external_consumer_or_adopter_attestation']}.
-  Non-author in-project review is not independent external attestation.
+  Non-author in-project review alone is not independent external attestation.
 - Stewardship: single-maintainer project in public review. There is no community
   programme, support commitment, review deadline, or production-readiness claim.
 
@@ -478,7 +478,7 @@ potentially lossy.
 Adopters own their concepts, ontologies, product decisions, access controls,
 and review authority. SEAG does not judge ontology quality, model or execute
 workflow behaviour, or claim interoperability beyond an exact tested profile.
-Project-controlled evidence and non-author in-project review do not
+Project-controlled evidence and non-author in-project review alone do not
 become independent external attestation merely because they are reproducible.
 
 ## Bounded reading tracks

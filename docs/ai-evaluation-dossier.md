@@ -37,7 +37,7 @@ SEAG is a file-oriented framework, not a hosted service or a claim that semantic
 Adopters own their concepts, ontologies, product decisions, access controls,
 and review authority. SEAG does not judge ontology quality, model or execute
 workflow behaviour, or claim interoperability beyond an exact tested profile.
-Project-controlled evidence and non-author in-project review do not
+Project-controlled evidence and non-author in-project review alone do not
 become independent external attestation merely because they are reproducible.
 
 ## Bounded reading tracks

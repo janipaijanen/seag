@@ -145,6 +145,16 @@ class EvaluationDossierTests(unittest.TestCase):
             evaluation_dossier.require_boundary("SEAG is something else.")
         with self.assertRaisesRegex(ValueError, "canonical stewardship boundary"):
             evaluation_dossier.require_boundary(evaluation_dossier.BOUNDARY)
+        evaluation_dossier.require_boundary(
+            "\n".join(
+                (
+                    evaluation_dossier.BOUNDARY,
+                    "SEAG is currently maintained by J. Example as a "
+                    "single-maintainer project in public review.",
+                    evaluation_dossier.SUPPORT_BOUNDARY,
+                )
+            )
+        )
         with self.assertRaisesRegex(ValueError, "SECURITY.md"):
             evaluation_dossier.require_security_stewardship("# Security\n")
 
