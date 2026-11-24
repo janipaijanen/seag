@@ -76,9 +76,28 @@ config blob digests without registry credentials. The publisher receives the
 verified archive only after that admission, requires the operator to repeat
 the exact source commit in `TOOLCHAIN_PUBLISH_COMMIT`, and serializes all
 candidate publications. It uses a digest-pinned Skopeo 1.24.1 image and a
-`candidate-<commit>-<manifest-digest>` discovery tag, fails closed unless the
-registry lookup specifically reports the destination absent, preserves the OCI
-manifest digest, and emits a credential-free receipt. The lookup and copy are
+`candidate-<commit>-<manifest-digest>` discovery tag. Before Skopeo login or
+copy, it queries the exact Registry v2 manifest resource with a bounded curl
+client that declares support for GitLab's Docker and OCI single-image and
+image-index representations, pins the authentication realm to this GitLab
+server, accepts an optional challenge scope only when it exactly names the
+locally derived repository and pull permission, and preserves the HTTP status
+and complete structured error body. Authentication parameters are selected
+only from the final 401 response header section; proxy or informational
+response sections cannot supply them. It accepts absence only for HTTP 404
+carrying a well-formed, duplicate-free JSON error document with exactly one
+`MANIFEST_UNKNOWN` or `NAME_UNKNOWN` code;
+authorization, rate, server, compound-error, redirect and malformed responses
+fail closed. The Bearer scheme requires the HTTP field grammar's space
+separator; prohibited control characters are rejected rather than trimmed. It
+refuses any destination outside `CI_REGISTRY` before sending a
+credential. The lookup requests a pull-only bearer token; the later Skopeo
+login obtains its own publication authority. The script requires `python`
+from the digest-pinned publisher image before any network operation and uses
+it for strict, duplicate-rejecting challenge and JSON parsing; a changed image
+without that runtime fails before credentials or registry access. It preserves
+the OCI manifest digest, hashes the raw post-copy
+manifest, and emits a credential-free receipt. The lookup and copy are
 not an atomic create-only registry operation: the candidate tag is never an
 authority or approval, and only the recorded manifest digest identifies bytes.
 Registry tag protection must restrict competing writers before the first run.
