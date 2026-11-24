@@ -21,6 +21,7 @@ MANIFEST = Path("docs/ai-evaluation-dossier.json")
 SOURCE_PATHS = (
     Path("VERSION"),
     Path("README.md"),
+    Path("DISCLAIMER.md"),
     Path("AGENTS.md"),
     Path("CONTRIBUTING.md"),
     Path("SECURITY.md"),
@@ -49,7 +50,7 @@ BOUNDARY = (
     "planned export exists."
 )
 STEWARDSHIP_PATTERN = re.compile(
-    r"SEAG is currently maintained by [^\n]+? as a single-maintainer "
+    r"SEAG is currently maintained by [^\n]{1,80}? as a single-maintainer "
     r"project in public review\."
 )
 SUPPORT_BOUNDARY = (
@@ -57,6 +58,11 @@ SUPPORT_BOUNDARY = (
     "review deadline, or production-readiness claim."
 )
 SECURITY_STEWARDSHIP = "SEAG is a single-maintainer project."
+AI_DISCLOSURE = "SEAG is developed with AI assistance."
+AI_CORE_BOUNDARY = (
+    "The tested local validation and transformation path does not require an AI "
+    "service."
+)
 MATURITY_NAMES = {
     1: "Planned",
     2: "Surface-defined",
@@ -264,6 +270,15 @@ def require_security_stewardship(security: str) -> None:
         raise ValueError("SECURITY.md no longer contains the stewardship boundary")
 
 
+def require_ai_disclosure(readme: str, disclaimer: str) -> None:
+    normalized_readme = " ".join(readme.split())
+    normalized_disclaimer = " ".join(disclaimer.split())
+    if AI_DISCLOSURE not in normalized_readme or AI_DISCLOSURE not in normalized_disclaimer:
+        raise ValueError("README.md and DISCLAIMER.md must disclose AI assistance")
+    if AI_CORE_BOUNDARY not in normalized_disclaimer:
+        raise ValueError("DISCLAIMER.md no longer contains the optional-AI boundary")
+
+
 def standard_version(entry: dict[str, object]) -> str:
     versions = entry.get("versions")
     if isinstance(versions, list):
@@ -354,8 +369,11 @@ def render(root: Path = ROOT) -> dict[Path, bytes]:
         raise ValueError("source schema does not have a string $id")
     cap_table = capability_table(capabilities)
     std_table = standards_table(standards)
-    require_boundary((root / "README.md").read_text(encoding="utf-8"))
+    readme = (root / "README.md").read_text(encoding="utf-8")
+    disclaimer = (root / "DISCLAIMER.md").read_text(encoding="utf-8")
+    require_boundary(readme)
     require_security_stewardship((root / "SECURITY.md").read_text(encoding="utf-8"))
+    require_ai_disclosure(readme, disclaimer)
     deployable = [item for item in capabilities if item["level"] == 5]
     deployable_statement = (
         f"Level 5 capabilities in this assessment: {', '.join(str(item['id']) for item in deployable)}."
@@ -393,6 +411,11 @@ input files by SHA-256.
   Non-author in-project review alone is not independent external attestation.
 - Stewardship: single-maintainer project in public review. There is no community
   programme, support commitment, review deadline, or production-readiness claim.
+- Development transparency: SEAG is developed with AI assistance, while the
+  human maintainer remains responsible for accepted changes and project claims.
+  The tested local validation and transformation path does not require an AI
+  service. See `DISCLAIMER.md` for cost, resource, environmental, and
+  external-service limits.
 
 ## Reading aid
 
@@ -471,6 +494,7 @@ potentially lossy.
 | Non-author in-project review | {evidence_scope['nonauthor_in_project_review']}; `{evidence_scope['nonauthor_review_context']}` |
 | External consumer/adopter attestation | {evidence_scope['external_consumer_or_adopter_attestation']} |
 | Stewardship | Single-maintainer; public review; no support commitment or review SLA |
+| Development | AI-assisted; accepted changes remain under human-maintainer responsibility |
 | Evaluation status | Alpha aid; not a release or certification |
 
 {BOUNDARY}
@@ -480,6 +504,9 @@ and review authority. SEAG does not judge ontology quality, model or execute
 workflow behaviour, or claim interoperability beyond an exact tested profile.
 Project-controlled evidence and non-author in-project review alone do not
 become independent external attestation merely because they are reproducible.
+SEAG is developed with AI assistance, but the tested local validation and
+transformation path does not require an AI service. See `DISCLAIMER.md` for the
+resource, cost, environmental, and external-service boundaries.
 
 ## Bounded reading tracks
 
@@ -581,7 +608,8 @@ external sources.
 ## Security, licensing, and responsibility
 
 Read `SECURITY.md` before publishing a vulnerability. Read `docs/licensing.md`
-and per-file SPDX declarations before redistributing content. A DCO sign-off is
+and `DISCLAIMER.md` before using external AI or substantial computing resources.
+Read per-file SPDX declarations before redistributing content. A DCO sign-off is
 provenance and rights certification, not copyright assignment. Generated
 semantic views inherit relevant source licensing, access, privacy, and
 classification restrictions; a public SEAG tool does not make adopter content

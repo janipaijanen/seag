@@ -9,6 +9,9 @@ CI uses that release section as the future release-note source.
 
 ## Unreleased
 
+- Added explicit AI-development transparency and a separate notice covering
+  optional AI/service costs, computing resources, energy and environmental
+  effects, data handling, and the controlling licence boundaries.
 - Made the AI dossier distinguish project-controlled evidence, non-author
   in-project review, and absent external consumer/adopter attestation; surfaced
   the README and security-policy single-maintainer support boundary and

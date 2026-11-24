@@ -155,8 +155,38 @@ class EvaluationDossierTests(unittest.TestCase):
                 )
             )
         )
+        with self.assertRaisesRegex(ValueError, "canonical stewardship boundary"):
+            evaluation_dossier.require_boundary(
+                "\n".join(
+                    (
+                        evaluation_dossier.BOUNDARY,
+                        "SEAG is currently maintained by J. Example as a team in "
+                        "public review.",
+                        evaluation_dossier.SUPPORT_BOUNDARY,
+                    )
+                )
+            )
+        with self.assertRaisesRegex(ValueError, "canonical stewardship boundary"):
+            evaluation_dossier.require_boundary(
+                "\n".join(
+                    (
+                        evaluation_dossier.BOUNDARY,
+                        "SEAG is currently maintained by "
+                        + "X" * 81
+                        + " as a single-maintainer project in public review.",
+                        evaluation_dossier.SUPPORT_BOUNDARY,
+                    )
+                )
+            )
         with self.assertRaisesRegex(ValueError, "SECURITY.md"):
             evaluation_dossier.require_security_stewardship("# Security\n")
+        with self.assertRaisesRegex(ValueError, "disclose AI assistance"):
+            evaluation_dossier.require_ai_disclosure("# README\n", "# Disclaimer\n")
+        with self.assertRaisesRegex(ValueError, "optional-AI boundary"):
+            evaluation_dossier.require_ai_disclosure(
+                evaluation_dossier.AI_DISCLOSURE,
+                evaluation_dossier.AI_DISCLOSURE,
+            )
 
     def test_standards_table_input_fails_closed(self):
         with self.assertRaisesRegex(ValueError, "must be an object"):
@@ -209,6 +239,7 @@ class EvaluationDossierTests(unittest.TestCase):
             self.assertIn("No capability is Level 5 Deployable", text)
             self.assertIn("project controlled", text)
             self.assertIn("single-maintainer", text.lower())
+            self.assertIn("developed with AI assistance", text)
             self.assertNotIn("pilot is in progress", text)
 
     def test_check_binds_changed_source_into_the_manifest(self):
