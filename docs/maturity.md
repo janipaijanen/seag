@@ -19,7 +19,7 @@ AGF integration profile has been implemented. A future change in the upstream
 vocabulary requires an explicit SEAG review and version update; it does not
 silently change existing SEAG assessments.
 
-### AGF26 and Rediflow AGF are distinct
+### AGF26 and silver-birch AGF are distinct
 
 The adoption record above does not identify a verified public repository
 locator or retain the original AGF26 source bytes. The commit and path identify
@@ -28,13 +28,13 @@ identity, ancestry, or byte equivalence. SEAG therefore makes no broader AGF26
 compatibility claim beyond the two named vocabulary blocks incorporated under
 the recorded licensing authorization.
 
-Rediflow's operational governance uses AGF `3.0.0` at commit
-`4465ef99081f5530a9775dfc8dde1436033c6fe1` plus Rediflow-specific authority,
+silver-birch's operational governance uses AGF `3.0.0` at commit
+`4465ef99081f5530a9775dfc8dde1436033c6fe1` plus silver-birch-specific authority,
 CI, path, loader, mirror, capability, decision-record, and role conventions.
 That is not the AGF26 `1.9.0` adoption recorded here. The two sources may share
 history or terminology, but neither ancestry nor maturity-vocabulary
 equivalence has been verified. SEAG must not describe itself as compatible with
-Rediflow AGF, AGF 3.0, or AGF26 on the strength of this adoption.
+silver-birch AGF, AGF 3.0, or AGF26 on the strength of this adoption.
 
 Any later compatibility profile requires a separately versioned, pinned source
 locator; retained source bytes and licence provenance; a field-level mapping;
@@ -44,7 +44,7 @@ immutable references. It must preserve canonical SEAG semantics, demonstrate
 the expected rejection of workflow and execution fields, and list every loss.
 Agent roles, plans, coordination records, gates, delegations, and workflow
 execution remain unsupported by design. This experiment is not a prerequisite
-for the Rediflow pilot.
+for the silver-birch pilot.
 
 The copyright holder's limited CC-BY-4.0 authorization for the vocabulary and
 adapted text incorporated in SEAG is recorded in
@@ -165,6 +165,6 @@ it does not claim semantic truth, authenticated actor authority, complete
 Unicode/process detection, CmapTools desktop compatibility, or cross-engine
 equivalence. Level 5 requires the reviewed, tagged stable distribution.
 
-SEAG's problem framing is **Empirically informed** by Rediflow and SEAG's own
+SEAG's problem framing is **Empirically informed** by silver-birch and SEAG's own
 incubation. Claims that SEAG improves independent projects remain
 **Theoretical** until multiple independent adopters provide verifiable evidence.

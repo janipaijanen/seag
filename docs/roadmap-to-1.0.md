@@ -427,7 +427,7 @@ floor.
 
 AGF interoperability is also optional and evidence-gated. The attributed
 AGF26 maturity-vocabulary adoption is not an AGF compatibility profile and is
-not equivalent to Rediflow's operational AGF 3.0 overlay. Before SEAG names any
+not equivalent to silver-birch's operational AGF 3.0 overlay. Before SEAG names any
 AGF profile, it must have a verified normative locator and retained source
 bytes, a pinned field mapping, explicit loss semantics, native validation on
 both sides, and retained round-trip fixtures. The first experiment, if a pilot

@@ -11,7 +11,7 @@ how they relate, which rules govern them, and where implementation and
 verification evidence can be found. SEAG then validates that source and exports
 it into representation modes required by people, agents, and tools.
 
-SEAG does not define, curate, or publish the domain ontology of Rediflow or any
+SEAG does not define, curate, or publish the domain ontology of silver-birch or any
 other adopting project. Domain statements remain owned by the adopting project.
 SEAG does define its own domain-neutral meta-ontology: the kinds of semantic
 artifacts it can capture, how mappings and transformations are described, and
@@ -135,10 +135,10 @@ as SEAG proposition predicates. Conditional `requires` statements belong in a
 named semantic constraint or an external rule artifact with scope, evaluation
 time, outcome, and unknown-input behaviour.
 
-## Rediflow provenance
+## silver-birch provenance
 
-Rediflow is the originating use case and may be credited publicly. Its ontology,
-glossary, rules, product decisions, and evidence remain in Rediflow. They may be
+silver-birch is the codename of the originating use case; naming the project behind it publicly needs a separate, exact-destination decision by that project's owner. Its ontology,
+glossary, rules, product decisions, and evidence remain in silver-birch. They may be
 used privately to test SEAG against real complexity, but they are not SEAG
 framework content and are not copied into a SEAG release.
 
@@ -149,9 +149,9 @@ the source project remains authoritative and the fixture is not redistributed.
 
 ## Independence
 
-SEAG must not become a Rediflow subdirectory, ontology distribution,
+SEAG must not become a silver-birch subdirectory, ontology distribution,
 product-specific documentation set, AGF extension, Ponytail plugin, or
-communication-style package. Rediflow may consume SEAG and provide private
+communication-style package. silver-birch may consume SEAG and provide private
 conformance evidence for its evolution, while each project keeps its content,
 release cycle, governance, and repository.
 

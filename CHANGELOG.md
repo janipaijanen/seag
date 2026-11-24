@@ -41,7 +41,7 @@ byte-pinned end to end.
 
 ## 0.2.0-alpha.1
 
-Unsupported evaluation release for the Rediflow pilot and other controlled
+Unsupported evaluation release for the silver-birch pilot and other controlled
 experiments. It retains the 0.1 source contract while adding experimental
 canonical and semantic-review tooling. It does not satisfy the 0.2 adoption
 gate or establish a supported compatibility baseline.
@@ -59,9 +59,9 @@ placement here corrects the changelog attribution; it does not change alpha.1.
 - Replaced the hand-parsed YAML standards register with strict UTF-8 JSON and
   a closed, machine-checked top-level contract.
 
-- Added a Rediflow-owned, replayable pilot-evidence contract for immutable
+- Added a silver-birch-owned, replayable pilot-evidence contract for immutable
   corpora, expectations, run results, tool identity, and version-lift migration
-  exercises without placing Rediflow domain content in SEAG.
+  exercises without placing silver-birch domain content in SEAG.
 - Moved adopter schedules and product-governance decisions out of the release
   content while retaining a reusable public evaluation protocol.
 - Allowed unsigned hosting-platform merge commits only when their tree exactly
