@@ -21,6 +21,7 @@ software work performed by people and LLM agents.
 [Enterprise integration](docs/enterprise-integration.md) ·
 [Semantic diff](docs/semantic-diff.md) ·
 [Input validation](docs/input-validation.md) ·
+[AI evaluation dossier](docs/ai-evaluation-dossier.md) ·
 [Superseded alpha.1 silver-birch pilot plan](docs/pilots/silver-birch-0.2.0-alpha.1.md) ·
 [Maturity](docs/maturity.md) ·
 [Conformance](docs/conformance.md) ·
@@ -239,6 +240,8 @@ See [standards and conformance](docs/conformance.md) and the machine-readable
 
 ## Documentation
 
+- [AI evaluation dossier](docs/ai-evaluation-dossier.md) and
+  [compact AI context](docs/ai-evaluation-context.md)
 - [SEAG concepts for software engineers](docs/introduction-for-software-engineers.md)
 - [Project charter](docs/charter.md)
 - [0.1 roadmap](docs/roadmap-0.1.md)

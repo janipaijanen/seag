@@ -9,6 +9,9 @@ CI uses that release section as the future release-note source.
 
 ## Unreleased
 
+- Added deterministic compact and full AI evaluation aids, a digest-bound
+  machine manifest, and a stale-generation check without claiming independent
+  validation or embedding adopter evidence.
 - Separated fresh default-branch containment authorization from reproducible
   tag-bundle construction, with exact GitLab remote identity checking,
   fail-closed policy fetches, recorded observed commits, and negative tests.
