@@ -331,6 +331,7 @@ output=
 headers=
 bearer=false
 netrc=false
+accept=false
 url=
 while test "$#" -gt 0; do
   case "$1" in
@@ -340,6 +341,7 @@ while test "$#" -gt 0; do
       test "$option" = --dump-header && headers=$value
       test "$option" = --netrc-file && netrc=true
       case "$option:$value" in --header:@*) bearer=true ;; esac
+      case "$option:$value" in --header:Accept:*) accept=true ;; esac
       ;;
     --silent|--show-error|--get) shift ;;
     *) url=$1; shift ;;
@@ -384,6 +386,12 @@ case "$url" in
         challenge-extra-param)
           printf '%s\r\n' 'HTTP/1.1 401 Unauthorized' \
             'WWW-Authenticate: Bearer realm="https://gitlab.example/jwt/auth",service="container_registry",scope="repository:any:push"' > "$headers" ;;
+        challenge-exact-scope)
+          printf '%s\r\n' 'HTTP/1.1 401 Unauthorized' \
+            'WWW-Authenticate: Bearer realm="https://gitlab.example/jwt/auth",service="container_registry",scope="repository:seag/ci-toolchain:pull"' > "$headers" ;;
+        challenge-unknown-param)
+          printf '%s\r\n' 'HTTP/1.1 401 Unauthorized' \
+            'WWW-Authenticate: Bearer realm="https://gitlab.example/jwt/auth",service="container_registry",audience="other"' > "$headers" ;;
         challenge-malformed)
           printf '%s\r\n' 'HTTP/1.1 401 Unauthorized' \
             'WWW-Authenticate: Bearer realm="https://gitlab.example/jwt/auth",service' > "$headers" ;;
@@ -397,7 +405,13 @@ case "$url" in
     fi
     case "$SKOPEO_MODE" in
       exists) printf '%s' "$SKOPEO_RAW_MANIFEST" > "$output"; printf 200 ;;
-      missing) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN","message":"manifest unknown"}]}' > "$output"; printf 404 ;;
+      exists-other-representation)
+        if test "$accept" = true; then
+          printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN"}]}' > "$output"; printf 404
+        else
+          printf '%s' '{"schemaVersion":2,"mediaType":"application/vnd.docker.distribution.manifest.list.v2+json"}' > "$output"; printf 200
+        fi ;;
+      missing|challenge-exact-scope) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN","message":"manifest unknown"}]}' > "$output"; printf 404 ;;
       name-missing) printf '%s' '{"errors":[{"code":"NAME_UNKNOWN","message":"repository name not known"}]}' > "$output"; printf 404 ;;
       mixed|multiline) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN"},{"code":"DENIED"}]}' > "$output"; printf 404 ;;
       other-resource) printf '%s' '{"errors":[{"code":"BLOB_UNKNOWN"}]}' > "$output"; printf 404 ;;
@@ -458,6 +472,7 @@ esac
             self.assertIn("/v2/seag/ci-toolchain/manifests/candidate-test", curl_calls)
             self.assertIn("scope=repository:seag/ci-toolchain:pull", curl_calls)
             self.assertNotIn("pull,push", curl_calls)
+            self.assertNotIn("Accept:", curl_calls)
             self.assertEqual(3, PUBLISHER.read_text().count("ulimit -f 128"))
             self.assertEqual(
                 environment["SKOPEO_MANIFEST"],
@@ -469,6 +484,7 @@ esac
     def test_publisher_never_copies_on_exists_auth_or_network_result(self):
         for mode, diagnostic in (
             ("exists", "candidate destination already exists"),
+            ("exists-other-representation", "candidate destination already exists"),
             ("auth", "candidate absence could not be established"),
             ("network", "candidate absence could not be established"),
             ("server", "candidate absence could not be established"),
@@ -541,6 +557,7 @@ esac
             "challenge-duplicate-header",
             "challenge-duplicate-param",
             "challenge-extra-param",
+            "challenge-unknown-param",
             "challenge-malformed",
         ):
             with self.subTest(mode=mode), tempfile.TemporaryDirectory() as directory:
@@ -553,6 +570,19 @@ esac
                 self.assertIn("candidate absence could not be established", result.stderr)
                 self.assertFalse((root / "login-called").exists())
                 self.assertFalse((root / "copy-called").exists())
+
+    def test_publisher_accepts_exact_read_only_authentication_scope(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            environment = self.publisher_fixture(root, "challenge-exact-scope")
+            result = subprocess.run(
+                [str(PUBLISHER)], cwd=root, env=environment, capture_output=True, text=True
+            )
+            self.assertEqual(0, result.returncode, result.stderr)
+            self.assertTrue((root / "copy-called").is_file())
+            curl_calls = (root / "curl-arguments").read_text()
+            self.assertIn("scope=repository:seag/ci-toolchain:pull", curl_calls)
+            self.assertNotIn("pull,push", curl_calls)
 
     def test_publisher_never_sends_credentials_outside_ci_registry(self):
         with tempfile.TemporaryDirectory() as directory:

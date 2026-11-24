@@ -61,8 +61,7 @@ readonly bearer_header="$auth_dir/bearer-header"
 challenge_status="$(
   ulimit -f 128
   exec curl --silent --show-error --max-time 30 --max-redirs 0 \
-    --request GET --header 'Accept: application/vnd.oci.image.manifest.v1+json' \
-    --dump-header "$response_headers" --output "$response_body" \
+    --request GET --dump-header "$response_headers" --output "$response_body" \
     --write-out '%{http_code}' "$manifest_url"
 )" || {
     echo "candidate absence could not be established" >&2
@@ -76,7 +75,7 @@ test "$challenge_status" = 401 || {
   echo "candidate absence could not be established" >&2
   exit 1
 }
-challenge_values="$(python - "$response_headers" <<'PY'
+challenge_values="$(python - "$response_headers" "$repository" <<'PY'
 import re
 import sys
 
@@ -119,10 +118,17 @@ while position < len(text):
     position += 1
     if not text[position:].strip():
         raise ValueError("trailing authentication parameter separator")
-if set(params) != {"realm", "service"}:
+if not {"realm", "service"} <= set(params) or not set(params) <= {
+    "realm",
+    "service",
+    "scope",
+}:
     raise ValueError("unexpected authentication parameter set")
 if not params["realm"] or not re.fullmatch(r"[A-Za-z0-9._:/-]+", params["service"]):
     raise ValueError("invalid authentication parameter value")
+expected_scope = f"repository:{sys.argv[2]}:pull"
+if "scope" in params and params["scope"] != expected_scope:
+    raise ValueError("authentication scope does not match the read-only request")
 print(params["realm"])
 print(params["service"])
 PY
@@ -232,8 +238,7 @@ chmod 0600 "$bearer_header"
 manifest_status="$(
   ulimit -f 128
   exec curl --silent --show-error --max-time 30 --max-redirs 0 \
-    --request GET --header 'Accept: application/vnd.oci.image.manifest.v1+json' \
-    --header "@$bearer_header" --dump-header "$response_headers" \
+    --request GET --header "@$bearer_header" --dump-header "$response_headers" \
     --output "$response_body" --write-out '%{http_code}' "$manifest_url"
 )" || {
     echo "candidate absence could not be established" >&2
