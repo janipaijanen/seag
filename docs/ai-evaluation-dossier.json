@@ -1,0 +1,145 @@
+{
+  "schema": "seag/ai-evaluation-dossier/v1",
+  "status": "alpha-evaluation-aid",
+  "seag_version": "0.2.0-alpha.2",
+  "canonical_repository": "https://gitlab.com/janipaijanen/seag",
+  "source_commit_instruction": "record git rev-parse HEAD in the evaluation receipt",
+  "source_contract_schema": "https://gitlab.com/janipaijanen/seag/-/raw/v0.1.0/schema/source-0.1.schema.json",
+  "source_digest_algorithm": "sha256",
+  "sources": [
+    {
+      "path": "VERSION",
+      "sha256": "61ef2b46a805c87bf98104b373c5104049ff8dd5a172b25fce1840b9af19b407",
+      "size": 14
+    },
+    {
+      "path": "README.md",
+      "sha256": "1d52974b87bf69c7083b34bffd560a8f06fb8b9c116fff39c7a4780217a96e15",
+      "size": 14422
+    },
+    {
+      "path": "AGENTS.md",
+      "sha256": "b94d5628cf69dd1f7274182ad5689941d1008dc32447c5a8a9da6b8dcaf19c04",
+      "size": 3519
+    },
+    {
+      "path": "CONTRIBUTING.md",
+      "sha256": "677b975d20ff4cb8b6f86f3d666cd0af1368f4f0e45bf6ab61b4d25aca10af07",
+      "size": 7470
+    },
+    {
+      "path": "SECURITY.md",
+      "sha256": "59692161bfb0767068080ea5176af301639c43e6e7a396f36a244e42a835aac7",
+      "size": 2866
+    },
+    {
+      "path": "maturity.yaml",
+      "sha256": "7bea2457c6c2cad5b9c59e20d7912a77fbd68ff23bb90b7bd0c0f0c2e1cd0ad3",
+      "size": 3621
+    },
+    {
+      "path": "standards.json",
+      "sha256": "a95711d8e709a0ac8553c3f63f15271ffd9e8d376bd0a2d5509890976b699aa9",
+      "size": 4618
+    },
+    {
+      "path": "scripts/generate-evaluation-dossier.py",
+      "sha256": "cffc970b17ea666c581c5dceff854d6879401ada6dae2cbc0b9c4440f9e59c34",
+      "size": 20976
+    },
+    {
+      "path": "schema/source-0.1.schema.json",
+      "sha256": "c9d8509be594c1aa465ebadc562d6f2820994045eb762414d4844d2205d85835",
+      "size": 24675
+    },
+    {
+      "path": "docs/canonical-source.md",
+      "sha256": "e34c7efb06eb7de2265e714945edf2b4e97c66bf47c8307ce9ddc5fbfb77c1f1",
+      "size": 3131
+    },
+    {
+      "path": "docs/charter.md",
+      "sha256": "856497e22dffaa92e56937063633bbbcb1703766d8c7197efdafe1ba57130b0b",
+      "size": 8884
+    },
+    {
+      "path": "docs/compatibility.md",
+      "sha256": "04dc3f380bb325dc46db0652a75bebca2df0d11b2eebf5a24113d581a125112b",
+      "size": 5203
+    },
+    {
+      "path": "docs/conformance.md",
+      "sha256": "cb54ecc5356e62117fa61523e702a708ddf504a35750a6f3af84dcc70dec6d24",
+      "size": 12457
+    },
+    {
+      "path": "docs/cxl-profile.md",
+      "sha256": "8ec80cb60e3d7007ce770b92a49b3198e46e40243f10bfa15ffadceb606d34fd",
+      "size": 2936
+    },
+    {
+      "path": "docs/glossary-extraction.md",
+      "sha256": "1ff56fc4e702753ad6b97e348c560e5b99445091e8c22a69772654c1a1ac1778",
+      "size": 1703
+    },
+    {
+      "path": "docs/installation-and-upgrade.md",
+      "sha256": "b71835bc70a4279d817b9a1f3f213bf70d797bcce68f017938654e75823e9c66",
+      "size": 4981
+    },
+    {
+      "path": "docs/licensing.md",
+      "sha256": "09b4230ec56dd796745d5c76b3de1f1fd76c0e726e2ca65fd1a1a446dcfa17de",
+      "size": 2796
+    },
+    {
+      "path": "docs/maturity.md",
+      "sha256": "196f479660d76c93ed65f378bcaa9457d8a1d3b315a2e34283ce976b23da7e80",
+      "size": 8876
+    },
+    {
+      "path": "docs/semantic-diff.md",
+      "sha256": "413809fe752670f1bbe4558151f8598e7f061ce17a143440580fb497c3af8f30",
+      "size": 9502
+    },
+    {
+      "path": "docs/semantic-mappings.md",
+      "sha256": "f86916e9bd70082f2b8a46b51bf86b2a2bbd7c5429103ef5c99e243f34254e73",
+      "size": 2266
+    },
+    {
+      "path": "docs/source-contract-0.1.md",
+      "sha256": "d01cc60df37e067335c7ab2cda435f036498bd67bb02a78d9e2d0f7b894008b8",
+      "size": 7928
+    }
+  ],
+  "outputs": [
+    {
+      "path": "docs/ai-evaluation-context.md",
+      "sha256": "b540b5f9fdac7f165dc80a7a1bbd73ab05565b4a3a98de5a22b2b23a4ab396fb",
+      "size": 4475
+    },
+    {
+      "path": "docs/ai-evaluation-dossier.md",
+      "sha256": "1fff5a1fbbdeeaeebb65d71a2f6dafbfd3df552752ad3729ec835310aff18f99",
+      "size": 10566
+    }
+  ],
+  "compact_context_budget": {
+    "encoding": "UTF-8",
+    "maximum_bytes": 8000,
+    "actual_bytes": 4475,
+    "word_definition": "non-whitespace runs counted by Python regular expression \\S+",
+    "maximum_words": 1100,
+    "actual_words": 482
+  },
+  "verification_commands": [
+    "python3 scripts/generate-evaluation-dossier.py --check",
+    "python3 -m unittest discover -s tests -v"
+  ],
+  "limitations": [
+    "The manifest binds local bytes but does not authenticate the Git repository or external sources.",
+    "The dossier is an evaluation aid, not a certification, release, or semantic truth claim.",
+    "The full documentation corpus and adopter pilot results are not embedded."
+  ]
+}
