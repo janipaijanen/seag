@@ -44,8 +44,8 @@
     },
     {
       "path": "scripts/generate-evaluation-dossier.py",
-      "sha256": "bb6ad2d742bd510297ad0b7c1e70985bfe3d0692447c289f43cdac295c301307",
-      "size": 22532
+      "sha256": "70fa1cab404fd557a049cc40fd7eb6ffc1da92ebb7290f9bb0438c7701c3bb11",
+      "size": 25598
     },
     {
       "path": "schema/source-0.1.schema.json",
