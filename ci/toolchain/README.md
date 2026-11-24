@@ -78,12 +78,13 @@ the exact source commit in `TOOLCHAIN_PUBLISH_COMMIT`, and serializes all
 candidate publications. It uses a digest-pinned Skopeo 1.24.1 image and a
 `candidate-<commit>-<manifest-digest>` discovery tag. Before Skopeo login or
 copy, it queries the exact Registry v2 manifest resource with a bounded curl
-client without restricting the stored manifest representation, pins the
-authentication realm to this GitLab server, accepts an optional challenge
-scope only when it exactly names the locally derived repository and pull
-permission, and preserves the HTTP status and complete structured error body.
-It accepts absence only for HTTP 404 carrying a well-formed, duplicate-free
-JSON error document with exactly one `MANIFEST_UNKNOWN` or `NAME_UNKNOWN` code;
+client that declares support for GitLab's Docker and OCI single-image and
+image-index representations, pins the authentication realm to this GitLab
+server, accepts an optional challenge scope only when it exactly names the
+locally derived repository and pull permission, and preserves the HTTP status
+and complete structured error body. It accepts absence only for HTTP 404
+carrying a well-formed, duplicate-free JSON error document with exactly one
+`MANIFEST_UNKNOWN` or `NAME_UNKNOWN` code;
 authorization, rate, server, compound-error, redirect and malformed responses
 fail closed. It refuses any destination outside `CI_REGISTRY` before sending a
 credential. The lookup requests a pull-only bearer token; the later Skopeo

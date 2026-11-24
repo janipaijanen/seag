@@ -331,7 +331,7 @@ output=
 headers=
 bearer=false
 netrc=false
-accept=false
+accept=
 url=
 while test "$#" -gt 0; do
   case "$1" in
@@ -341,7 +341,7 @@ while test "$#" -gt 0; do
       test "$option" = --dump-header && headers=$value
       test "$option" = --netrc-file && netrc=true
       case "$option:$value" in --header:@*) bearer=true ;; esac
-      case "$option:$value" in --header:Accept:*) accept=true ;; esac
+      case "$option:$value" in --header:Accept:*) accept=${value#Accept: } ;; esac
       ;;
     --silent|--show-error|--get) shift ;;
     *) url=$1; shift ;;
@@ -406,11 +406,12 @@ case "$url" in
     case "$SKOPEO_MODE" in
       exists) printf '%s' "$SKOPEO_RAW_MANIFEST" > "$output"; printf 200 ;;
       exists-other-representation)
-        if test "$accept" = true; then
-          printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN"}]}' > "$output"; printf 404
-        else
+        case ",$accept," in
+          *application/vnd.docker.distribution.manifest.list.v2+json*)
           printf '%s' '{"schemaVersion":2,"mediaType":"application/vnd.docker.distribution.manifest.list.v2+json"}' > "$output"; printf 200
-        fi ;;
+            ;;
+          *) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN"}]}' > "$output"; printf 404 ;;
+        esac ;;
       missing|challenge-exact-scope) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN","message":"manifest unknown"}]}' > "$output"; printf 404 ;;
       name-missing) printf '%s' '{"errors":[{"code":"NAME_UNKNOWN","message":"repository name not known"}]}' > "$output"; printf 404 ;;
       mixed|multiline) printf '%s' '{"errors":[{"code":"MANIFEST_UNKNOWN"},{"code":"DENIED"}]}' > "$output"; printf 404 ;;
@@ -472,7 +473,13 @@ esac
             self.assertIn("/v2/seag/ci-toolchain/manifests/candidate-test", curl_calls)
             self.assertIn("scope=repository:seag/ci-toolchain:pull", curl_calls)
             self.assertNotIn("pull,push", curl_calls)
-            self.assertNotIn("Accept:", curl_calls)
+            for media_type in (
+                "application/vnd.oci.image.manifest.v1+json",
+                "application/vnd.oci.image.index.v1+json",
+                "application/vnd.docker.distribution.manifest.v2+json",
+                "application/vnd.docker.distribution.manifest.list.v2+json",
+            ):
+                self.assertIn(media_type, curl_calls)
             self.assertEqual(3, PUBLISHER.read_text().count("ulimit -f 128"))
             self.assertEqual(
                 environment["SKOPEO_MANIFEST"],
@@ -481,7 +488,7 @@ esac
                 .strip(),
             )
 
-    def test_publisher_never_copies_on_exists_auth_or_network_result(self):
+    def test_publisher_never_copies_on_exists_or_inconclusive_result(self):
         for mode, diagnostic in (
             ("exists", "candidate destination already exists"),
             ("exists-other-representation", "candidate destination already exists"),

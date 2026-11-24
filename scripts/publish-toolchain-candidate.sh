@@ -51,6 +51,7 @@ case "$repository:$tag" in
 esac
 readonly repository tag
 readonly manifest_url="https://$CI_REGISTRY/v2/$repository/manifests/$tag"
+readonly manifest_accept='Accept: application/vnd.oci.image.manifest.v1+json, application/vnd.oci.image.index.v1+json, application/vnd.docker.distribution.manifest.v2+json, application/vnd.docker.distribution.manifest.list.v2+json'
 readonly response_headers="$auth_dir/response-headers"
 readonly response_body="$auth_dir/response-body"
 readonly token_body="$auth_dir/token-body"
@@ -61,7 +62,8 @@ readonly bearer_header="$auth_dir/bearer-header"
 challenge_status="$(
   ulimit -f 128
   exec curl --silent --show-error --max-time 30 --max-redirs 0 \
-    --request GET --dump-header "$response_headers" --output "$response_body" \
+    --request GET --header "$manifest_accept" \
+    --dump-header "$response_headers" --output "$response_body" \
     --write-out '%{http_code}' "$manifest_url"
 )" || {
     echo "candidate absence could not be established" >&2
@@ -238,8 +240,9 @@ chmod 0600 "$bearer_header"
 manifest_status="$(
   ulimit -f 128
   exec curl --silent --show-error --max-time 30 --max-redirs 0 \
-    --request GET --header "@$bearer_header" --dump-header "$response_headers" \
-    --output "$response_body" --write-out '%{http_code}' "$manifest_url"
+    --request GET --header "$manifest_accept" --header "@$bearer_header" \
+    --dump-header "$response_headers" --output "$response_body" \
+    --write-out '%{http_code}' "$manifest_url"
 )" || {
     echo "candidate absence could not be established" >&2
     exit 1
