@@ -44,6 +44,26 @@ SEAG is developed with AI assistance, but the tested local validation and
 transformation path does not require an AI service. See `DISCLAIMER.md` for the
 resource, cost, environmental, and external-service boundaries.
 
+## Evidence states and no-invention rule
+
+- **Confirmed:** the supplied dossier or a directly verified cited source supports
+  the statement.
+- **Explicitly absent:** an authoritative cited source expressly establishes
+  absence.
+- **Unknown/not covered:** the supplied material does not establish either
+  presence or absence.
+
+An evaluator, AI agent, or other reader **MUST NOT** invent facts,
+capabilities, evidence, events, intentions, or conclusions. Silence **MUST NOT**
+be converted into absence. Missing information **MUST** be reported as unknown,
+not covered, or not evidenced by the supplied material. Inference **MUST** be
+labelled as inference, and external information **MUST** be separated from
+dossier-derived conclusions with its own source and verification status.
+
+For example, when this dossier embeds no pilot result, report “No pilot result
+is evidenced by the supplied dossier.” Do not report “No pilot exists.”
+Unpublished, not supplied, not verified, and nonexistent are distinct states.
+
 ## Bounded reading tracks
 
 ### Compact orientation
@@ -94,6 +114,8 @@ below govern; no aggregate project score is implied.
 | `semantic-validator` | 4 Validated | tests:54-validator-tests-passed<br>tests:82-total-tests-passed<br>+2 in `maturity.yaml` | None recorded |
 | `glossary-extraction` | 4 Validated | test:test_transforms.TransformTest.test_glossary_retains_identity_language_and_source_provenance<br>fixture:fixtures/expected/glossary-en.json<br>+1 in `maturity.yaml` | None recorded |
 | `cmaptools-cxl-exchange` | 4 Validated | test:test_transforms.TransformTest.test_cxl_round_trip_preserves_bounded_graph<br>fixture:fixtures/expected/concept-map.cxl<br>+1 in `maturity.yaml` | CmapTools desktop import is untested and unclaimed |
+| `canonical-source-rendering` | 3 Instantiated | document:docs/canonical-source.md<br>test:test_canonical.CanonicalSourceTest.test_written_copy_validates_and_has_no_semantic_change<br>+2 in `maturity.yaml` | Experimental 0.2 alpha contract; not a supported compatibility baseline; Canonical bytes identify a new exact source snapshot even when semantics do not change |
+| `semantic-diff-and-conflict-detection` | 3 Instantiated | document:docs/semantic-diff.md<br>test:test_semantic_diff.SemanticDiffTest.test_change_taxonomy_and_order_are_stable<br>+2 in `maturity.yaml` | Experimental 0.2 alpha result contract; not a supported compatibility baseline; Does not decide correctness or semantic equivalence and has no corpus or output size limits |
 | `ponytail-contributor-discipline` | 3 Instantiated | source:https://github.com/DietrichGebert/ponytail/blob/7801d061243d7b753bad0e0b3c057cd250b11755/skills/ponytail/SKILL.md<br>document:docs/semantic-minimality.md<br>+4 in `maturity.yaml` | None recorded |
 | `optional-agf-caveman-profiles` | 1 Planned |  | None recorded |
 
@@ -106,21 +128,21 @@ capability automatically.
 
 | Identifier | Class | Pinned version | Claim |
 |---|---|---|---|
-| `rfc2119-rfc8174` | core | RFC 2119, RFC 8174 | none recorded |
-| `bcp47` | core | RFC 5646, RFC 4647 | none recorded |
-| `uri-iri` | core | RFC 3986, RFC 3987 | none recorded |
-| `ip-address-literals` | core | RFC 3986, RFC 4291 | none recorded |
+| `rfc2119-rfc8174` | core | RFC 2119, RFC 8174 | no additional compatibility claim |
+| `bcp47` | core | RFC 5646, RFC 4647 | no additional compatibility claim |
+| `uri-iri` | core | RFC 3986, RFC 3987 | no additional compatibility claim |
+| `ip-address-literals` | core | RFC 3986, RFC 4291 | no additional compatibility claim |
 | `internet-port-range` | core | RFC 6335 | numeric-range-only |
-| `uuid` | conditional | RFC 9562 | none recorded |
-| `json` | core | RFC 8259 | none recorded |
-| `json-schema` | core | Draft 2020-12 | none recorded |
-| `json-pointer` | core | RFC 6901 | none recorded |
-| `timestamp` | core | RFC 3339 | none recorded |
-| `unicode-normalization` | core | Unicode Standard, UAX #15 | none recorded |
-| `json-canonicalization` | conditional | RFC 8785 | none recorded |
+| `uuid` | conditional | RFC 9562 | no additional compatibility claim |
+| `json` | core | RFC 8259 | no additional compatibility claim |
+| `json-schema` | core | Draft 2020-12 | no additional compatibility claim |
+| `json-pointer` | core | RFC 6901 | no additional compatibility claim |
+| `timestamp` | core | RFC 3339 | no additional compatibility claim |
+| `unicode-normalization` | core | Unicode Standard, UAX #15 | no additional compatibility claim |
+| `json-canonicalization` | conditional | RFC 8785 | no additional compatibility claim |
 | `w3c-prov` | mapping | PROV-DM, PROV-O 2013 Recommendation | mapping-required |
 | `w3c-skos` | mapping | SKOS Reference 2009 Recommendation | mapping-required |
-| `spdx` | publication-gate | SPDX Specification 3.0.1 | none recorded |
+| `spdx` | publication-gate | SPDX Specification 3.0.1 | no additional compatibility claim |
 | `cmaptools-cxl` | export-profile | IHMC public cmap.xsd sha256:aa8ffda7d51ce4864e76186a349240cb6f01e086fab9cbc34e9c816bd778802a | compatible-parser-round-trip |
 | `semantic-web-exports` | export-profile | pending-profile | not-yet-conformant |
 

@@ -34,6 +34,26 @@ input files by SHA-256.
   service. See `DISCLAIMER.md` for cost, resource, environmental, and
   external-service limits.
 
+## Evidence states and no-invention rule
+
+- **Confirmed:** the supplied dossier or a directly verified cited source supports
+  the statement.
+- **Explicitly absent:** an authoritative cited source expressly establishes
+  absence.
+- **Unknown/not covered:** the supplied material does not establish either
+  presence or absence.
+
+An evaluator, AI agent, or other reader **MUST NOT** invent facts,
+capabilities, evidence, events, intentions, or conclusions. Silence **MUST NOT**
+be converted into absence. Missing information **MUST** be reported as unknown,
+not covered, or not evidenced by the supplied material. Inference **MUST** be
+labelled as inference, and external information **MUST** be separated from
+dossier-derived conclusions with its own source and verification status.
+
+For example, when this dossier embeds no pilot result, report “No pilot result
+is evidenced by the supplied dossier.” Do not report “No pilot exists.”
+Unpublished, not supplied, not verified, and nonexistent are distinct states.
+
 ## Reading aid
 
 - **Adopt for evaluation:** only when text-first, provenance-preserving semantic
@@ -59,6 +79,8 @@ These are maturity-linked questions, not SEAG recommendations.
 | `semantic-validator` | 4 Validated | tests:54-validator-tests-passed<br>tests:82-total-tests-passed<br>+2 in `maturity.yaml` | None recorded |
 | `glossary-extraction` | 4 Validated | test:test_transforms.TransformTest.test_glossary_retains_identity_language_and_source_provenance<br>fixture:fixtures/expected/glossary-en.json<br>+1 in `maturity.yaml` | None recorded |
 | `cmaptools-cxl-exchange` | 4 Validated | test:test_transforms.TransformTest.test_cxl_round_trip_preserves_bounded_graph<br>fixture:fixtures/expected/concept-map.cxl<br>+1 in `maturity.yaml` | CmapTools desktop import is untested and unclaimed |
+| `canonical-source-rendering` | 3 Instantiated | document:docs/canonical-source.md<br>test:test_canonical.CanonicalSourceTest.test_written_copy_validates_and_has_no_semantic_change<br>+2 in `maturity.yaml` | Experimental 0.2 alpha contract; not a supported compatibility baseline; Canonical bytes identify a new exact source snapshot even when semantics do not change |
+| `semantic-diff-and-conflict-detection` | 3 Instantiated | document:docs/semantic-diff.md<br>test:test_semantic_diff.SemanticDiffTest.test_change_taxonomy_and_order_are_stable<br>+2 in `maturity.yaml` | Experimental 0.2 alpha result contract; not a supported compatibility baseline; Does not decide correctness or semantic equivalence and has no corpus or output size limits |
 | `ponytail-contributor-discipline` | 3 Instantiated | source:https://github.com/DietrichGebert/ponytail/blob/7801d061243d7b753bad0e0b3c057cd250b11755/skills/ponytail/SKILL.md<br>document:docs/semantic-minimality.md<br>+4 in `maturity.yaml` | None recorded |
 | `optional-agf-caveman-profiles` | 1 Planned |  | None recorded |
 

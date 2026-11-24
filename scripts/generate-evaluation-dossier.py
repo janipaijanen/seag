@@ -63,6 +63,23 @@ AI_CORE_BOUNDARY = (
     "The tested local validation and transformation path does not require an AI "
     "service."
 )
+EVIDENCE_STATE_RULE = """- **Confirmed:** the supplied dossier or a directly verified cited source supports
+  the statement.
+- **Explicitly absent:** an authoritative cited source expressly establishes
+  absence.
+- **Unknown/not covered:** the supplied material does not establish either
+  presence or absence.
+
+An evaluator, AI agent, or other reader **MUST NOT** invent facts,
+capabilities, evidence, events, intentions, or conclusions. Silence **MUST NOT**
+be converted into absence. Missing information **MUST** be reported as unknown,
+not covered, or not evidenced by the supplied material. Inference **MUST** be
+labelled as inference, and external information **MUST** be separated from
+dossier-derived conclusions with its own source and verification status.
+
+For example, when this dossier embeds no pilot result, report “No pilot result
+is evidenced by the supplied dossier.” Do not report “No pilot exists.”
+Unpublished, not supplied, not verified, and nonexistent are distinct states."""
 MATURITY_NAMES = {
     1: "Planned",
     2: "Surface-defined",
@@ -343,7 +360,7 @@ def standards_table(standards: list[dict[str, object]]) -> str:
         rows.append(
             f"| `{markdown_cell(entry['id'])}` | {markdown_cell(entry['class'])} | "
             f"{markdown_cell(standard_version(entry))} | "
-            f"{markdown_cell(entry.get('claim', 'none recorded'))} |"
+            f"{markdown_cell(entry.get('claim', 'no additional compatibility claim'))} |"
         )
     return "\n".join(rows)
 
@@ -416,6 +433,10 @@ input files by SHA-256.
   The tested local validation and transformation path does not require an AI
   service. See `DISCLAIMER.md` for cost, resource, environmental, and
   external-service limits.
+
+## Evidence states and no-invention rule
+
+{EVIDENCE_STATE_RULE}
 
 ## Reading aid
 
@@ -507,6 +528,10 @@ become independent external attestation merely because they are reproducible.
 SEAG is developed with AI assistance, but the tested local validation and
 transformation path does not require an AI service. See `DISCLAIMER.md` for the
 resource, cost, environmental, and external-service boundaries.
+
+## Evidence states and no-invention rule
+
+{EVIDENCE_STATE_RULE}
 
 ## Bounded reading tracks
 

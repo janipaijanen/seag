@@ -57,6 +57,44 @@ class EvaluationDossierTests(unittest.TestCase):
         for standard in register["standards"]:
             self.assertIn(f"`{standard['id']}`", dossier)
 
+    def test_dossier_lists_shipped_alpha_review_capabilities(self):
+        outputs = evaluation_dossier.render()
+        for path in (evaluation_dossier.CONTEXT, evaluation_dossier.DOSSIER):
+            text = outputs[path].decode("utf-8")
+            self.assertIn("`canonical-source-rendering`", text)
+            self.assertIn("`semantic-diff-and-conflict-detection`", text)
+            self.assertIn("Experimental 0.2 alpha", text)
+
+        maturity = (ROOT / "maturity.yaml").read_text(encoding="utf-8")
+        capabilities = {
+            item["id"]: item for item in evaluation_dossier.parse_capabilities(maturity)
+        }
+        self.assertEqual(capabilities["canonical-source-rendering"]["level"], 3)
+        self.assertEqual(
+            capabilities["semantic-diff-and-conflict-detection"]["level"], 3
+        )
+
+    def test_missing_standard_claim_is_not_rendered_as_missing_evidence(self):
+        table = evaluation_dossier.standards_table(
+            [{"id": "probe", "class": "core", "version": "1"}]
+        )
+        self.assertIn("no additional compatibility claim", table)
+        self.assertNotIn("none recorded", table)
+
+    def test_both_dossier_views_forbid_invention_and_argument_from_silence(self):
+        outputs = evaluation_dossier.render()
+        for path in (evaluation_dossier.CONTEXT, evaluation_dossier.DOSSIER):
+            text = outputs[path].decode("utf-8")
+            self.assertIn("## Evidence states and no-invention rule", text)
+            self.assertIn("**MUST NOT** invent facts", text)
+            self.assertIn("Silence **MUST NOT**\nbe converted into absence", text)
+            self.assertIn("No pilot result\nis evidenced by the supplied dossier", text)
+            self.assertIn("Do not report “No pilot exists.”", text)
+            self.assertIn(
+                "Unpublished, not supplied, not verified, and nonexistent are distinct states",
+                text,
+            )
+
     def test_check_rejects_changed_output(self):
         outputs = evaluation_dossier.render()
         with tempfile.TemporaryDirectory() as temporary:
