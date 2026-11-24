@@ -75,8 +75,11 @@ checksum manifest, OCI member listing, Linux/amd64 descriptor, and manifest and
 config blob digests without registry credentials. The publisher receives the
 verified archive only after that admission, requires the operator to repeat
 the exact source commit in `TOOLCHAIN_PUBLISH_COMMIT`, and serializes all
-candidate publications. It uses a digest-pinned Skopeo 1.24.1 image and a
-`candidate-<commit>-<manifest-digest>` discovery tag. Before Skopeo login or
+candidate publications. It uses a digest-pinned official Containers
+all-in-one image and a `candidate-<commit>-<manifest-digest>` discovery tag.
+The pinned publisher runtime currently proves Python 3.15.2 and Skopeo 1.25.1;
+the real-image contract job retains those observed versions instead of
+treating this prose as runtime evidence. Before Skopeo login or
 copy, it queries the exact Registry v2 manifest resource with a bounded curl
 client that declares support for GitLab's Docker and OCI single-image and
 image-index representations, pins the authentication realm to this GitLab
