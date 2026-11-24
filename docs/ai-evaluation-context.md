@@ -25,7 +25,7 @@ input files by SHA-256.
   in-project review is present with
   context `ai-agents-in-same-project`; external consumer or
   adopter attestation is absent.
-  Non-author in-project review is not independent external attestation.
+  Non-author in-project review alone is not independent external attestation.
 - Stewardship: single-maintainer project in public review. There is no community
   programme, support commitment, review deadline, or production-readiness claim.
 
