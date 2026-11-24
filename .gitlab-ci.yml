@@ -56,7 +56,7 @@ toolchain-context-proof:
     name: python:3.14.8-alpine@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d750607710cc56da3bc72
   before_script: []
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup|publisher|publisher-runtime)$/'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup|publisher|publisher-runtime|runner-routing)$/'
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
   script:
     - test "$(cat ci/toolchain/SOURCE_DATE_EPOCH)" = "1795432630"
@@ -70,6 +70,9 @@ toolchain-context-proof:
 
 .toolchain-build-proof:
   stage: validate
+  # Rootless BuildKit needs the dedicated runner whose executor permits the
+  # subordinate UID/GID mapping; ordinary untagged Docker runners do not.
+  tags: [dind]
   image:
     name: moby/buildkit@sha256:7d02292556e66feea6d2d89b7ec143503b57e4f59a4efc6b7ece8547e4d3e5be
     entrypoint: [""]
@@ -78,7 +81,7 @@ toolchain-context-proof:
     - job: toolchain-context-proof
       artifacts: true
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup|publisher|publisher-runtime)$/'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup|publisher|publisher-runtime|runner-routing)$/'
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
   script:
     - test -z "${DOCKER_AUTH_CONFIG:-}"
@@ -146,7 +149,7 @@ toolchain-reproducibility-proof:
     - job: toolchain-build-proof-b
       artifacts: true
   rules:
-    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup|publisher|publisher-runtime)$/'
+    - if: '$CI_PIPELINE_SOURCE == "merge_request_event" && $CI_MERGE_REQUEST_SOURCE_BRANCH_NAME =~ /^ci\/toolchain-(build-proof|boundary-followup|publisher|publisher-runtime|runner-routing)$/'
     - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
   script:
     - (cd toolchain-proof-a && sha256sum -c SHA256SUMS)
