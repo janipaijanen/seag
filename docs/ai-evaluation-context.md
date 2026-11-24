@@ -21,6 +21,13 @@ input files by SHA-256.
   oracle, an agent runtime, or a hosted collaboration service.
 - Passing validation proves only the bounded structural and semantic checks
   implemented by that exact revision.
+- Evidence control: project controlled. Non-author
+  in-project review is present with
+  context `ai-agents-in-same-project`; external consumer or
+  adopter attestation is absent.
+  In-project AI-agent review is not independent external attestation.
+- Stewardship: single-maintainer project in public review. There is no community
+  programme, support commitment, review deadline, or production-readiness claim.
 
 ## Reading aid
 
@@ -66,6 +73,11 @@ uv run --locked --no-sync python scripts/check-conformance.py
 uv run --locked --no-sync python -m unittest discover -s tests -v
 git diff --check
 ```
+
+The dossier `--check` command regenerates the outputs in memory and verifies
+the committed Markdown and manifest bytes against every locally bound input.
+The exact runtime pins are reproducibility inputs; the digest-pinned toolchain
+is the intended low-friction route once its publication gate is complete.
 
 Report the version, commit, files read, commands actually run, strengths,
 source-cited gaps, proposals, and anything not verified. Use the

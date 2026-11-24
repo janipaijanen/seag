@@ -24,6 +24,12 @@ evidence_status:
   problem_framing: empirically-informed
   independent_project_benefit: theoretical
 
+evaluation_evidence_scope:
+  control: project-controlled
+  nonauthor_in_project_review: present
+  nonauthor_review_context: ai-agents-in-same-project
+  external_consumer_or_adopter_attestation: absent
+
 capabilities:
   framework-boundaries:
     level: 4

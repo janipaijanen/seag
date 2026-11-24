@@ -48,6 +48,14 @@ BOUNDARY = (
     "semantic content is true, actor identities are authenticated, or every "
     "planned export exists."
 )
+STEWARDSHIP = (
+    "SEAG is currently maintained by Jani Päijänen as a single-maintainer "
+    "project in public review."
+)
+SUPPORT_BOUNDARY = (
+    "These procedures do not create a community programme, support commitment, "
+    "review deadline, or production-readiness claim."
+)
 MATURITY_NAMES = {
     1: "Planned",
     2: "Surface-defined",
@@ -189,6 +197,55 @@ def parse_evidence_status(text: str) -> dict[str, str]:
     return result
 
 
+def parse_evaluation_evidence_scope(text: str) -> dict[str, str]:
+    if sum(line == "evaluation_evidence_scope:" for line in text.splitlines()) != 1:
+        raise ValueError(
+            "maturity.yaml must contain exactly one evaluation_evidence_scope block"
+        )
+    match = re.search(
+        r"(?m)^evaluation_evidence_scope:\n"
+        r"  control: ([a-z-]+)\n"
+        r"  nonauthor_in_project_review: ([a-z-]+)\n"
+        r"  nonauthor_review_context: ([a-z-]+)\n"
+        r"  external_consumer_or_adopter_attestation: ([a-z-]+)\n",
+        text,
+    )
+    if not match:
+        raise ValueError("maturity.yaml has no supported evaluation_evidence_scope block")
+    result = {
+        "control": match.group(1),
+        "nonauthor_in_project_review": match.group(2),
+        "nonauthor_review_context": match.group(3),
+        "external_consumer_or_adopter_attestation": match.group(4),
+    }
+    if result["control"] not in {
+        "project-controlled",
+        "mixed-control",
+        "external-controlled",
+    }:
+        raise ValueError("maturity.yaml evaluation evidence control is unknown")
+    for field in (
+        "nonauthor_in_project_review",
+        "external_consumer_or_adopter_attestation",
+    ):
+        if result[field] not in {"present", "absent"}:
+            raise ValueError(f"maturity.yaml evaluation evidence {field} is unknown")
+    if result["nonauthor_review_context"] not in {
+        "none",
+        "human",
+        "ai-agents-in-same-project",
+        "mixed",
+    }:
+        raise ValueError("maturity.yaml nonauthor review context is unknown")
+    review_present = result["nonauthor_in_project_review"] == "present"
+    context_present = result["nonauthor_review_context"] != "none"
+    if review_present != context_present:
+        raise ValueError(
+            "maturity.yaml nonauthor review presence and context are inconsistent"
+        )
+    return result
+
+
 def require_boundary(readme: str) -> None:
     normalized = " ".join(
         line.removeprefix("> ").strip() for line in readme.splitlines()
@@ -196,6 +253,8 @@ def require_boundary(readme: str) -> None:
     normalized = " ".join(normalized.split())
     if BOUNDARY not in normalized:
         raise ValueError("README.md no longer contains the canonical evaluation boundary")
+    if STEWARDSHIP not in normalized or SUPPORT_BOUNDARY not in normalized:
+        raise ValueError("README.md no longer contains the canonical stewardship boundary")
 
 
 def standard_version(entry: dict[str, object]) -> str:
@@ -272,6 +331,7 @@ def render(root: Path = ROOT) -> dict[Path, bytes]:
     maturity = (root / "maturity.yaml").read_text(encoding="utf-8")
     capabilities = parse_capabilities(maturity)
     evidence_status = parse_evidence_status(maturity)
+    evidence_scope = parse_evaluation_evidence_scope(maturity)
     register = strict_json((root / "standards.json").read_bytes(), "standards.json")
     if not isinstance(register, dict):
         raise ValueError("standards.json does not have the expected register shape")
@@ -318,6 +378,13 @@ input files by SHA-256.
   oracle, an agent runtime, or a hosted collaboration service.
 - Passing validation proves only the bounded structural and semantic checks
   implemented by that exact revision.
+- Evidence control: {evidence_scope['control'].replace('-', ' ')}. Non-author
+  in-project review is {evidence_scope['nonauthor_in_project_review']} with
+  context `{evidence_scope['nonauthor_review_context']}`; external consumer or
+  adopter attestation is {evidence_scope['external_consumer_or_adopter_attestation']}.
+  In-project AI-agent review is not independent external attestation.
+- Stewardship: single-maintainer project in public review. There is no community
+  programme, support commitment, review deadline, or production-readiness claim.
 
 ## Reading aid
 
@@ -353,6 +420,11 @@ uv run --locked --no-sync python -m unittest discover -s tests -v
 git diff --check
 ```
 
+The dossier `--check` command regenerates the outputs in memory and verifies
+the committed Markdown and manifest bytes against every locally bound input.
+The exact runtime pins are reproducibility inputs; the digest-pinned toolchain
+is the intended low-friction route once its publication gate is complete.
+
 Report the version, commit, files read, commands actually run, strengths,
 source-cited gaps, proposals, and anything not verified. Use the
 [full dossier](ai-evaluation-dossier.md) before making standards,
@@ -387,6 +459,10 @@ potentially lossy.
 | Version file | `{version}` |
 | Source schema | `{schema['$id']}` |
 | Standards register | `{register['seag_standards_register']}` / `{register['status']}` |
+| Evidence control | {evidence_scope['control'].replace('-', ' ')} |
+| Non-author in-project review | {evidence_scope['nonauthor_in_project_review']}; `{evidence_scope['nonauthor_review_context']}` |
+| External consumer/adopter attestation | {evidence_scope['external_consumer_or_adopter_attestation']} |
+| Stewardship | Single-maintainer; public review; no support commitment or review SLA |
 | Evaluation status | Alpha aid; not a release or certification |
 
 {BOUNDARY}
@@ -394,6 +470,8 @@ potentially lossy.
 Adopters own their concepts, ontologies, product decisions, access controls,
 and review authority. SEAG does not judge ontology quality, model or execute
 workflow behaviour, or claim interoperability beyond an exact tested profile.
+Project-controlled evidence and non-author in-project AI-agent review do not
+become independent external attestation merely because they are reproducible.
 
 ## Bounded reading tracks
 
@@ -548,6 +626,12 @@ path named by this dossier and verify it directly.
         "source_commit_instruction": "record git rev-parse HEAD in the evaluation receipt",
         "source_contract_schema": schema["$id"],
         "source_digest_algorithm": "sha256",
+        "evaluation_evidence_scope": evidence_scope,
+        "stewardship": {
+            "maintainer_model": "single-maintainer",
+            "status": "public-review",
+            "support_commitment": "none",
+        },
         "sources": sources,
         "outputs": [
             {"path": CONTEXT.as_posix(), "sha256": sha256(context_bytes), "size": len(context_bytes)},

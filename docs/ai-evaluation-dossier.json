@@ -6,6 +6,17 @@
   "source_commit_instruction": "record git rev-parse HEAD in the evaluation receipt",
   "source_contract_schema": "https://gitlab.com/janipaijanen/seag/-/raw/v0.1.0/schema/source-0.1.schema.json",
   "source_digest_algorithm": "sha256",
+  "evaluation_evidence_scope": {
+    "control": "project-controlled",
+    "nonauthor_in_project_review": "present",
+    "nonauthor_review_context": "ai-agents-in-same-project",
+    "external_consumer_or_adopter_attestation": "absent"
+  },
+  "stewardship": {
+    "maintainer_model": "single-maintainer",
+    "status": "public-review",
+    "support_commitment": "none"
+  },
   "sources": [
     {
       "path": "VERSION",
@@ -34,8 +45,8 @@
     },
     {
       "path": "maturity.yaml",
-      "sha256": "b69334e853a7d1110db5ad3ca1b7eea7575635c7f105e1d12ea5f8061fca2f49",
-      "size": 3622
+      "sha256": "a6d039ccefb960ce9f14a3bab554479177c7f71f667e8ca803967ebebb32b8d9",
+      "size": 3824
     },
     {
       "path": "standards.json",
@@ -44,8 +55,8 @@
     },
     {
       "path": "scripts/generate-evaluation-dossier.py",
-      "sha256": "70fa1cab404fd557a049cc40fd7eb6ffc1da92ebb7290f9bb0438c7701c3bb11",
-      "size": 25598
+      "sha256": "35a40ad13af7280b436719644f2d32c6dcdf5f49e9675c1ebb846fce5384c28b",
+      "size": 29662
     },
     {
       "path": "schema/source-0.1.schema.json",
@@ -116,22 +127,22 @@
   "outputs": [
     {
       "path": "docs/ai-evaluation-context.md",
-      "sha256": "cd16d63966b259fd6445b45a86c8b2fd416d622030d010d84f859801432495ec",
-      "size": 4620
+      "sha256": "a80f604b7874ca9a5c9de11f96548a9e0e590df2dee5d0adbea3e8e6274fc02a",
+      "size": 5340
     },
     {
       "path": "docs/ai-evaluation-dossier.md",
-      "sha256": "21be6f31ffdf717da22595d095631c9f686b924b708ddcfabff5da158ef60fe4",
-      "size": 10468
+      "sha256": "64d4152148956dd8b5ae6a3b889ce42ef84b4b430d3a6b40e0c38fd459569953",
+      "size": 10876
     }
   ],
   "compact_context_budget": {
     "encoding": "UTF-8",
     "maximum_bytes": 8000,
-    "actual_bytes": 4620,
+    "actual_bytes": 5340,
     "word_definition": "non-whitespace runs counted by Python regular expression \\S+",
     "maximum_words": 1100,
-    "actual_words": 504
+    "actual_words": 594
   },
   "verification_commands": [
     "python3 scripts/generate-evaluation-dossier.py --check",
