@@ -116,3 +116,15 @@ phase necessarily runs with ordinary CI job authority. Its local
 clone/tag/bundle phase is separately scrubbed to an exact `HOME`, `LC_ALL`, and
 `PATH` allowlist; the job does not claim that credentials are absent from the
 authorization phase.
+
+Current-development H6 is now closed for this bounded CI-toolchain adoption.
+MR !34 merged the consumer change at commit
+`3320eb1d242b59a7efbf42112af0dc7f662572ff`; protected-main pipeline
+`3114095373` passed every automatic job, including the non-publishing
+tag-path rehearsal in job `18362786962`, and a fresh post-pipeline review found
+no P1, P2, or P3 findings. The durable identities and review boundary are in
+[`reviews/toolchain-adoption-3320eb1d.json`](reviews/toolchain-adoption-3320eb1d.json).
+This closes only the accepted digest's current-development protected-main CI
+adoption gate. It does not rewrite alpha.2's immutable limitation, establish a
+SEAG release, approve publication, claim fully offline CI, or authorize the
+manual publisher.
