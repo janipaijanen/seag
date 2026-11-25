@@ -20,15 +20,16 @@ stages:
 
 variables:
   GIT_DEPTH: "0"
-  UV_VERSION: "0.12.9"
   UV_NO_PROGRESS: "1"
 
 default:
-  # CPython 3.14.8 / Alpine 3.24 multi-architecture OCI index, pinned by digest.
-  image: python:3.14.8-alpine@sha256:f6a589d43c42b9e7f7dc67a12d37132491f362859a5d750607710cc56da3bc72
+  # Accepted Linux/amd64 SEAG CI toolchain candidate, selected only by its
+  # fresh-reviewed manifest digest. The discovery tag is not authority.
+  image: registry.gitlab.com/janipaijanen/seag/ci-toolchain@sha256:b427405058274309921ce6cf8e8e0cedc278bba492da46152c208222eb55a632
   before_script:
-    - apk add --no-cache git=2.54.1-r0
-    - python -m pip install --no-cache-dir "uv==$UV_VERSION"
+    - test "$(python --version)" = "Python 3.14.8"
+    - test "$(git --version)" = "git version 2.54.1"
+    - test "$(uv --version)" = "uv 0.12.9 (x86_64-unknown-linux-musl)"
     - python scripts/check-dependency-policy.py
     - uv lock --check
     - uv sync --locked --only-group conformance
@@ -219,6 +220,38 @@ tag-authorization:
     - if: '$CI_COMMIT_TAG'
   script:
     - uv run --locked --no-sync python scripts/check-tag-containment.py --commit "$CI_COMMIT_SHA" --remote origin --branch "$CI_DEFAULT_BRANCH" --server-host "$CI_SERVER_HOST" --project-path "$CI_PROJECT_PATH"
+
+# Protected-main rehearsal of the tag-only authorization and bundle path. The
+# authorization phase uses ordinary CI job authority for the authenticated
+# origin fetch. The local clone/tag/bundle phase receives only the explicit
+# environment allowlist below. The job performs no remote push or publication.
+tag-bundle-dress-rehearsal:
+  stage: authorize
+  needs: [validate]
+  rules:
+    - if: '$CI_COMMIT_BRANCH == $CI_DEFAULT_BRANCH && $CI_COMMIT_REF_PROTECTED == "true"'
+  script:
+    - test -z "${CI_COMMIT_TAG:-}"
+    - mkdir tag-dress-rehearsal
+    - uv run --locked --no-sync python scripts/check-tag-containment.py --commit "$CI_COMMIT_SHA" --remote origin --branch "$CI_DEFAULT_BRANCH" --server-host "$CI_SERVER_HOST" --project-path "$CI_PROJECT_PATH" | tee tag-dress-rehearsal/tag-authorization.txt
+    - mkdir tag-dress-rehearsal/empty-home
+    - >-
+      env -i
+      PATH=/usr/local/bin:/usr/bin:/bin
+      HOME="$CI_PROJECT_DIR/tag-dress-rehearsal/empty-home"
+      LC_ALL=C
+      python scripts/run-tag-bundle-dress-rehearsal.py
+      --source "$CI_PROJECT_DIR"
+      --commit "$CI_COMMIT_SHA"
+      --output "$CI_PROJECT_DIR/tag-dress-rehearsal"
+  artifacts:
+    name: "seag-tag-bundle-dress-rehearsal-${CI_COMMIT_SHA}"
+    paths:
+      - tag-dress-rehearsal/tag-authorization.txt
+      - tag-dress-rehearsal/local-tag-object.txt
+      - tag-dress-rehearsal/BOUNDARY.txt
+      - tag-dress-rehearsal/bundle/
+    expire_in: 30 days
 
 release-candidate-bundle:
   stage: bundle

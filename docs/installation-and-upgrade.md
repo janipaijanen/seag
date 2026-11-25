@@ -103,6 +103,16 @@ That review is procedurally separate, not account-level or human organizational
 independence. Its accepted evaluation identity is
 `registry.gitlab.com/janipaijanen/seag/ci-toolchain@sha256:b427405058274309921ce6cf8e8e0cedc278bba492da46152c208222eb55a632`.
 That later evidence does not rewrite alpha.2's historical verification limits,
-does not make the candidate a SEAG release, and does not by itself establish
-that protected-main jobs consume the image. CI adoption requires a separately
-reviewed consumer change and successful exact-head evidence.
+does not make the candidate a SEAG release, and does not rewrite any immutable
+alpha.2 artifact. Current development selects the accepted manifest digest for
+general CI consumers and removes live Git and uv installation from their job
+startup. This is not a claim that CI is fully offline: uv still retrieves
+hash-locked project dependencies, tag containment queries current authenticated
+default-branch policy, and producer and publisher jobs retain their separately
+pinned runtimes. H6 remains open until the consumer change, protected-main
+pipeline, and non-publishing tag-path rehearsal have successful retained
+evidence and independent review. The rehearsal's authenticated containment
+phase necessarily runs with ordinary CI job authority. Its local
+clone/tag/bundle phase is separately scrubbed to an exact `HOME`, `LC_ALL`, and
+`PATH` allowlist; the job does not claim that credentials are absent from the
+authorization phase.
