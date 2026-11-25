@@ -25,8 +25,8 @@
     },
     {
       "path": "README.md",
-      "sha256": "5f0f6f536213230602ca04918a75f6bbc0441160273da226d8e6b1a6d49830a2",
-      "size": 15458
+      "sha256": "4db7d624c10fb0db0cf496e6620f065f5acdd830f4cdc0e7f8d16bf523b36feb",
+      "size": 15456
     },
     {
       "path": "DISCLAIMER.md",
@@ -50,8 +50,8 @@
     },
     {
       "path": "maturity.yaml",
-      "sha256": "a6d039ccefb960ce9f14a3bab554479177c7f71f667e8ca803967ebebb32b8d9",
-      "size": 3824
+      "sha256": "1c052e2de8c4b02bc39f46ea14ede9e8bb78137a8e36b1dcf8fe5629a4a19b58",
+      "size": 5065
     },
     {
       "path": "standards.json",
@@ -60,8 +60,8 @@
     },
     {
       "path": "scripts/generate-evaluation-dossier.py",
-      "sha256": "76ed3f4b3b697ee54e4eb82fff5b4cac7a06d234d5ac293958f929dd25e2af0c",
-      "size": 31566
+      "sha256": "e8e4b7e5869b50d51947f2ab6bdc223ae5426dbcaea74377f5af93f86f68ddbf",
+      "size": 33010
     },
     {
       "path": "schema/source-0.1.schema.json",
@@ -110,8 +110,8 @@
     },
     {
       "path": "docs/maturity.md",
-      "sha256": "cbb9a204724ec67a2e72f664a213847ca7bd23e189cfb681891aaef7a037bb56",
-      "size": 8877
+      "sha256": "23d86f9ea4799fd666710bca09b09b595eef0832b001aff9577b358fcfaff8fd",
+      "size": 10317
     },
     {
       "path": "docs/semantic-diff.md",
@@ -132,22 +132,22 @@
   "outputs": [
     {
       "path": "docs/ai-evaluation-context.md",
-      "sha256": "cda400e0a9d384dda070a3722ee7baa5538dd5797a60e3796eb994a6afffca5b",
-      "size": 5613
+      "sha256": "e957cc057d0140621bb8417195ef97f55ef2ea2d910be6218d187256735e5acc",
+      "size": 7671
     },
     {
       "path": "docs/ai-evaluation-dossier.md",
-      "sha256": "0160322387c365d420c2c785ffbfb6ae04499b23864099d86a4e84e5b8436e23",
-      "size": 11266
+      "sha256": "a702e202384903cb5cad5fff28cd9653b6cba918cadc21d3113b7b6251acaa77",
+      "size": 13564
     }
   ],
   "compact_context_budget": {
     "encoding": "UTF-8",
     "maximum_bytes": 8000,
-    "actual_bytes": 5613,
+    "actual_bytes": 7671,
     "word_definition": "non-whitespace runs counted by Python regular expression \\S+",
     "maximum_words": 1100,
-    "actual_words": 629
+    "actual_words": 881
   },
   "verification_commands": [
     "python3 scripts/generate-evaluation-dossier.py --check",

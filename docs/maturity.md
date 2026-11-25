@@ -139,31 +139,43 @@ The machine-readable assessment is [`maturity.yaml`](../maturity.yaml). Its
 levels describe the identified capability scope at the recorded source commit;
 they are not a blanket project score.
 
-As of the stable 0.1 candidate assessment:
+The table combines the stable 0.1 candidate assessment with explicitly marked
+0.2 alpha evaluation capabilities. The exact refs and commits for both bases
+are recorded in `maturity.yaml`.
 
 | Capability | Level | Evidence and limitation |
 |---|---:|---|
-| Framework charter and boundary policies | 4 Validated | Normative documents, closed source contract, fixtures, validator, and boundary tests; not yet in a stable release |
-| Identity, provenance, language, and standards policies | 4 Validated | Pinned register, validation, transformation sidecars, and mapping profiles; not yet in a stable release |
-| Reproducible release-candidate bundling | 4 Validated | Local repeatability tests and passing GitLab pipelines; no supported release |
-| SPDX coverage enforcement | 4 Validated | Exact-header check and CI evidence; no public release |
-| Normative semantic source contract | 4 Validated | Integrated contract, schema, neutral fixtures, independent review, and exact-head CI; not released |
-| Semantic validator | 4 Validated | Dependency-free implementation with positive and negative tests on the integration head; not released |
-| Ontology-to-glossary extraction | 4 Validated | Deterministic exact-language extraction retains record provenance and digest-bound extraction evidence; no stable release |
+| Framework charter and boundary policies | 4 Validated | Normative documents, closed source contract, fixtures, validator, boundary tests, and immutable `v0.1.0` release; no support commitment or external-adopter evidence |
+| Identity, provenance, language, and standards policies | 4 Validated | Pinned register, validation, transformation sidecars, mapping profiles, and immutable `v0.1.0` release; no external-adopter evidence |
+| Reproducible release-candidate bundling | 4 Validated | Local repeatability tests, passing GitLab pipelines, and immutable `v0.1.0` release bundle; no support commitment |
+| SPDX coverage enforcement | 4 Validated | Exact-header check, CI evidence, and immutable `v0.1.0` release; mechanical evidence, not legal attestation |
+| Normative semantic source contract | 4 Validated | Integrated contract, schema, neutral fixtures, review, exact-head CI, and immutable `v0.1.0` release; no external-adopter evidence |
+| Semantic validator | 4 Validated | Dependency-free implementation with positive and negative tests in immutable `v0.1.0`; no support commitment or external-adopter evidence |
+| Ontology-to-glossary extraction | 4 Validated | Deterministic exact-language extraction in immutable `v0.1.0` retains identity, record provenance, and digest-bound evidence; no external-adopter evidence |
 | CmapTools CXL exchange | 4 Validated | Deterministic export and compatible-parser graph round trip; CmapTools desktop import remains untested and unclaimed |
+| Canonical source rendering | 3 Instantiated | Experimental 0.2 alpha implementation and deterministic tests; not a supported compatibility baseline, and canonical bytes create a new exact snapshot |
+| Semantic diff and bounded conflict detection | 3 Instantiated | Experimental 0.2 alpha implementation, result schema, fixtures, and tests; no correctness/equivalence determination or corpus/output size limits |
 | Ponytail contributor discipline | 3 Instantiated | Pinned full discipline, contribution rule, input-boundary policy, and negative tests; independent exact-head validation pending |
 | AGF and Caveman profiles | 1 Planned | Interoperability targets only |
 
-The current assessment basis is the implementation commit recorded in
-[`maturity.yaml`](../maturity.yaml), the `release/0.1.0-prep` stable-candidate
-ref, the durable
+The current assessment basis is split explicitly in
+[`maturity.yaml`](../maturity.yaml): the bounded 0.1 implementation commit,
+immutable `v0.1.0` release ref, and successful tag pipeline, plus the exact
+`v0.2.0-alpha.2` evaluation ref, commit, and tag pipeline for the two alpha
+capabilities above. The 0.1 basis also includes the durable
 [source-contract integration review](reviews/source-contract-integration-0.1.md),
 the passing test count and exact-head hosted pipelines recorded in
 `maturity.yaml`.
-Level 4 applies only to the bounded 0.1 contract and checks exercised there;
-it does not claim semantic truth, authenticated actor authority, complete
+Level 4 applies only to the bounded 0.1 contract and checks exercised there.
+The stable 0.1 rows remain Level 4 rather than Level 5 because an immutable
+release does not create a support or maintained-compatibility commitment. The
+alpha capabilities remain Level 3 because their result contracts are
+experimental and the semantic-diff resource limits remain open; their
+project-controlled tests do not silently promote them. The assessment
+does not claim semantic truth, authenticated actor authority, complete
 Unicode/process detection, CmapTools desktop compatibility, or cross-engine
-equivalence. Level 5 requires the reviewed, tagged stable distribution.
+equivalence. Level 5 additionally requires a documented supported use and
+maintained compatibility commitment; a stable tag alone is insufficient.
 
 SEAG's problem framing is **Empirically informed** by silver-birch and SEAG's own
 incubation. Claims that SEAG improves independent projects remain
