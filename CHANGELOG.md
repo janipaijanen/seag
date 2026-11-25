@@ -9,6 +9,11 @@ CI uses that release section as the future release-note source.
 
 ## Unreleased
 
+- Recorded the published Linux/amd64 CI toolchain candidate and its fresh
+  read-only post-publication technical review by immutable manifest digest,
+  while distinguishing procedural review separation from organizational
+  independence and keeping candidate evidence separate from release status
+  and protected-main CI adoption.
 - Bound release manifests and external build provenance to the complete Git
   tree so exact reviewed-tree identity survives merge-commit comparison even
   though CI policy remains outside the distributable archive.

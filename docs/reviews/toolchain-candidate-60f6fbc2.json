@@ -1,0 +1,87 @@
+{
+  "accepted_use": "controlled-evaluation-only",
+  "attestation_date": "2026-11-25",
+  "attestation": {
+    "completed_at": "2026-11-25T06:47:46Z",
+    "credential_scan": {
+      "coverage": "aggregate regular-file tar payloads across all eight layers; repeated, overwritten, and later-whiteouted paths count separately; not a merged-rootfs count",
+      "credible_findings": 0,
+      "detector": "custom Python 3.14.8 standard-library byte and regular-expression scan",
+      "false_positives": [
+        "one AWS-access-key-shaped substring in the libunistring Unicode-name table"
+      ],
+      "file_payloads": 2811,
+      "limitations": "supports no detected credential leakage under the recorded rules, not universal absence of unmodelled secret formats",
+      "metadata_coverage": "manifest, config, inventory, SBOM, and four receipt files were also scanned but are excluded from the payload counts",
+      "path_rules": [
+        ".docker/",
+        ".git/config",
+        ".netrc",
+        "credentials",
+        "auth.json",
+        "bearer-header",
+        "response-body",
+        "token-body",
+        "config.json"
+      ],
+      "regex_rule_classes": [
+        "GitLab token prefixes",
+        "CI secret assignments",
+        "Authorization header values",
+        "private-key boundaries",
+        "AWS access-key shape"
+      ],
+      "secret_rule": "exact byte search for the current registry secret returned by glab auth docker-helper",
+      "uncompressed_bytes": 173041955
+    },
+    "inventory_sha256": "edd47cb22e34f59437e3a5513695f44a46aca5ed5db708149eb6889d5b76496e",
+    "oci_proof_archive_sha256": "c78a8b6ec25431e5a9f9dab3459339ff176a56bf8627d222755913d3d0ca0bb5",
+    "sbom": {
+      "component_count": 44,
+      "format": "CycloneDX",
+      "sha256": "baa5e71274eb958ff1579ac8f6bb740599c6f13f95934a9d06c6c9146406f11e",
+      "spec_version": "1.6"
+    },
+    "verified": [
+      "registry-manifest",
+      "config",
+      "compressed-layer-digests-and-sizes",
+      "decompressed-layer-diff-ids",
+      "installed-package-inventory",
+      "sbom-reconciliation",
+      "credential-absence-scan"
+    ],
+    "reviewer": {
+      "identity": "OpenAI Codex agent, task identity /root/seag_candidate_attestation",
+      "role": "read-only post-publication evidence reviewer; not a human approver or release authority",
+      "separation": "fresh post-publication analysis; did not participate in the build or publisher job and performed no repository, registry, tag, release, environment, rule, or CI-adoption mutation",
+      "separation_limit": "procedural and computational, not account-level or human organizational independence; existing GitLab identity janipaijanen was used for read APIs and pull-only registry access"
+    },
+    "tooling": {
+      "glab": "1.116.0 (e8436ca8a)",
+      "python": "3.14.8"
+    }
+  },
+  "candidate": {
+    "config_digest": "sha256:2068596fb47837b99fa04837ee1295c89e6ba7b050d8033da60f10a1b93fc324",
+    "layer_count": 8,
+    "manifest_digest": "sha256:b427405058274309921ce6cf8e8e0cedc278bba492da46152c208222eb55a632",
+    "platform": "linux/amd64",
+    "reference": "registry.gitlab.com/janipaijanen/seag/ci-toolchain@sha256:b427405058274309921ce6cf8e8e0cedc278bba492da46152c208222eb55a632",
+    "source_commit": "60f6fbc2c587835bf8eb886202029d2f30454357"
+  },
+  "evidence": {
+    "pipeline_id": 3111983772,
+    "publication_job_id": 18346907447,
+    "publication_receipt_sha256": "ea64b40cea9cdf532aaa939a14ef509d2fccdb4090d14341eee734cc6a671929",
+    "registry_repository_id": 13048838
+  },
+  "limitations": [
+    "candidate-is-not-a-release",
+    "candidate-tag-is-not-authority",
+    "protected-main-ci-adoption-not-established",
+    "protection-api-state-is-current-state-not-historical-proof",
+    "external-downstream-adoption-not-assessed"
+  ],
+  "schema": "seag/toolchain-candidate-attestation/v1"
+}
