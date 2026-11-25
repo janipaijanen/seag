@@ -1,0 +1,58 @@
+{
+  "adoption": {
+    "commit": "3320eb1d242b59a7efbf42112af0dc7f662572ff",
+    "source_tree": "2ab5dffd0e476f478990d35552eba569a8fe9877",
+    "toolchain_reference": "registry.gitlab.com/janipaijanen/seag/ci-toolchain@sha256:b427405058274309921ce6cf8e8e0cedc278bba492da46152c208222eb55a632"
+  },
+  "conclusion": {
+    "gate": "H6",
+    "result": "closed-for-current-development-ci-adoption",
+    "scope": "accepted-digest protected-main CI consumption and non-publishing tag-path rehearsal",
+    "severity_counts": {
+      "P1": 0,
+      "P2": 0,
+      "P3": 0
+    }
+  },
+  "evidence": {
+    "pipeline_id": 3114095373,
+    "pipeline_status": "success",
+    "release_candidate_job_id": 18362786963,
+    "rehearsal": {
+      "artifact_expires_at": "2026-12-25T14:09:49.672Z",
+      "artifact_zip_sha256": "e400d153b77d658b8e3326fdff03e27f4e3982cdec4573900505d192084fc26a",
+      "bundle_sha256": "ec9dc75c7ab4640b9024675a28edb01c066d9ca21c564c993c7cae63fa304c6c",
+      "job_id": 18362786962,
+      "publication_gate": "not-asserted",
+      "release_status": "candidate",
+      "tag": "v0.2.0-alpha.2"
+    }
+  },
+  "limitations": [
+    "current-development-adoption-only",
+    "not-a-seag-release",
+    "not-publication-approval",
+    "manual-publisher-not-played",
+    "not-fully-offline-ci",
+    "review-is-procedurally-separate-not-organizationally-independent",
+    "historical-alpha-2-limit-remains-immutable"
+  ],
+  "review": {
+    "completed_at": "2026-11-25T14:17:19Z",
+    "reviewer": "OpenAI Codex agent, task identity /root/seag_mr34_exact_review",
+    "separation": "fresh read-only post-merge evidence review; no repository, tag, release, registry, environment, or CI mutation",
+    "verified": [
+      "all-nine-automatic-jobs-succeeded",
+      "exact-digest-and-runtime-identities",
+      "locked-dependency-sync-and-tests",
+      "reproducible-toolchain-and-release-candidate-archives",
+      "live-default-branch-containment",
+      "local-tag-object-resolves-adopted-commit",
+      "scrubbed-local-phase-boundary",
+      "candidate-not-asserted-bundle",
+      "no-publication-side-effects",
+      "manual-publisher-remained-unplayed"
+    ]
+  },
+  "schema": "seag/toolchain-adoption-review/v1"
+}
