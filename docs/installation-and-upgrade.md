@@ -96,3 +96,13 @@ repository metadata are not pinned by digest, and the tag-containment check
 fetches the then-current `origin/main`. These are known reproducibility and
 supply-chain limits, not evidence that an observed candidate archive differs
 between the two CI builds. The H6 byte-pinning gate remains open.
+
+Current development has since published a separate Linux/amd64 CI toolchain
+candidate and recorded a fresh read-only post-publication technical review.
+That review is procedurally separate, not account-level or human organizational
+independence. Its accepted evaluation identity is
+`registry.gitlab.com/janipaijanen/seag/ci-toolchain@sha256:b427405058274309921ce6cf8e8e0cedc278bba492da46152c208222eb55a632`.
+That later evidence does not rewrite alpha.2's historical verification limits,
+does not make the candidate a SEAG release, and does not by itself establish
+that protected-main jobs consume the image. CI adoption requires a separately
+reviewed consumer change and successful exact-head evidence.

@@ -5,8 +5,23 @@ SPDX-License-Identifier: Apache-2.0
 
 # SEAG CI toolchain candidate
 
-This directory defines a Linux/amd64 candidate, not a published or accepted CI
-image. `inputs.json` binds the base image and every added package to immutable
+This directory defines the Linux/amd64 toolchain whose candidate from source
+commit `60f6fbc2c587835bf8eb886202029d2f30454357` was published and received a
+fresh read-only post-publication technical review on 2026-11-25. The
+maintainer-recorded review is procedurally separate, not account-level or human
+organizational independence. The accepted evaluation identity is the immutable
+manifest digest:
+
+```text
+registry.gitlab.com/janipaijanen/seag/ci-toolchain@sha256:b427405058274309921ce6cf8e8e0cedc278bba492da46152c208222eb55a632
+```
+
+This is candidate evidence, not a release or protected-main CI adoption. The
+discovery tag is not authority and must not be consumed in place of the digest.
+The retained machine-readable review record is
+`docs/reviews/toolchain-candidate-60f6fbc2.json`.
+
+`inputs.json` binds the base image and every added package to immutable
 identity. `prepare-toolchain-context.py` enforces each requested and final URL,
 exact byte size and SHA-256 before the build. `install.py` repeats size and hash
 verification inside the network-disabled build.

@@ -100,8 +100,8 @@
     },
     {
       "path": "docs/installation-and-upgrade.md",
-      "sha256": "b71835bc70a4279d817b9a1f3f213bf70d797bcce68f017938654e75823e9c66",
-      "size": 4981
+      "sha256": "fd5da63c4cc6c3c3ee329fab905f980480fec2ebe9cc62cc9cba310548c939c3",
+      "size": 5685
     },
     {
       "path": "docs/licensing.md",
