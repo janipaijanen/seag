@@ -137,6 +137,7 @@ def build(
     }:
         raise ValueError("stable status and asserted publication gate must be selected together")
     commit = git("rev-parse", "--verify", f"{commitish}^{{commit}}").strip()
+    tree = git("rev-parse", "--verify", f"{commit}^{{tree}}").strip()
     epoch = int(git("show", "-s", "--format=%ct", commit).strip())
     entries = source_entries(commit)
     prefix = f"seag-{version}"
@@ -154,6 +155,7 @@ def build(
         "name": "seag",
         "version": version,
         "source_commit": commit,
+        "source_tree": tree,
         "source_date_epoch": epoch,
         "release_status": release_status,
         "publication_gate": publication_gate,
@@ -186,6 +188,7 @@ def build(
                 "format": "seag/release-build-provenance/v1",
                 "subject": {"path": archive.name, "sha256": archive_digest},
                 "source_commit": commit,
+                "source_tree": tree,
                 "source_date_epoch": epoch,
                 "builder": "scripts/build-release-bundle.py",
                 "builder_digest": next(

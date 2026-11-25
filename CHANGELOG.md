@@ -9,6 +9,9 @@ CI uses that release section as the future release-note source.
 
 ## Unreleased
 
+- Bound release manifests and external build provenance to the complete Git
+  tree so exact reviewed-tree identity survives merge-commit comparison even
+  though CI policy remains outside the distributable archive.
 - Added explicit AI-development transparency and a separate notice covering
   optional AI/service costs, computing resources, energy and environmental
   effects, data handling, and the controlling licence boundaries.
