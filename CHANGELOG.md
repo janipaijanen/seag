@@ -9,6 +9,11 @@ CI uses that release section as the future release-note source.
 
 ## Unreleased
 
+- Selected the reviewed CI toolchain candidate by immutable digest for general
+  consumers, removed live Git and uv installation from job startup, added
+  fail-closed consumer-policy tests, and added a protected-main-only local
+  tag-path rehearsal whose scrubbed local phase performs no remote tag or
+  publication operation.
 - Recorded the published Linux/amd64 CI toolchain candidate and its fresh
   read-only post-publication technical review by immutable manifest digest,
   while distinguishing procedural review separation from organizational

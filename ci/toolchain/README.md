@@ -16,10 +16,23 @@ manifest digest:
 registry.gitlab.com/janipaijanen/seag/ci-toolchain@sha256:b427405058274309921ce6cf8e8e0cedc278bba492da46152c208222eb55a632
 ```
 
-This is candidate evidence, not a release or protected-main CI adoption. The
-discovery tag is not authority and must not be consumed in place of the digest.
-The retained machine-readable review record is
+Current development selects this digest for general CI consumer jobs while
+keeping the candidate producer, reproducibility proof, admission, and publisher
+on separate explicitly pinned images. This is a proposed CI adoption increment,
+not a SEAG release or evidence that the protected-main consumer pipeline has
+passed. The discovery tag is not authority and must not be consumed in place of
+the digest. The retained machine-readable review record is
 `docs/reviews/toolchain-candidate-60f6fbc2.json`.
+
+Consumer jobs still retrieve hash-locked project dependencies through uv. The
+tool image removes live Git and uv installation from job startup; it does not
+make the complete CI pipeline offline or eliminate the intentionally live,
+authenticated default-branch authorization query used for tag containment.
+The protected-main tag-path rehearsal therefore has two explicit phases: its
+authorization phase runs with ordinary CI job authority, while the local
+clone/tag/bundle phase runs under `env -i` with only `HOME`, `LC_ALL`, and
+`PATH`. The job does not claim to lack credentials; the scrubbed local phase is
+the narrower boundary, and the job contains no remote push or publication.
 
 `inputs.json` binds the base image and every added package to immutable
 identity. `prepare-toolchain-context.py` enforces each requested and final URL,
