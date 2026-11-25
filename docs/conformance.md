@@ -225,8 +225,11 @@ field contracts.
 The CI release-candidate archive is reproducible from a Git commit and version
 in the authoritative `VERSION` file. It contains the tracked distributable source plus
 `RELEASE-MANIFEST.json`. CI also emits an archive SHA-256 checksum and a build
-provenance record. The archive manifest identifies every included source file,
-its exact Git object, size, and SHA-256 digest.
+provenance record. The archive manifest and external provenance record identify
+the exact source commit and its complete Git tree. The manifest also identifies
+every included source file, its exact Git object, size, and SHA-256 digest. The
+tree identity covers the complete reviewed repository snapshot, including CI
+policy that is deliberately excluded from the distributable archive.
 
 The build timestamp is the source commit timestamp (`SOURCE_DATE_EPOCH` in
 effect), not the CI runner clock. Archive paths, ordering, ownership, modes,

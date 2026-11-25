@@ -69,7 +69,11 @@ class ReleaseBundleTests(unittest.TestCase):
             self.assertEqual(filename, archive_a.name)
             self.assertEqual(digest, release_bundle.sha256(archive_a.read_bytes()))
             provenance = json.loads(provenance_a.read_text())
+            commit = subprocess.check_output(("git", "rev-parse", "HEAD"), text=True).strip()
+            tree = subprocess.check_output(("git", "rev-parse", "HEAD^{tree}"), text=True).strip()
             self.assertEqual(provenance["subject"]["sha256"], digest)
+            self.assertEqual(provenance["source_commit"], commit)
+            self.assertEqual(provenance["source_tree"], tree)
             self.assertEqual(provenance["release_status"], "candidate")
             self.assertEqual(provenance["publication_gate"], "not-asserted")
             with tarfile.open(archive_a, "r:gz") as archive:
@@ -78,6 +82,8 @@ class ReleaseBundleTests(unittest.TestCase):
                 manifest = json.load(archive.extractfile(manifest_name))
             self.assertEqual(manifest["release_status"], "candidate")
             self.assertEqual(manifest["publication_gate"], "not-asserted")
+            self.assertEqual(manifest["source_commit"], commit)
+            self.assertEqual(manifest["source_tree"], tree)
             self.assertTrue(any(name.endswith("/RELEASE-MANIFEST.json") for name in names))
             self.assertFalse(any(name.endswith("/.gitlab-ci.yml") for name in names))
 

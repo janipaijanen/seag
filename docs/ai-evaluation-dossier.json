@@ -25,8 +25,8 @@
     },
     {
       "path": "README.md",
-      "sha256": "4db7d624c10fb0db0cf496e6620f065f5acdd830f4cdc0e7f8d16bf523b36feb",
-      "size": 15456
+      "sha256": "936198c0a9f1ac191216aef581a5d22aff751d3bd90f26b6b4b00d0d5c7c7afd",
+      "size": 15595
     },
     {
       "path": "DISCLAIMER.md",
@@ -85,8 +85,8 @@
     },
     {
       "path": "docs/conformance.md",
-      "sha256": "cb54ecc5356e62117fa61523e702a708ddf504a35750a6f3af84dcc70dec6d24",
-      "size": 12457
+      "sha256": "e269f466ffd2544093ae5dae0dcf4383a07b3d10be42a2c86a1c8046d2918724",
+      "size": 12716
     },
     {
       "path": "docs/cxl-profile.md",
